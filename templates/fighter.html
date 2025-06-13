@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="space-y-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-start space-x-6">
+                {% if fighter.headshot_url %}
+                    <img src="{{ fighter.headshot_url }}" alt="{{ fighter.full_name }}" class="w-32 h-32 object-cover rounded-lg">
+                {% endif %}
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">{{ fighter.full_name }}</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-gray-600"><span class="font-semibold">Weight Class:</span> {{ fighter.weight_class or 'N/A' }}</p>
+                            <p class="text-gray-600"><span class="font-semibold">Record:</span> {{ fighter.record or 'N/A' }}</p>
+                            <p class="text-gray-600"><span class="font-semibold">Age:</span> {{ fighter.age or 'N/A' }}</p>
+                            {% if fighter.nickname %}
+                                <p class="text-gray-600"><span class="font-semibold">Nickname:</span> {{ fighter.nickname }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-gray-600"><span class="font-semibold">Height:</span> {{ fighter.display_height or 'N/A' }}</p>
+                            <p class="text-gray-600"><span class="font-semibold">Weight:</span> {{ fighter.display_weight or 'N/A' }}</p>
+                            <p class="text-gray-600"><span class="font-semibold">Reach:</span> {{ fighter.reach or 'N/A' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-4 mb-8">
+            <a href="/fighter/{{ fighter.id }}/timeline" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                View Career Timeline
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-6">
+                <div class="w-3/4">
+                    <h3 class="text-xl font-bold mb-4">Fight History</h3>
+                    <!-- Filters -->
+                    <form id="filterForm" method="get" class="grid grid-cols-3 gap-2 mb-4">
+                        <!-- Promotion Filter -->
+                        <div>
+                            <label for="promotion" class="block text-xs font-medium text-gray-700 mb-0.5">Promotion</label>
+                            <select name="promotion" id="promotion" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1">
+                                <option value="all" {% if fighter.current_filters.promotion == 'all' %}selected{% endif %}>All Promotions</option>
+                                {% for promo in fighter.promotions %}
+                                <option value="{{ promo }}" {% if fighter.current_filters.promotion == promo %}selected{% endif %}>{{ promo|upper }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Rounds Format Filter -->
+                        <div>
+                            <label for="rounds_format" class="block text-xs font-medium text-gray-700 mb-0.5">Rounds Format</label>
+                            <select name="rounds_format" id="rounds_format" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1">
+                                <option value="all" {% if fighter.current_filters.rounds_format == 'all' %}selected{% endif %}>All Formats</option>
+                                {% for rounds in fighter.rounds_formats %}
+                                <option value="{{ rounds }}" {% if fighter.current_filters.rounds_format == rounds|string %}selected{% endif %}>{{ rounds }} Rounds</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Fight Type Filter -->
+                        <div>
+                            <label for="fight_type" class="block text-xs font-medium text-gray-700 mb-0.5">Fight Type</label>
+                            <select name="fight_type" id="fight_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1">
+                                <option value="all" {% if fighter.current_filters.fight_type == 'all' %}selected{% endif %}>All Fights</option>
+                                <option value="title" {% if fighter.current_filters.fight_type == 'title' %}selected{% endif %}>Title Fights</option>
+                                <option value="main" {% if fighter.current_filters.fight_type == 'main' %}selected{% endif %}>Main Events</option>
+                                <option value="co-main" {% if fighter.current_filters.fight_type == 'co-main' %}selected{% endif %}>Co-Main Events</option>
+                            </select>
+                        </div>
+
+                        <!-- Weight Class Filter -->
+                        <div>
+                            <label for="weight_class" class="block text-xs font-medium text-gray-700 mb-0.5">Weight Class</label>
+                            <select name="weight_class" id="weight_class" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1">
+                                <option value="all" {% if fighter.current_filters.weight_class == 'all' %}selected{% endif %}>All Weight Classes</option>
+                                {% for weight_class in fighter.weight_classes %}
+                                <option value="{{ weight_class }}" {% if fighter.current_filters.weight_class == weight_class %}selected{% endif %}>{{ weight_class }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Odds Type Filter -->
+                        <div>
+                            <label for="odds_type" class="block text-xs font-medium text-gray-700 mb-0.5">Betting Status</label>
+                            <select name="odds_type" id="odds_type" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-1">
+                                <option value="all" {% if fighter.current_filters.odds_type == 'all' %}selected{% endif %}>All Fights</option>
+                                <option value="favorite" {% if fighter.current_filters.odds_type == 'favorite' %}selected{% endif %}>Favorites</option>
+                                <option value="underdog" {% if fighter.current_filters.odds_type == 'underdog' %}selected{% endif %}>Underdogs</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <!-- Filtered Stats -->
+                    <div class="grid grid-cols-4 gap-4 mb-6">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm font-medium text-gray-500">Overall Record</div>
+                            <div class="text-lg font-semibold">{{ fighter.filtered_record }}</div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm font-medium text-gray-500">Decisions</div>
+                            <div class="text-lg font-semibold">{{ fighter.filtered_decisions }}/{{ fighter.filtered_total_fights }}</div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm font-medium text-gray-500">KO Record</div>
+                            <div class="text-lg font-semibold">{{ fighter.filtered_ko_record }}</div>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <div class="text-sm font-medium text-gray-500">Submission Record</div>
+                            <div class="text-lg font-semibold">{{ fighter.filtered_sub_record }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50">
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Date</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Event</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Opponent</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Result</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Method</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Round</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Time</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Weight Class</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Rounds</th>
+                            <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Odds</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for fight in fighter.fight_history %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ fight.date|format_date }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-900">
+                                    <a href="{{ url_for('events', event_id=fight.event_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ fight.event_name }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">
+                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ fight.opponent }}
+                                    </a>
+                                </td>
+                                <td class="px-4 py-2 text-sm">
+                                    <span class="px-2 py-1 rounded-full text-xs font-semibold 
+                                        {% if fight.won is none %}
+                                            bg-gray-100 text-gray-800
+                                        {% elif fight.won %}
+                                            bg-green-100 text-green-800
+                                        {% else %}
+                                            bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {% if fight.won is none %}
+                                            Draw/NC
+                                        {% elif fight.won %}
+                                            Won
+                                        {% else %}
+                                            Lost
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if fight.result_display_name %}
+                                        {{ fight.result_display_name }}
+                                        {% if fight.fight_title and 'title' in fight.fight_title.lower() %}
+                                            <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" title="Title Fight">
+                                                <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                                                </svg>
+                                                Title
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ fight.end_round or 'N/A' }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ fight.end_time or 'N/A' }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ fight.weight_class or 'N/A' }}</td>
+                                <td class="px-4 py-2 text-sm text-gray-900">{{ fight.rounds_format or 'N/A' }}</td>
+                                <td class="px-4 py-2 text-sm">
+                                    {% if fight.fighter_odds %}
+                                        <span class="{% if fight.fighter_odds|int > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                            {{ fight.fighter_odds }}
+                                        </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all filter selects
+    const filterSelects = document.querySelectorAll('select[name]');
+    
+    // Add change event listener to each select
+    filterSelects.forEach(select => {
+        select.addEventListener('change', function() {
+            // Submit the form when any filter changes
+            document.getElementById('filterForm').submit();
+        });
+    });
+});
+</script>
+{% endblock %} 

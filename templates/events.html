@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold mb-4">Fight Events</h1>
+        
+        <div class="max-w-xl">
+            <div class="flex space-x-4 items-end">
+                <div class="flex-1">
+                    <label for="yearSelector" class="block text-sm font-medium text-gray-700 mb-2">Select a Year:</label>
+                    <select id="yearSelector" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <option value="">Choose a year...</option>
+                        {% for year in years %}
+                            <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="flex-1">
+                    <label for="eventSelector" class="block text-sm font-medium text-gray-700 mb-2">Select an Event:</label>
+                    <select id="eventSelector" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <option value="">Choose an event...</option>
+                        {% for event in events_list %}
+                            <option value="{{ event.event_id }}" {% if selected_event and selected_event.event_id == event.event_id %}selected{% endif %}>
+                                {{ event.event_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if selected_event %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ selected_event.event_name }}</h2>
+                        <p class="text-gray-600 mt-1">{{ selected_event.date|format_date }}</p>
+                        <p class="text-gray-600">{{ selected_event.venue_name }}, {{ selected_event.city }}, {{ selected_event.country }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="divide-y divide-gray-200">
+                {% for fight in selected_event.fights %}
+                    <div class="p-6 hover:bg-gray-50">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center space-x-4">
+                                    <div class="flex-1 flex items-center space-x-3">
+                                        {% if fight.fighter_1_headshot %}
+                                            <img src="{{ fight.fighter_1_headshot }}" alt="{{ fight.fighter_1_name }}" class="w-12 h-12 rounded-full object-cover">
+                                        {% endif %}
+                                        <div>
+                                            <a href="/fighter/{{ fight.fighter_1_id }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                                {{ fight.fighter_1_name }}
+                                            </a>
+                                            {% if fight.fighter_1_odds %}
+                                                <span class="ml-2 text-sm {% if fight.fighter_1_odds|int > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                                    {{ fight.fighter_1_odds }}
+                                                </span>
+                                            {% endif %}
+                                            {% if fight.fighter_1_winner is not none %}
+                                                <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold {% if fight.fighter_1_winner %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                    {% if fight.fighter_1_winner %}Won{% else %}Lost{% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="text-gray-500 font-medium">vs</div>
+                                    <div class="flex-1 text-right flex items-center justify-end space-x-3">
+                                        <div>
+                                            <a href="/fighter/{{ fight.fighter_2_id }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                                {{ fight.fighter_2_name }}
+                                            </a>
+                                            {% if fight.fighter_2_odds %}
+                                                <span class="ml-2 text-sm {% if fight.fighter_2_odds|int > 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                                    {{ fight.fighter_2_odds }}
+                                                </span>
+                                            {% endif %}
+                                            {% if fight.fighter_2_winner is not none %}
+                                                <span class="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold {% if fight.fighter_2_winner %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                    {% if fight.fighter_2_winner %}Won{% else %}Lost{% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        {% if fight.fighter_2_headshot %}
+                                            <img src="{{ fight.fighter_2_headshot }}" alt="{{ fight.fighter_2_name }}" class="w-12 h-12 rounded-full object-cover">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mt-2 flex flex-col items-center text-sm">
+                                    <div class="flex items-center space-x-4 text-gray-500">
+                                        {% if fight.card_segment %}
+                                            <span>{{ fight.card_segment }}</span>
+                                        {% endif %}
+                                        <span>{{ fight.weight_class }}</span>
+                                    </div>
+                                    {% if fight.result_display_name %}
+                                        <div class="mt-1 text-gray-700">
+                                            {{ fight.result_display_name }}
+                                            {% if fight.end_round %}
+                                                (Round {{ fight.end_round }}
+                                                {% if fight.end_time %}
+                                                    - {{ fight.end_time }}
+                                                {% endif %}
+                                                )
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% if fight.has_stats %}
+                                    <div class="mt-4 flex justify-center">
+                                        <button onclick="toggleStats('{{ fight.event_id_fight_id }}')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                                            Show Fight Stats
+                                        </button>
+                                    </div>
+                                    <div id="stats-{{ fight.event_id_fight_id }}" class="mt-4 hidden">
+                                        <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                                            <div class="text-center">
+                                                <h4 class="font-semibold mb-2">{{ fight.fighter_1_name }}</h4>
+                                                <div class="space-y-2 text-sm">
+                                                    <div class="flex justify-between">
+                                                        <span>Total Strikes:</span>
+                                                        <span id="fighter1-total-strikes-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Sig. Strikes:</span>
+                                                        <span id="fighter1-sig-strikes-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Takedowns:</span>
+                                                        <span id="fighter1-takedowns-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Knockdowns:</span>
+                                                        <span id="fighter1-knockdowns-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center">
+                                                <h4 class="font-semibold mb-2">{{ fight.fighter_2_name }}</h4>
+                                                <div class="space-y-2 text-sm">
+                                                    <div class="flex justify-between">
+                                                        <span>Total Strikes:</span>
+                                                        <span id="fighter2-total-strikes-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Sig. Strikes:</span>
+                                                        <span id="fighter2-sig-strikes-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Takedowns:</span>
+                                                        <span id="fighter2-takedowns-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                    <div class="flex justify-between">
+                                                        <span>Knockdowns:</span>
+                                                        <span id="fighter2-knockdowns-{{ fight.event_id_fight_id }}">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-500">Select a year and event to view its fights.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+// Function to handle URL parameters
+function getUrlParameter(name) {
+    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+    var results = regex.exec(location.search);
+    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+}
+
+// Function to update URL and reload page
+function updateUrlAndReload(year, eventId) {
+    let url = '/events';
+    const params = [];
+    
+    if (year) {
+        params.push(`year=${year}`);
+    }
+    if (eventId) {
+        params.push(`event_id=${eventId}`);
+    }
+    
+    if (params.length > 0) {
+        url += '?' + params.join('&');
+    }
+    
+    window.location.href = url;
+}
+
+// On page load, if we have an event_id but no year, redirect to include the year
+document.addEventListener('DOMContentLoaded', function() {
+    const eventId = getUrlParameter('event_id');
+    const year = getUrlParameter('year');
+    
+    // Only redirect if we have an event_id but no year, and we're not already in a redirect
+    if (eventId && !year && !sessionStorage.getItem('redirecting')) {
+        sessionStorage.setItem('redirecting', 'true');
+        window.location.href = `/events?event_id=${eventId}`;
+    } else {
+        sessionStorage.removeItem('redirecting');
+    }
+});
+
+document.getElementById('yearSelector')?.addEventListener('change', function() {
+    const selectedYear = this.value;
+    const selectedEvent = document.getElementById('eventSelector')?.value;
+    updateUrlAndReload(selectedYear, selectedEvent);
+});
+
+document.getElementById('eventSelector')?.addEventListener('change', function() {
+    const selectedEvent = this.value;
+    const selectedYear = document.getElementById('yearSelector')?.value;
+    updateUrlAndReload(selectedYear, selectedEvent);
+});
+
+// Add click handler for fighter names
+$(document).on('click', '.fighter-name', function(e) {
+    e.preventDefault();
+    const fighterId = $(this).data('fighter-id');
+    window.location.href = `/fighters?fighter_id=${fighterId}`;
+});
+
+function toggleStats(fightId) {
+    const statsDiv = document.getElementById(`stats-${fightId}`);
+    const button = statsDiv.previousElementSibling.querySelector('button');
+    
+    if (statsDiv.classList.contains('hidden')) {
+        statsDiv.classList.remove('hidden');
+        button.textContent = 'Hide Fight Stats';
+        
+        // Load stats if not already loaded
+        if (statsDiv.querySelector('.text-sm').textContent.includes('Loading')) {
+            fetch(`/api/fight-stats/${fightId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.fighter1_stats) {
+                        document.getElementById(`fighter1-total-strikes-${fightId}`).textContent = 
+                            `${data.fighter1_stats.totalStrikesLanded}/${data.fighter1_stats.totalStrikesAttempted}`;
+                        document.getElementById(`fighter1-sig-strikes-${fightId}`).textContent = 
+                            `${data.fighter1_stats.sigStrikesLanded}/${data.fighter1_stats.sigStrikesAttempted}`;
+                        document.getElementById(`fighter1-takedowns-${fightId}`).textContent = 
+                            `${data.fighter1_stats.takedownsLanded}/${data.fighter1_stats.takedownsAttempted}`;
+                        document.getElementById(`fighter1-knockdowns-${fightId}`).textContent = 
+                            data.fighter1_stats.knockDowns;
+                    }
+                    
+                    if (data.fighter2_stats) {
+                        document.getElementById(`fighter2-total-strikes-${fightId}`).textContent = 
+                            `${data.fighter2_stats.totalStrikesLanded}/${data.fighter2_stats.totalStrikesAttempted}`;
+                        document.getElementById(`fighter2-sig-strikes-${fightId}`).textContent = 
+                            `${data.fighter2_stats.sigStrikesLanded}/${data.fighter2_stats.sigStrikesAttempted}`;
+                        document.getElementById(`fighter2-takedowns-${fightId}`).textContent = 
+                            `${data.fighter2_stats.takedownsLanded}/${data.fighter2_stats.takedownsAttempted}`;
+                        document.getElementById(`fighter2-knockdowns-${fightId}`).textContent = 
+                            data.fighter2_stats.knockDowns;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading fight stats:', error);
+                    statsDiv.querySelectorAll('.text-sm span').forEach(span => {
+                        span.textContent = 'Error loading stats';
+                    });
+                });
+        }
+    } else {
+        statsDiv.classList.add('hidden');
+        button.textContent = 'Show Fight Stats';
+    }
+}
+</script>
+{% endblock %} 

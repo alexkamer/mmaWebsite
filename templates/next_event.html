@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    {% if event %}
+    <!-- Event Header -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h1 class="text-3xl font-bold mb-4">{{ event.event_name }}</h1>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+                <p class="flex items-center text-gray-600">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    {{ event.date }}
+                </p>
+                <p class="flex items-center text-gray-600">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    {{ event.venue_name }}
+                </p>
+                <p class="flex items-center text-gray-600">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    {{ event.city }}, {{ event.country }}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fight Card -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6">
+            <h2 class="text-2xl font-bold mb-6">Fight Card</h2>
+            <div class="space-y-6">
+                {% for fight in fights %}
+                <div class="border-b border-gray-200 pb-6 last:border-b-0 last:pb-0">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+                        <!-- Fighter 1 -->
+                        <div class="flex items-center space-x-4 justify-start">
+                            {% if fight.fighter_1_headshot %}
+                            <div class="w-16 h-16 rounded-full overflow-hidden">
+                                <img src="{{ fight.fighter_1_headshot }}" alt="{{ fight.fighter_1_name }}" class="w-full h-full object-cover">
+                            </div>
+                            {% endif %}
+                            <div class="flex-1">
+                                <a href="/fighters?fighter_id={{ fight.fighter_1_id }}" class="text-lg font-medium text-gray-900 hover:text-indigo-600">
+                                    {{ fight.fighter_1_name }}
+                                </a>
+                                <p class="text-sm text-gray-600">{{ fight.fighter_1_record }}</p>
+                                {% if fight.fighter_1_odds %}
+                                <p class="text-sm text-gray-600 mt-1">
+                                    {% if fight.fighter_1_odds|int < 0 %}
+                                    <span class="text-red-600">Favorite</span>
+                                    {% endif %}
+                                    {{ fight.fighter_1_odds }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <!-- Center Info -->
+                        <div class="flex flex-col items-center justify-center text-center space-y-1">
+                            <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600">
+                                {{ fight.weight_class }}
+                            </span>
+                            {% if fight.card_segment %}
+                            <span class="text-xs text-gray-500">{{ fight.card_segment }}</span>
+                            {% endif %}
+                        </div>
+                        <!-- Fighter 2 -->
+                        <div class="flex items-center space-x-4 justify-end">
+                            <div class="flex-1 text-right">
+                                <a href="/fighters?fighter_id={{ fight.fighter_2_id }}" class="text-lg font-medium text-gray-900 hover:text-indigo-600">
+                                    {{ fight.fighter_2_name }}
+                                </a>
+                                <p class="text-sm text-gray-600">{{ fight.fighter_2_record }}</p>
+                                {% if fight.fighter_2_odds %}
+                                <p class="text-sm text-gray-600 mt-1">
+                                    {% if fight.fighter_2_odds|int < 0 %}
+                                    <span class="text-red-600">Favorite</span>
+                                    {% endif %}
+                                    {{ fight.fighter_2_odds }}
+                                </p>
+                                {% endif %}
+                            </div>
+                            {% if fight.fighter_2_headshot %}
+                            <div class="w-16 h-16 rounded-full overflow-hidden">
+                                <img src="{{ fight.fighter_2_headshot }}" alt="{{ fight.fighter_2_name }}" class="w-full h-full object-cover">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-lg p-6 text-center">
+        <h2 class="text-2xl font-bold mb-4">No Upcoming Events</h2>
+        <p class="text-gray-600">There are no upcoming UFC events scheduled at this time.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

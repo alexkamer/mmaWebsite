@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">UFC Rankings</h1>
+            {% if last_updated %}
+            <p class="text-gray-600">Last updated: {{ last_updated }}</p>
+            {% endif %}
+        </div>
+        <div class="mt-4 md:mt-0">
+            <div class="flex items-center space-x-2 bg-gray-100 rounded-lg p-2">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="text-sm text-gray-600">Rankings are updated weekly</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container mb-8">
+        <div class="flex space-x-2 overflow-x-auto pb-2 scrollbar-hide">
+            {% for ranking_type, divisions in rankings.items() %}
+                {% if 'Pound for Pound' in ranking_type %}
+                    <button class="nav-link-tab {% if loop.first %}active{% endif %}" 
+                            id="mens-p4p-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#mens-p4p" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="mens-p4p" 
+                            aria-selected="{{ 'true' if loop.first else 'false' }}">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Men's P4P
+                        </span>
+                    </button>
+                    <button class="nav-link-tab" 
+                            id="womens-p4p-tab" 
+                            data-bs-toggle="tab" 
+                            data-bs-target="#womens-p4p" 
+                            type="button" 
+                            role="tab" 
+                            aria-controls="womens-p4p" 
+                            aria-selected="false">
+                        <span class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Women's P4P
+                        </span>
+                    </button>
+                {% else %}
+                    {% for division, fighters in divisions.items() %}
+                        {% set mens_fighters = fighters|selectattr('gender', 'equalto', 'M')|list %}
+                        {% set womens_fighters = fighters|selectattr('gender', 'equalto', 'F')|list %}
+                        
+                        {% if mens_fighters %}
+                        <button class="nav-link-tab" 
+                                id="mens-{{ division|lower|replace(' ', '-') }}-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#mens-{{ division|lower|replace(' ', '-') }}" 
+                                type="button" 
+                                role="tab" 
+                                aria-controls="mens-{{ division|lower|replace(' ', '-') }}" 
+                                aria-selected="false">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Men's {{ division }}
+                            </span>
+                        </button>
+                        {% endif %}
+                        
+                        {% if womens_fighters %}
+                        <button class="nav-link-tab" 
+                                id="womens-{{ division|lower|replace(' ', '-') }}-tab" 
+                                data-bs-toggle="tab" 
+                                data-bs-target="#womens-{{ division|lower|replace(' ', '-') }}" 
+                                type="button" 
+                                role="tab" 
+                                aria-controls="womens-{{ division|lower|replace(' ', '-') }}" 
+                                aria-selected="false">
+                            <span class="flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Women's {{ division }}
+                            </span>
+                        </button>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="rankingsTabsContent">
+        {% for ranking_type, divisions in rankings.items() %}
+            {% if 'Pound for Pound' in ranking_type %}
+                {% for division, fighters in divisions.items() %}
+                    {% set mens_fighters = fighters|selectattr('gender', 'equalto', 'M')|list %}
+                    {% set womens_fighters = fighters|selectattr('gender', 'equalto', 'F')|list %}
+                    
+                    {% if mens_fighters %}
+                    <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="mens-p4p" role="tabpanel" aria-labelledby="mens-p4p-tab">
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6">
+                                <h2 class="text-2xl font-bold text-white">Men's Pound for Pound Rankings</h2>
+                            </div>
+                            <div class="p-0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fighter</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            {% for fighter in mens_fighters %}
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-8 py-4">
+                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-900 font-bold">
+                                                        {{ fighter.p4p_rank }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                                                            {% if fighter.headshot_url %}
+                                                                <img src="{{ fighter.headshot_url }}" alt="{{ fighter.fighter_name }}" class="w-full h-full object-cover">
+                                                            {% else %}
+                                                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if fighter.athlete_id %}
+                                                            <a href="/fighters?fighter_id={{ fighter.athlete_id }}" class="text-gray-900 hover:text-indigo-600 font-medium transition-colors">
+                                                                {{ fighter.fighter_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-900 font-medium">{{ fighter.fighter_name }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                                        {{ fighter.division }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if womens_fighters %}
+                    <div class="tab-pane fade" id="womens-p4p" role="tabpanel" aria-labelledby="womens-p4p-tab">
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6">
+                                <h2 class="text-2xl font-bold text-white">Women's Pound for Pound Rankings</h2>
+                            </div>
+                            <div class="p-0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fighter</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            {% for fighter in womens_fighters %}
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-8 py-4">
+                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-900 font-bold">
+                                                        {{ fighter.p4p_rank }}
+                                                    </span>
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                                                            {% if fighter.headshot_url %}
+                                                                <img src="{{ fighter.headshot_url }}" alt="{{ fighter.fighter_name }}" class="w-full h-full object-cover">
+                                                            {% else %}
+                                                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if fighter.athlete_id %}
+                                                            <a href="/fighters?fighter_id={{ fighter.athlete_id }}" class="text-gray-900 hover:text-indigo-600 font-medium transition-colors">
+                                                                {{ fighter.fighter_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-900 font-medium">{{ fighter.fighter_name }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-800">
+                                                        {{ fighter.division }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                {% for division, fighters in divisions.items() %}
+                    {% set mens_fighters = fighters|selectattr('gender', 'equalto', 'M')|list %}
+                    {% set womens_fighters = fighters|selectattr('gender', 'equalto', 'F')|list %}
+                    
+                    {% if mens_fighters %}
+                    <div class="tab-pane fade" id="mens-{{ division|lower|replace(' ', '-') }}" role="tabpanel" aria-labelledby="mens-{{ division|lower|replace(' ', '-') }}-tab">
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6">
+                                <h2 class="text-2xl font-bold text-white">Men's {{ division }}</h2>
+                            </div>
+                            <div class="p-0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fighter</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            {% for fighter in mens_fighters %}
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-8 py-4">
+                                                    {% if fighter.is_champion and not fighter.is_interim_champion %}
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                        Champion
+                                                    </span>
+                                                    {% elif fighter.is_interim_champion %}
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                                        Interim Champion
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-900 font-bold">
+                                                        {{ fighter.rank }}
+                                                    </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                                                            {% if fighter.headshot_url %}
+                                                                <img src="{{ fighter.headshot_url }}" alt="{{ fighter.fighter_name }}" class="w-full h-full object-cover">
+                                                            {% else %}
+                                                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if fighter.athlete_id %}
+                                                            <a href="/fighters?fighter_id={{ fighter.athlete_id }}" class="text-gray-900 hover:text-indigo-600 font-medium transition-colors">
+                                                                {{ fighter.fighter_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-900 font-medium">{{ fighter.fighter_name }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if womens_fighters %}
+                    <div class="tab-pane fade" id="womens-{{ division|lower|replace(' ', '-') }}" role="tabpanel" aria-labelledby="womens-{{ division|lower|replace(' ', '-') }}-tab">
+                        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                            <div class="bg-gradient-to-r from-indigo-600 to-indigo-700 px-8 py-6">
+                                <h2 class="text-2xl font-bold text-white">Women's {{ division }}</h2>
+                            </div>
+                            <div class="p-0">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead>
+                                            <tr class="bg-gray-50">
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                                <th class="px-8 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fighter</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-200">
+                                            {% for fighter in womens_fighters %}
+                                            <tr class="hover:bg-gray-50 transition-colors">
+                                                <td class="px-8 py-4">
+                                                    {% if fighter.is_champion and not fighter.is_interim_champion %}
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                        Champion
+                                                    </span>
+                                                    {% elif fighter.is_interim_champion %}
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                                        Interim Champion
+                                                    </span>
+                                                    {% else %}
+                                                    <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-900 font-bold">
+                                                        {{ fighter.rank }}
+                                                    </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td class="px-8 py-4">
+                                                    <div class="flex items-center space-x-4">
+                                                        <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-200">
+                                                            {% if fighter.headshot_url %}
+                                                                <img src="{{ fighter.headshot_url }}" alt="{{ fighter.fighter_name }}" class="w-full h-full object-cover">
+                                                            {% else %}
+                                                                <div class="w-full h-full bg-gray-100 flex items-center justify-center">
+                                                                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                                    </svg>
+                                                                </div>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if fighter.athlete_id %}
+                                                            <a href="/fighters?fighter_id={{ fighter.athlete_id }}" class="text-gray-900 hover:text-indigo-600 font-medium transition-colors">
+                                                                {{ fighter.fighter_name }}
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-gray-900 font-medium">{{ fighter.fighter_name }}</span>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.nav-link-tab {
+    @apply px-6 py-3 text-sm font-medium rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors whitespace-nowrap;
+}
+
+.nav-link-tab.active {
+    @apply bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s ease-out;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all tab buttons
+    const tabButtons = document.querySelectorAll('[data-bs-toggle="tab"]');
+    
+    // Add click event listener to each button
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-link-tab').forEach(tab => {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+            });
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            this.setAttribute('aria-selected', 'true');
+            
+            // Hide all tab panes
+            document.querySelectorAll('.tab-pane').forEach(pane => {
+                pane.classList.remove('show', 'active');
+            });
+            
+            // Show the selected tab pane
+            const targetId = this.getAttribute('data-bs-target');
+            const targetPane = document.querySelector(targetId);
+            if (targetPane) {
+                targetPane.classList.add('show', 'active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

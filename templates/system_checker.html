@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">System Checker</h1>
+            <p class="text-gray-600">Analyze patterns and trends in MMA fights</p>
+        </div>
+        <!-- Filter Toggle -->
+        <div class="mt-4 md:mt-0">
+            <form method="get" class="flex items-center space-x-2">
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="ufc_only" value="true" class="sr-only peer" {% if ufc_only %}checked{% endif %}>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    <span class="ml-3 text-sm font-medium text-gray-900">UFC Only</span>
+                </label>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Apply Filter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Analysis Sections -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Age Difference Analysis -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Age Difference Analysis</h2>
+            <p class="text-gray-600 mb-4">Analyze how age differences affect fight outcomes</p>
+            <form method="get" class="mb-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="min_age_diff" class="block text-sm font-medium text-gray-700 mb-2">
+                            Minimum Age Difference: <span id="age_diff_value">{{ min_age_diff }}</span> years
+                        </label>
+                        <input type="range" 
+                               id="min_age_diff" 
+                               name="min_age_diff" 
+                               min="1" 
+                               max="20" 
+                               value="{{ min_age_diff }}"
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                               oninput="document.getElementById('age_diff_value').textContent = this.value">
+                    </div>
+                    <div class="flex justify-between text-xs text-gray-500">
+                        <span>1 year</span>
+                        <span>20 years</span>
+                    </div>
+
+                    <!-- Younger Fighter Betting Status Filter -->
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Younger Fighter Betting Status
+                        </label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input type="radio" name="betting_status" value="any" 
+                                       class="form-radio text-blue-600" 
+                                       {% if betting_status == 'any' %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
+                                    {% if betting_status == 'any' %}
+                                        bg-blue-100 text-blue-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
+                                    {% endif %}">
+                                    Any
+                                </span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input type="radio" name="betting_status" value="favorite" 
+                                       class="form-radio text-blue-600" 
+                                       {% if betting_status == 'favorite' %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
+                                    {% if betting_status == 'favorite' %}
+                                        bg-blue-100 text-blue-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
+                                    {% endif %}">
+                                    Favorite
+                                </span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer group">
+                                <input type="radio" name="betting_status" value="underdog" 
+                                       class="form-radio text-blue-600" 
+                                       {% if betting_status == 'underdog' %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
+                                    {% if betting_status == 'underdog' %}
+                                        bg-blue-100 text-blue-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
+                                    {% endif %}">
+                                    Underdog
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Weight Class Filter -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700">
+                            Weight Classes
+                        </label>
+                        <div class="flex flex-wrap gap-2">
+                            {% for weight_class in [
+                                'Flyweight', 'Bantamweight', 'Featherweight', 'Lightweight',
+                                'Welterweight', 'Middleweight', 'Light Heavyweight', 'Heavyweight',
+                                'Women\'s Flyweight', 'Women\'s Bantamweight', 'Women\'s Featherweight',
+                                'Women\'s Strawweight'
+                            ] %}
+                            <label class="inline-flex items-center cursor-pointer group">
+                                <input type="checkbox" name="weight_classes" value="{{ weight_class }}"
+                                       class="form-checkbox text-blue-600 rounded"
+                                       {% if weight_class in selected_weight_classes %}checked{% endif %}
+                                       onchange="this.form.submit()">
+                                <span class="ml-2 px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
+                                    {% if weight_class in selected_weight_classes %}
+                                        bg-blue-100 text-blue-800
+                                    {% else %}
+                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
+                                    {% endif %}">
+                                    {{ weight_class }}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="ufc_only" value="{{ 'true' if ufc_only else 'false' }}">
+                <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Update Analysis
+                </button>
+            </form>
+            <div class="space-y-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-900 mb-2">Fighters {{ min_age_diff }}+ Years Younger</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Win Rate:</span>
+                        <span class="text-lg font-semibold text-indigo-600">{{ younger_fighter_win_rate }}%</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        Based on {{ younger_fighter_stats.total_fights }} fights
+                    </div>
+                </div>
+
+                <!-- Expandable Fight Details -->
+                <div class="mt-6">
+                    <button onclick="toggleFightDetails()" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <span class="font-semibold text-gray-900">View Fight Details</span>
+                        <svg id="expandIcon" class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="fightDetails" class="hidden mt-4 space-y-4">
+                        {% for fight in fight_details %}
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <span class="text-sm text-gray-500">{{ fight.date }}</span>
+                                    <h4 class="font-semibold text-gray-900">{{ fight.event }}</h4>
+                                </div>
+                                <span class="px-2 py-1 text-xs font-medium rounded-full {% if fight.winner == fight.younger_fighter %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ fight.age_diff }} years
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-semibold">{{ fight.younger_fighter }}</span>
+                                        <span class="text-sm text-gray-500">({{ fight.younger_age }} years)</span>
+                                        {% if fight.fighter1_odds %}
+                                            <span class="text-sm {% if fight.fighter1_odds|int < 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                                ({{ fight.fighter1_odds }})
+                                            </span>
+                                        {% else %}
+                                            <span class="text-sm text-gray-400">(N/A)</span>
+                                        {% endif %}
+                                        {% if fight.younger_fighter_betting_status %}
+                                            <span class="text-xs px-2 py-1 rounded-full {% if fight.younger_fighter_betting_status == 'favorite' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                                {{ fight.younger_fighter_betting_status|title }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">Age: {{ fight.younger_age }}</div>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-semibold">{{ fight.older_fighter }}</span>
+                                        <span class="text-sm text-gray-500">({{ fight.older_age }} years)</span>
+                                        {% if fight.fighter2_odds %}
+                                            <span class="text-sm {% if fight.fighter2_odds|int < 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                                                ({{ fight.fighter2_odds }})
+                                            </span>
+                                        {% else %}
+                                            <span class="text-sm text-gray-400">(N/A)</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">Age: {{ fight.older_age }}</div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600">
+                                {{ fight.result }}
+                                {% if fight.end_round %}
+                                (Round {{ fight.end_round }}{% if fight.end_time %}, {{ fight.end_time }}{% endif %})
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weight Class Favorites -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Weight Class Favorites</h2>
+            <p class="text-gray-600 mb-4">Track favorite fighter performance by weight class</p>
+            <div class="space-y-4">
+                {% for weight_class, stats in weight_class_stats.items() %}
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-900 mb-2">{{ weight_class }}</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Favorite Win Rate:</span>
+                        <span class="text-lg font-semibold text-indigo-600">{{ stats.favorite_win_rate }}%</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        Based on {{ stats.total_fights }} fights
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Women's Fight Analysis -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Women's Fight Analysis</h2>
+            <p class="text-gray-600 mb-4">Analyze patterns in women's fights</p>
+            <div class="space-y-4">
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-900 mb-2">Fights Going the Distance</h3>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Percentage:</span>
+                        <span class="text-lg font-semibold text-indigo-600">{{ womens_distance_rate }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Analysis -->
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Additional Analysis</h2>
+            <p class="text-gray-600 mb-4">More statistical insights</p>
+            <div class="space-y-4">
+                <!-- Add more analysis sections here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-white {
+    transition: transform 0.2s ease-in-out;
+}
+
+.bg-white:hover {
+    transform: translateY(-2px);
+}
+
+/* Custom slider styling */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4f46e5;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    background: #4338ca;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #4f46e5;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+    background: #4338ca;
+}
+</style>
+
+<script>
+function toggleFightDetails() {
+    const details = document.getElementById('fightDetails');
+    const icon = document.getElementById('expandIcon');
+    if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+    } else {
+        details.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+    }
+}
+</script>
+{% endblock %} 

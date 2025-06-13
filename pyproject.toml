@@ -1,0 +1,20 @@
+[project]
+name = "mmawebsite"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "agno>=1.5.10",
+    "aiohttp>=3.12.11",
+    "azure-ai-inference>=1.0.0b9",
+    "crawl4ai>=0.6.3",
+    "flask>=3.1.1",
+    "flask-sqlalchemy>=3.1.1",
+    "httpx>=0.28.1",
+    "ipykernel>=6.29.5",
+    "openai>=1.84.0",
+    "pandas>=2.3.0",
+    "pydantic>=2.11.5",
+    "sqlalchemy>=2.0.41",
+]

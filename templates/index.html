@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative h-screen flex items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-10"></div>
+    <div class="absolute inset-0 bg-[url('/static/images/octagon-pattern.jpg')] bg-cover bg-center bg-no-repeat opacity-10"></div>
+    <div class="container mx-auto px-4 relative">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl font-bold mb-6 scroll-animate-fade-up">Welcome to MMA Stats</h1>
+            <p class="text-xl md:text-2xl mb-10 text-indigo-100 scroll-animate-fade-up" style="animation-delay: 0.2s">Your ultimate destination for UFC statistics, rankings, and fighter information</p>
+            <div class="flex flex-wrap justify-center gap-6 scroll-animate-fade-up" style="animation-delay: 0.4s">
+                <a href="/fighters" class="bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 hover:scale-105 transform transition duration-300 shadow-lg">
+                    Browse Fighters
+                </a>
+                <a href="/events" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-indigo-600 hover:scale-105 transform transition duration-300 shadow-lg">
+                    View Events
+                </a>
+                <a href="/rankings" class="bg-transparent border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-indigo-600 hover:scale-105 transform transition duration-300 shadow-lg">
+                    Check Rankings
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+    </div>
+</section>
+
+<!-- Upcoming Events Section -->
+<section class="min-h-screen flex items-center bg-white py-20">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <div class="scroll-animate-fade-right">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Upcoming Events</h2>
+                <p class="text-gray-600 mt-2">Don't miss the next big fights</p>
+            </div>
+            <a href="/events" class="text-indigo-600 hover:text-indigo-800 font-semibold group scroll-animate-fade-left">
+                View All Events 
+                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for event in upcoming_events %}
+            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                    <div class="p-8">
+                        <h3 class="font-bold text-xl mb-4 text-gray-900">{{ event.event_name }}</h3>
+                        <div class="space-y-3 text-gray-600">
+                            <p class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                {{ event.date }}
+                            </p>
+                            <p class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                {{ event.venue_name }}
+                            </p>
+                            <p class="flex items-center">
+                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ event.city }}, {{ event.country }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Fighters Section -->
+<section class="min-h-screen flex items-center bg-gray-50 py-20">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <div class="scroll-animate-fade-right">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Featured Fighters</h2>
+                <p class="text-gray-600 mt-2">Top ranked UFC athletes</p>
+            </div>
+            <a href="/fighters" class="text-indigo-600 hover:text-indigo-800 font-semibold group scroll-animate-fade-left">
+                View All Fighters 
+                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {% for fighter in top_fighters[:4] %}
+            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
+                    <div class="relative">
+                        <img src="{{ fighter.headshot_url }}" alt="{{ fighter.full_name }}" class="w-full h-64 object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 p-6">
+                            <h3 class="text-xl font-bold text-white">{{ fighter.full_name }}</h3>
+                            <p class="text-white/80">{{ fighter.weight_class }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Recent Events Section -->
+<section class="min-h-screen flex items-center bg-white py-20">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <div class="scroll-animate-fade-right">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Recent Events</h2>
+                <p class="text-gray-600 mt-2">Latest UFC fight nights</p>
+            </div>
+            <a href="/events" class="text-indigo-600 hover:text-indigo-800 font-semibold group scroll-animate-fade-left">
+                View All Events 
+                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for event in recent_events %}
+            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <a href="/events?event_id=ufc_{{ event.event_id }}" class="block transform hover:scale-105 transition duration-300">
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+                        <div class="p-8">
+                            <h3 class="font-bold text-xl mb-4 text-gray-900">{{ event.event_name }}</h3>
+                            <div class="space-y-3 text-gray-600">
+                                <p class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    {{ event.date }}
+                                </p>
+                                <p class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    {{ event.venue_name }}
+                                </p>
+                                <p class="flex items-center">
+                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ event.city }}, {{ event.country }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<style>
+/* Smooth scrolling behavior */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Scroll-based animations */
+.scroll-animate-fade-up {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-animate-fade-right {
+    opacity: 0;
+    transform: translateX(-30px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-animate-fade-left {
+    opacity: 0;
+    transform: translateX(30px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-animate-fade-up.is-visible,
+.scroll-animate-fade-right.is-visible,
+.scroll-animate-fade-left.is-visible {
+    opacity: 1;
+    transform: translate(0);
+}
+
+/* Initial hero section animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+.animate-fade-in-delay {
+    animation: fadeIn 0.8s ease-out 0.2s forwards;
+    opacity: 0;
+}
+
+.animate-fade-in-delay-2 {
+    animation: fadeIn 0.8s ease-out 0.4s forwards;
+    opacity: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const animatedElements = document.querySelectorAll('.scroll-animate-fade-up, .scroll-animate-fade-right, .scroll-animate-fade-left');
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    animatedElements.forEach(element => {
+        observer.observe(element);
+    });
+});
+</script>
+{% endblock %} 

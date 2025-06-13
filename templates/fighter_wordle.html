@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center">Fighter Wordle</h1>
+        
+        <!-- Game Instructions -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">How to Play</h2>
+            <ul class="list-disc list-inside space-y-2 text-gray-700">
+                <li>Try to guess the UFC fighter in 6 attempts</li>
+                <li>Today's fighter is <span id="target-fighter-name">Loading...</span>!</li>
+                <li>After each guess, you'll get hints about the fighter</li>
+                <li>Green: Correct information</li>
+                <li>Yellow: Close but not exact</li>
+                <li>Gray: Incorrect information</li>
+            </ul>
+        </div>
+
+        <!-- Game Board -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <!-- Single Input Bar with Autocomplete -->
+            <div class="relative">
+                <div class="flex gap-4 mb-6">
+                    <input type="text" id="guess-input" class="flex-1 px-4 py-2 border rounded-lg" 
+                           placeholder="Enter fighter name..." autocomplete="off">
+                    <button id="submit-guess" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                        Submit
+                    </button>
+                </div>
+                <!-- Autocomplete Suggestions -->
+                <div id="suggestions" class="absolute left-0 right-0 bg-white border border-gray-200 rounded-lg shadow-lg hidden max-h-60 overflow-y-auto z-10">
+                </div>
+            </div>
+
+            <!-- Feedback Display -->
+            <div id="feedback" class="space-y-4">
+                <!-- Feedback will be populated by JavaScript -->
+            </div>
+
+            <div class="guesses-container">
+                <table class="guesses-table">
+                    <thead>
+                        <tr>
+                            <th>Fighter</th>
+                            <th>Country</th>
+                            <th>Weight Class</th>
+                            <th>Gender</th>
+                            <th>Height</th>
+                            <th>Age</th>
+                            <th>Total Fights</th>
+                        </tr>
+                    </thead>
+                    <tbody class="guesses-grid">
+                        <!-- JS will add <tr> with 7 <td> here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="flex justify-center">
+            <button id="new-game" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700">
+                New Game
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let attempts = 0;
+let targetFighter = null;
+let gameOver = false;
+let searchTimeout = null;
+
+// Initialize the game
+async function initGame() {
+    try {
+        const response = await fetch('/api/fighter-wordle/new-game');
+        const data = await response.json();
+        targetFighter = data.fighter;
+        document.getElementById('target-fighter-name').textContent = targetFighter.name;
+        resetGame();
+    } catch (error) {
+        console.error('Error initializing game:', error);
+    }
+}
+
+// Reset the game state
+function resetGame() {
+    attempts = 0;
+    gameOver = false;
+    document.querySelector('#guess-input').value = '';
+    document.querySelector('#guess-input').disabled = false;
+    document.querySelector('#guess-input').focus();
+    document.querySelector('#feedback').innerHTML = '';
+    hideSuggestions();
+    // Clear the guesses table
+    const tbody = document.querySelector('.guesses-grid');
+    if (tbody) tbody.innerHTML = '';
+}
+
+// Handle fighter search
+async function searchFighters(query) {
+    if (!query) {
+        hideSuggestions();
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/fighters/search?q=${encodeURIComponent(query)}`);
+        const fighters = await response.json();
+        showSuggestions(fighters);
+    } catch (error) {
+        console.error('Error searching fighters:', error);
+    }
+}
+
+// Show autocomplete suggestions
+function showSuggestions(fighters) {
+    const suggestionsDiv = document.querySelector('#suggestions');
+    if (fighters.length === 0) {
+        hideSuggestions();
+        return;
+    }
+
+    suggestionsDiv.innerHTML = fighters
+        .map(fighter => `
+            <div class="suggestion-item px-4 py-2 hover:bg-gray-100 cursor-pointer" data-name="${fighter.full_name}">
+                ${fighter.full_name}
+            </div>
+        `)
+        .join('');
+
+    suggestionsDiv.classList.remove('hidden');
+
+    // Add click handlers to suggestions
+    document.querySelectorAll('.suggestion-item').forEach(item => {
+        item.addEventListener('click', () => {
+            document.querySelector('#guess-input').value = item.dataset.name;
+            hideSuggestions();
+            submitGuess();
+        });
+    });
+}
+
+// Hide autocomplete suggestions
+function hideSuggestions() {
+    const suggestionsDiv = document.querySelector('#suggestions');
+    suggestionsDiv.classList.add('hidden');
+    suggestionsDiv.innerHTML = '';
+}
+
+// Handle guess submission
+async function submitGuess() {
+    if (gameOver) return;
+
+    const guessInput = document.querySelector('#guess-input');
+    const guess = guessInput.value.trim();
+
+    if (!guess) return;
+
+    try {
+        const response = await fetch('/api/fighter-wordle/check-guess', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ guess }),
+        });
+
+        const result = await response.json();
+        displayFeedback(result);
+        
+        if (result.correct || attempts >= 5) {
+            gameOver = true;
+            showGameOver(result.correct);
+            guessInput.disabled = true;
+        } else {
+            attempts++;
+            guessInput.value = '';
+            guessInput.focus();
+        }
+    } catch (error) {
+        console.error('Error submitting guess:', error);
+    }
+}
+
+// Display feedback for the guess
+function displayFeedback(result) {
+    const tbody = document.querySelector('.guesses-grid');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+        <td class="fighter-cell">
+            <img src="${result.headshot_url}" alt="${result.name}" class="fighter-img">
+            <div class="fighter-name">${result.name}</div>
+        </td>
+        <td class="country-cell">
+            <img src="${result.flag_url.url}" alt="Country Flag" class="country-flag ${result.flag_url.status === 'correct' ? 'flag-correct' : ''}">
+        </td>
+        <td>
+            <span class="px-3 py-1 rounded-full ${getStatusClass(result.weight_class.status)}">
+                ${result.weight_class.value}
+            </span>
+        </td>
+        <td>
+            <span class="px-3 py-1 rounded-full ${getStatusClass(result.gender.status)}">
+                ${result.gender.value}
+            </span>
+        </td>
+        <td>
+            <span class="px-3 py-1 rounded-full ${getStatusClass(result.height.status)}">
+                ${result.height.value}
+                ${result.height.direction ? `<span class='ml-1'>${result.height.direction === 'up' ? '↑' : '↓'}</span>` : ''}
+            </span>
+        </td>
+        <td>
+            <span class="px-3 py-1 rounded-full ${getStatusClass(result.age.status)}">
+                ${result.age.value}
+                ${result.age.direction ? `<span class='ml-1'>${result.age.direction === 'up' ? '↑' : '↓'}</span>` : ''}
+            </span>
+        </td>
+        <td>
+            <span class="px-3 py-1 rounded-full ${getStatusClass(result.total_fights.status)}">
+                ${result.total_fights.value}
+                ${result.total_fights.direction ? `<span class='ml-1'>${result.total_fights.direction === 'up' ? '↑' : '↓'}</span>` : ''}
+            </span>
+        </td>
+    `;
+    tbody.appendChild(tr);
+}
+
+// Get CSS class for status
+function getStatusClass(status) {
+    switch (status) {
+        case 'correct':
+            return 'bg-green-100 text-green-800';
+        case 'close':
+            return 'bg-yellow-100 text-yellow-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
+    }
+}
+
+// Show game over message
+function showGameOver(won) {
+    const message = won ? 
+        `Congratulations! You guessed ${targetFighter.name} correctly!` :
+        `Game Over! The fighter was ${targetFighter.name}`;
+    
+    const gameOverDiv = document.createElement('div');
+    gameOverDiv.className = 'mt-6 p-4 bg-gray-100 rounded-lg text-center font-semibold';
+    gameOverDiv.textContent = message;
+    document.querySelector('#feedback').insertBefore(gameOverDiv, document.querySelector('#feedback').firstChild);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    initGame();
+
+    document.querySelector('#new-game').addEventListener('click', initGame);
+    document.querySelector('#submit-guess').addEventListener('click', submitGuess);
+
+    // Handle input changes for autocomplete
+    const guessInput = document.querySelector('#guess-input');
+    guessInput.addEventListener('input', (event) => {
+        const query = event.target.value.trim();
+        
+        // Clear previous timeout
+        if (searchTimeout) {
+            clearTimeout(searchTimeout);
+        }
+        
+        // Set new timeout to debounce search
+        searchTimeout = setTimeout(() => {
+            searchFighters(query);
+        }, 300);
+    });
+
+    // Handle Enter key
+    guessInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !gameOver) {
+            submitGuess();
+        }
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('#guess-input') && !event.target.closest('#suggestions')) {
+            hideSuggestions();
+        }
+    });
+});
+</script>
+
+<style>
+.guesses-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+.guesses-table th, .guesses-table td {
+    border: 1px solid #34495e;
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px 8px;
+    font-size: 16px;
+}
+.guesses-table th {
+    background: #2c3e50;
+    color: #fff;
+    font-weight: bold;
+}
+.fighter-cell {
+    min-width: 140px;
+}
+.country-cell {
+    min-width: 60px;
+}
+.fighter-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    margin: 0 auto 4px auto;
+}
+.fighter-name {
+    font-size: 14px;
+    font-weight: 500;
+    margin-top: 2px;
+}
+.country-flag {
+    width: 32px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+    margin: 0 auto;
+    border: 2px solid transparent;
+}
+.flag-correct {
+    border-color: #22c55e;
+}
+</style>
+{% endblock %} 

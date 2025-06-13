@@ -1,0 +1,416 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Title and Fighter Selection -->
+    <div class="mb-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-2">Tale of the Tape</h1>
+        <p class="text-gray-600 mb-8">Compare fighters' records, stats, and fight history</p>
+        
+        <!-- Fighter Selection Form -->
+        <div class="grid grid-cols-2 gap-8">
+            <!-- Fighter 1 Selection -->
+            <div class="relative">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fighter 1</label>
+                <div class="relative">
+                    <input type="text" 
+                           id="fighter1-search" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+                           placeholder="Search for a fighter..."
+                           value="{{ selected_fighter1.full_name if selected_fighter1 else '' }}">
+                    <input type="hidden" id="fighter1-id" name="fighter1" value="{{ selected_fighter1.id if selected_fighter1 else '' }}">
+                    <div id="fighter1-results" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden"></div>
+                </div>
+            </div>
+
+            <!-- Fighter 2 Selection -->
+            <div class="relative">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Fighter 2</label>
+                <div class="relative">
+                    <input type="text" 
+                           id="fighter2-search" 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 shadow-sm"
+                           placeholder="Search for a fighter..."
+                           value="{{ selected_fighter2.full_name if selected_fighter2 else '' }}">
+                    <input type="hidden" id="fighter2-id" name="fighter2" value="{{ selected_fighter2.id if selected_fighter2 else '' }}">
+                    <div id="fighter2-results" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if selected_fighter1 and selected_fighter2 %}
+    <!-- VS Badge -->
+    <div class="flex justify-center mb-8">
+        <div class="bg-gradient-to-r from-blue-500 to-red-500 text-white font-bold text-2xl px-8 py-3 rounded-full shadow-lg">
+            VS
+        </div>
+    </div>
+
+    <!-- Comparison Section -->
+    <div class="grid grid-cols-2 gap-8">
+        <!-- Fighter 1 Stats -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    {% if selected_fighter1.headshot_url %}
+                    <div class="relative">
+                        <img src="{{ selected_fighter1.headshot_url }}" alt="{{ selected_fighter1.full_name }}" class="w-32 h-32 rounded-full mr-6 border-4 border-blue-100 shadow-lg">
+                        {% if selected_fighter1.flag_url %}
+                        <img src="{{ selected_fighter1.flag_url }}" alt="Flag" class="absolute bottom-0 right-6 w-8 h-8 rounded-full border-2 border-white shadow-md">
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ selected_fighter1.full_name }}</h2>
+                        <p class="text-lg text-gray-600 font-medium">{{ selected_fighter1.weight_class }}</p>
+                        <p class="text-sm text-gray-500 mt-1">Age: {{ selected_fighter1.age }} | Height: {{ selected_fighter1.height }} | Reach: {{ selected_fighter1.reach }}</p>
+                    </div>
+                </div>
+
+                <!-- Fighter 1 Record -->
+                <div class="grid grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-blue-600">Overall Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter1.filtered_record }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-blue-600">Decisions</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter1.filtered_decisions }}/{{ selected_fighter1.filtered_total_fights }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-blue-600">KO Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter1.filtered_ko_record }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-blue-600">Submission Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter1.filtered_sub_record }}</div>
+                    </div>
+                </div>
+
+                <!-- Fighter 1 Filters -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Fight History</h3>
+                    <form id="fighter1-filters" class="grid grid-cols-3 gap-3">
+                        <input type="hidden" name="fighter1" value="{{ selected_fighter1.id }}">
+                        <input type="hidden" name="fighter2" value="{{ selected_fighter2.id }}">
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Promotion</label>
+                            <select name="fighter1_promotion" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter1')">
+                                <option value="all" {% if fighter1_filters.promotion == 'all' %}selected{% endif %}>All Promotions</option>
+                                {% for promotion in selected_fighter1.promotions %}
+                                <option value="{{ promotion }}" {% if fighter1_filters.promotion == promotion %}selected{% endif %}>{{ promotion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Weight Class</label>
+                            <select name="fighter1_weight_class" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter1')">
+                                <option value="all" {% if fighter1_filters.weight_class == 'all' %}selected{% endif %}>All Weight Classes</option>
+                                {% for weight_class in selected_fighter1.weight_classes %}
+                                <option value="{{ weight_class }}" {% if fighter1_filters.weight_class == weight_class %}selected{% endif %}>{{ weight_class }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Odds Type</label>
+                            <select name="fighter1_odds_type" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter1')">
+                                <option value="all" {% if fighter1_filters.odds_type == 'all' %}selected{% endif %}>All Odds</option>
+                                <option value="favorite" {% if fighter1_filters.odds_type == 'favorite' %}selected{% endif %}>As Favorite</option>
+                                <option value="underdog" {% if fighter1_filters.odds_type == 'underdog' %}selected{% endif %}>As Underdog</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Fighter 1 Fight History -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Fight History</h3>
+                    <div class="space-y-3">
+                        {% for fight in selected_fighter1.fight_history %}
+                        <div class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
+                                    <div class="text-sm text-gray-500">{{ fight.event_name }} ({{ fight.date|format_date }})</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium {% if fight.won == 1 %}text-green-600{% elif fight.won == 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                                        {{ fight.result_display_name }}
+                                    </div>
+                                    {% if fight.fighter_odds %}
+                                    <div class="text-sm text-gray-500">Odds: {{ fight.fighter_odds }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fighter 2 Stats -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-[1.02] transition-transform duration-300">
+            <div class="p-6">
+                <div class="flex items-center mb-8">
+                    {% if selected_fighter2.headshot_url %}
+                    <div class="relative">
+                        <img src="{{ selected_fighter2.headshot_url }}" alt="{{ selected_fighter2.full_name }}" class="w-32 h-32 rounded-full mr-6 border-4 border-red-100 shadow-lg">
+                        {% if selected_fighter2.flag_url %}
+                        <img src="{{ selected_fighter2.flag_url }}" alt="Flag" class="absolute bottom-0 right-6 w-8 h-8 rounded-full border-2 border-white shadow-md">
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">{{ selected_fighter2.full_name }}</h2>
+                        <p class="text-lg text-gray-600 font-medium">{{ selected_fighter2.weight_class }}</p>
+                        <p class="text-sm text-gray-500 mt-1">Age: {{ selected_fighter2.age }} | Height: {{ selected_fighter2.height }} | Reach: {{ selected_fighter2.reach }}</p>
+                    </div>
+                </div>
+
+                <!-- Fighter 2 Record -->
+                <div class="grid grid-cols-4 gap-4 mb-8">
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-red-600">Overall Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter2.filtered_record }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-red-600">Decisions</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter2.filtered_decisions }}/{{ selected_fighter2.filtered_total_fights }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-red-600">KO Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter2.filtered_ko_record }}</div>
+                    </div>
+                    <div class="bg-gradient-to-br from-red-50 to-red-100 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                        <div class="text-sm font-medium text-red-600">Submission Record</div>
+                        <div class="text-2xl font-bold text-gray-900">{{ selected_fighter2.filtered_sub_record }}</div>
+                    </div>
+                </div>
+
+                <!-- Fighter 2 Filters -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Filter Fight History</h3>
+                    <form id="fighter2-filters" class="grid grid-cols-3 gap-3">
+                        <input type="hidden" name="fighter1" value="{{ selected_fighter1.id }}">
+                        <input type="hidden" name="fighter2" value="{{ selected_fighter2.id }}">
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Promotion</label>
+                            <select name="fighter2_promotion" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter2')">
+                                <option value="all" {% if fighter2_filters.promotion == 'all' %}selected{% endif %}>All Promotions</option>
+                                {% for promotion in selected_fighter2.promotions %}
+                                <option value="{{ promotion }}" {% if fighter2_filters.promotion == promotion %}selected{% endif %}>{{ promotion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Weight Class</label>
+                            <select name="fighter2_weight_class" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter2')">
+                                <option value="all" {% if fighter2_filters.weight_class == 'all' %}selected{% endif %}>All Weight Classes</option>
+                                {% for weight_class in selected_fighter2.weight_classes %}
+                                <option value="{{ weight_class }}" {% if fighter2_filters.weight_class == weight_class %}selected{% endif %}>{{ weight_class }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Odds Type</label>
+                            <select name="fighter2_odds_type" 
+                                    class="w-full text-sm py-2 px-3 border border-gray-300 rounded-md focus:ring-1 focus:ring-red-500 focus:border-red-500 bg-white shadow-sm"
+                                    onchange="updateFilter(this, 'fighter2')">
+                                <option value="all" {% if fighter2_filters.odds_type == 'all' %}selected{% endif %}>All Odds</option>
+                                <option value="favorite" {% if fighter2_filters.odds_type == 'favorite' %}selected{% endif %}>As Favorite</option>
+                                <option value="underdog" {% if fighter2_filters.odds_type == 'underdog' %}selected{% endif %}>As Underdog</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Fighter 2 Fight History -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Fight History</h3>
+                    <div class="space-y-3">
+                        {% for fight in selected_fighter2.fight_history %}
+                        <div class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
+                                    <div class="text-sm text-gray-500">{{ fight.event_name }} ({{ fight.date|format_date }})</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium {% if fight.won == 1 %}text-green-600{% elif fight.won == 0 %}text-red-600{% else %}text-gray-600{% endif %}">
+                                        {{ fight.result_display_name }}
+                                    </div>
+                                    {% if fight.fighter_odds %}
+                                    <div class="text-sm text-gray-500">Odds: {{ fight.fighter_odds }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+let searchTimeout1;
+let searchTimeout2;
+
+document.getElementById('fighter1-search').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout1);
+    const query = e.target.value.trim();
+    const resultsDiv = document.getElementById('fighter1-results');
+    
+    if (query.length < 2) {
+        resultsDiv.classList.add('hidden');
+        return;
+    }
+    
+    searchTimeout1 = setTimeout(() => {
+        fetch(`/api/fighters/search?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(fighter => {
+                        const div = document.createElement('div');
+                        div.className = 'p-2 hover:bg-gray-100 cursor-pointer';
+                        div.textContent = fighter.full_name;
+                        div.addEventListener('click', () => {
+                            document.getElementById('fighter1-id').value = fighter.id;
+                            e.target.value = fighter.full_name;
+                            resultsDiv.classList.add('hidden');
+                            updateUrl();
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.classList.add('hidden');
+                }
+            });
+    }, 300);
+});
+
+document.getElementById('fighter2-search').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout2);
+    const query = e.target.value.trim();
+    const resultsDiv = document.getElementById('fighter2-results');
+    
+    if (query.length < 2) {
+        resultsDiv.classList.add('hidden');
+        return;
+    }
+    
+    searchTimeout2 = setTimeout(() => {
+        fetch(`/api/fighters/search?q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
+                if (data.length > 0) {
+                    data.forEach(fighter => {
+                        const div = document.createElement('div');
+                        div.className = 'p-2 hover:bg-gray-100 cursor-pointer';
+                        div.textContent = fighter.full_name;
+                        div.addEventListener('click', () => {
+                            document.getElementById('fighter2-id').value = fighter.id;
+                            e.target.value = fighter.full_name;
+                            resultsDiv.classList.add('hidden');
+                            updateUrl();
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                    resultsDiv.classList.remove('hidden');
+                } else {
+                    resultsDiv.classList.add('hidden');
+                }
+            });
+    }, 300);
+});
+
+// Close search results when clicking outside
+document.addEventListener('click', function(e) {
+    const fighter1Search = document.getElementById('fighter1-search');
+    const fighter2Search = document.getElementById('fighter2-search');
+    const fighter1Results = document.getElementById('fighter1-results');
+    const fighter2Results = document.getElementById('fighter2-results');
+    
+    if (!fighter1Search.contains(e.target) && !fighter1Results.contains(e.target)) {
+        fighter1Results.classList.add('hidden');
+    }
+    if (!fighter2Search.contains(e.target) && !fighter2Results.contains(e.target)) {
+        fighter2Results.classList.add('hidden');
+    }
+});
+
+function updateUrl() {
+    const fighter1Id = document.getElementById('fighter1-id').value;
+    const fighter2Id = document.getElementById('fighter2-id').value;
+    
+    if (fighter1Id && fighter2Id) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('fighter1', fighter1Id);
+        url.searchParams.set('fighter2', fighter2Id);
+        window.location.href = url.toString();
+    }
+}
+
+// Remove the old form change event listeners since we're using onchange directly
+document.getElementById('fighter1-filters').removeEventListener('change', function() {
+    this.submit();
+});
+
+document.getElementById('fighter2-filters').removeEventListener('change', function() {
+    this.submit();
+});
+
+function updateFilter(button, fighter) {
+    const form = document.getElementById(`${fighter}-filters`);
+    const formData = new FormData(form);
+    formData.set(button.name, button.value);
+    
+    // Get all current URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Update the specific filter parameter
+    urlParams.set(button.name, button.value);
+    
+    // Make the AJAX request
+    fetch(`${window.location.pathname}?${urlParams.toString()}`)
+        .then(response => response.text())
+        .then(html => {
+            // Create a temporary div to parse the response
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Update the fighter's section with new content
+            const newContent = doc.querySelector(`#${fighter}-filters`).closest('.bg-white');
+            const currentContent = document.querySelector(`#${fighter}-filters`).closest('.bg-white');
+            currentContent.replaceWith(newContent);
+            
+            // Update URL without refreshing
+            window.history.pushState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+        });
+}
+</script>
+{% endblock %} 
