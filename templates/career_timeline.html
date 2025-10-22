@@ -55,15 +55,7 @@
                 <div class="flex gap-4">
                     <button class="timeline-filter active" data-filter="fights">Fights</button>
                     <button class="timeline-filter" data-filter="title-fights">Title Fights</button>
-                    <div class="relative inline-block">
-                        <button class="timeline-filter" data-filter="rankings">Rankings</button>
-                        <div class="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 ease-in-out" style="top: 100%;">
-                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-ranking-filter="all-rankings">All Rankings</button>
-                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-ranking-filter="champion">Championship</button>
-                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-ranking-filter="interim">Interim Championship</button>
-                            <button class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-ranking-filter="ranked">Ranked Position</button>
-                        </div>
-                    </div>
+
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="zoom-out" class="p-2 rounded-lg hover:bg-gray-100">
@@ -88,9 +80,7 @@
                              data-type="{{ event.type }}" 
                              data-date="{{ event.date }}" 
                              {% if event.type == 'fights' and event.is_title_fight %}data-title-fight="true"{% endif %}
-                             {% if event.type == 'rankings' %}
-                             data-ranking-type="{% if event.is_champion %}champion{% elif event.is_interim_champion %}interim{% else %}ranked{% endif %}"
-                             {% endif %}>
+                             >
                             <div class="timeline-dot"></div>
                             <div class="timeline-content">
                                 <div class="timeline-date">{{ event.date }}</div>
@@ -496,9 +486,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     event.style.display = event.dataset.type === 'fights' ? 'flex' : 'none';
                 } else if (filterType === 'title-fights') {
                     event.style.display = event.dataset.titleFight === 'true' ? 'flex' : 'none';
-                } else if (filterType === 'rankings') {
-                    event.style.display = event.dataset.type === 'rankings' ? 'flex' : 'none';
-                }
+
             });
 
             // Recalculate spacing after filtering
@@ -506,50 +494,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Ranking filter functionality
-    rankingFilters.forEach(filter => {
-        filter.addEventListener('click', () => {
-            const rankingType = filter.dataset.rankingFilter;
-            
-            // Update active state of the rankings button
-            const rankingsButton = document.querySelector('[data-filter="rankings"]');
-            rankingsButton.classList.add('active');
-            
-            events.forEach(event => {
-                if (event.dataset.type === 'rankings') {
-                    if (rankingType === 'all-rankings') {
-                        event.style.display = 'flex';
-                    } else {
-                        event.style.display = event.dataset.rankingType === rankingType ? 'flex' : 'none';
-                    }
-                } else {
-                    event.style.display = 'none';
-                }
-            });
 
-            // Recalculate spacing after filtering
-            calculateSpacing();
-        });
-    });
 
     // Initially show only fights
     events.forEach(event => {
         event.style.display = event.dataset.type === 'fights' ? 'flex' : 'none';
     });
 
-    // Add hover functionality for rankings dropdown
-    const rankingsButton = document.querySelector('[data-filter="rankings"]');
-    const rankingsDropdown = rankingsButton.nextElementSibling;
-    
-    rankingsButton.addEventListener('mouseenter', () => {
-        rankingsDropdown.style.opacity = '1';
-        rankingsDropdown.style.visibility = 'visible';
-    });
-    
-    rankingsButton.parentElement.addEventListener('mouseleave', () => {
-        rankingsDropdown.style.opacity = '0';
-        rankingsDropdown.style.visibility = 'hidden';
-    });
+
 });
 </script>
 {% endblock %} 

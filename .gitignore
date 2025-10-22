@@ -8,3 +8,59 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Environment variables and sensitive data
+.env
+*.env
+!.env.example
+
+# Logs
+*.log
+logs/
+backfill.log
+
+# Temporary files
+debug_*.html
+*.tmp
+*.bak
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Database files (too large for GitHub)
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+data/*.sqlite
+
+# Database backups
+*.db.backup
+*.db.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# Ruff
+.ruff_cache/

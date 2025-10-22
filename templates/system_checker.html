@@ -3,324 +3,421 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-2">System Checker</h1>
-            <p class="text-gray-600">Analyze patterns and trends in MMA fights</p>
-        </div>
-        <!-- Filter Toggle -->
-        <div class="mt-4 md:mt-0">
-            <form method="get" class="flex items-center space-x-2">
-                <label class="relative inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="ufc_only" value="true" class="sr-only peer" {% if ufc_only %}checked{% endif %}>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    <span class="ml-3 text-sm font-medium text-gray-900">UFC Only</span>
-                </label>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Apply Filter
-                </button>
-            </form>
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg p-8 mb-8">
+        <div class="text-center">
+            <h1 class="text-4xl font-bold mb-2">System Checker</h1>
+            <p class="text-purple-200">Advanced MMA Analytics & Pattern Recognition</p>
         </div>
     </div>
 
-    <!-- Analysis Sections -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <!-- Age Difference Analysis -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Age Difference Analysis</h2>
-            <p class="text-gray-600 mb-4">Analyze how age differences affect fight outcomes</p>
-            <form method="get" class="mb-6">
-                <div class="space-y-4">
-                    <div>
-                        <label for="min_age_diff" class="block text-sm font-medium text-gray-700 mb-2">
-                            Minimum Age Difference: <span id="age_diff_value">{{ min_age_diff }}</span> years
-                        </label>
-                        <input type="range" 
-                               id="min_age_diff" 
-                               name="min_age_diff" 
-                               min="1" 
-                               max="20" 
-                               value="{{ min_age_diff }}"
-                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                               oninput="document.getElementById('age_diff_value').textContent = this.value">
-                    </div>
-                    <div class="flex justify-between text-xs text-gray-500">
-                        <span>1 year</span>
-                        <span>20 years</span>
-                    </div>
+    <!-- Interactive Filters -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            🎛️ Filter Analytics
+        </h3>
+        <form id="analytics-filters" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Date Range Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                <select name="date_range" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all" {{ 'selected' if request.args.get('date_range', 'all') == 'all' }}>All Time</option>
+                    <option value="2024" {{ 'selected' if request.args.get('date_range') == '2024' }}>2024</option>
+                    <option value="2023" {{ 'selected' if request.args.get('date_range') == '2023' }}>2023</option>
+                    <option value="2022" {{ 'selected' if request.args.get('date_range') == '2022' }}>2022</option>
+                    <option value="2021" {{ 'selected' if request.args.get('date_range') == '2021' }}>2021</option>
+                    <option value="last_2_years" {{ 'selected' if request.args.get('date_range') == 'last_2_years' }}>Last 2 Years</option>
+                </select>
+            </div>
 
-                    <!-- Younger Fighter Betting Status Filter -->
-                    <div class="mt-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Younger Fighter Betting Status
-                        </label>
-                        <div class="flex space-x-4">
-                            <label class="flex items-center space-x-2 cursor-pointer group">
-                                <input type="radio" name="betting_status" value="any" 
-                                       class="form-radio text-blue-600" 
-                                       {% if betting_status == 'any' %}checked{% endif %}
-                                       onchange="this.form.submit()">
-                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
-                                    {% if betting_status == 'any' %}
-                                        bg-blue-100 text-blue-800
-                                    {% else %}
-                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
-                                    {% endif %}">
-                                    Any
-                                </span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer group">
-                                <input type="radio" name="betting_status" value="favorite" 
-                                       class="form-radio text-blue-600" 
-                                       {% if betting_status == 'favorite' %}checked{% endif %}
-                                       onchange="this.form.submit()">
-                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
-                                    {% if betting_status == 'favorite' %}
-                                        bg-blue-100 text-blue-800
-                                    {% else %}
-                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
-                                    {% endif %}">
-                                    Favorite
-                                </span>
-                            </label>
-                            <label class="flex items-center space-x-2 cursor-pointer group">
-                                <input type="radio" name="betting_status" value="underdog" 
-                                       class="form-radio text-blue-600" 
-                                       {% if betting_status == 'underdog' %}checked{% endif %}
-                                       onchange="this.form.submit()">
-                                <span class="px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
-                                    {% if betting_status == 'underdog' %}
-                                        bg-blue-100 text-blue-800
-                                    {% else %}
-                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
-                                    {% endif %}">
-                                    Underdog
-                                </span>
-                            </label>
-                        </div>
-                    </div>
+            <!-- Weight Class Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Weight Class</label>
+                <select name="weight_class" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all" {{ 'selected' if request.args.get('weight_class', 'all') == 'all' }}>All Weight Classes</option>
+                    
+                    <!-- Men's Weight Classes -->
+                    <optgroup label="🥊 Men's Divisions">
+                        <option value="heavyweight" {{ 'selected' if request.args.get('weight_class') == 'heavyweight' }}>Heavyweight</option>
+                        <option value="light_heavyweight" {{ 'selected' if request.args.get('weight_class') == 'light_heavyweight' }}>Light Heavyweight</option>
+                        <option value="middleweight" {{ 'selected' if request.args.get('weight_class') == 'middleweight' }}>Middleweight</option>
+                        <option value="welterweight" {{ 'selected' if request.args.get('weight_class') == 'welterweight' }}>Welterweight</option>
+                        <option value="lightweight" {{ 'selected' if request.args.get('weight_class') == 'lightweight' }}>Lightweight</option>
+                        <option value="featherweight" {{ 'selected' if request.args.get('weight_class') == 'featherweight' }}>Featherweight</option>
+                        <option value="bantamweight" {{ 'selected' if request.args.get('weight_class') == 'bantamweight' }}>Bantamweight</option>
+                        <option value="flyweight" {{ 'selected' if request.args.get('weight_class') == 'flyweight' }}>Flyweight</option>
+                    </optgroup>
+                    
+                    <!-- Women's Weight Classes -->
+                    <optgroup label="👩‍🥊 Women's Divisions">
+                        <option value="womens_featherweight" {{ 'selected' if request.args.get('weight_class') == 'womens_featherweight' }}>Women's Featherweight</option>
+                        <option value="womens_bantamweight" {{ 'selected' if request.args.get('weight_class') == 'womens_bantamweight' }}>Women's Bantamweight</option>
+                        <option value="womens_flyweight" {{ 'selected' if request.args.get('weight_class') == 'womens_flyweight' }}>Women's Flyweight</option>
+                        <option value="womens_strawweight" {{ 'selected' if request.args.get('weight_class') == 'womens_strawweight' }}>Women's Strawweight</option>
+                        <option value="womens_atomweight" {{ 'selected' if request.args.get('weight_class') == 'womens_atomweight' }}>Women's Atomweight</option>
+                    </optgroup>
+                </select>
+            </div>
 
-                    <!-- Weight Class Filter -->
-                    <div class="space-y-2">
-                        <label class="block text-sm font-medium text-gray-700">
-                            Weight Classes
-                        </label>
-                        <div class="flex flex-wrap gap-2">
-                            {% for weight_class in [
-                                'Flyweight', 'Bantamweight', 'Featherweight', 'Lightweight',
-                                'Welterweight', 'Middleweight', 'Light Heavyweight', 'Heavyweight',
-                                'Women\'s Flyweight', 'Women\'s Bantamweight', 'Women\'s Featherweight',
-                                'Women\'s Strawweight'
-                            ] %}
-                            <label class="inline-flex items-center cursor-pointer group">
-                                <input type="checkbox" name="weight_classes" value="{{ weight_class }}"
-                                       class="form-checkbox text-blue-600 rounded"
-                                       {% if weight_class in selected_weight_classes %}checked{% endif %}
-                                       onchange="this.form.submit()">
-                                <span class="ml-2 px-3 py-1 rounded-full text-sm font-medium transition-colors duration-200
-                                    {% if weight_class in selected_weight_classes %}
-                                        bg-blue-100 text-blue-800
-                                    {% else %}
-                                        bg-gray-100 text-gray-600 group-hover:bg-gray-200
-                                    {% endif %}">
-                                    {{ weight_class }}
-                                </span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <input type="hidden" name="ufc_only" value="{{ 'true' if ufc_only else 'false' }}">
-                <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Update Analysis
+            <!-- Card Position Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Card Position</label>
+                <select name="card_position" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="all" {{ 'selected' if request.args.get('card_position', 'all') == 'all' }}>All Positions</option>
+                    <option value="main_card" {{ 'selected' if request.args.get('card_position') == 'main_card' }}>Main Card</option>
+                    <option value="preliminary" {{ 'selected' if request.args.get('card_position') == 'preliminary' }}>Preliminary</option>
+                    <option value="early_preliminary" {{ 'selected' if request.args.get('card_position') == 'early_preliminary' }}>Early Preliminary</option>
+                </select>
+            </div>
+
+            <!-- Action Button -->
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    Apply Filters
                 </button>
-            </form>
-            <div class="space-y-4">
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <h3 class="font-semibold text-gray-900 mb-2">Fighters {{ min_age_diff }}+ Years Younger</h3>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-600">Win Rate:</span>
-                        <span class="text-lg font-semibold text-indigo-600">{{ younger_fighter_win_rate }}%</span>
-                    </div>
-                    <div class="mt-2 text-sm text-gray-500">
-                        Based on {{ younger_fighter_stats.total_fights }} fights
-                    </div>
-                </div>
-
-                <!-- Expandable Fight Details -->
-                <div class="mt-6">
-                    <button onclick="toggleFightDetails()" class="w-full flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                        <span class="font-semibold text-gray-900">View Fight Details</span>
-                        <svg id="expandIcon" class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                    </button>
-                    <div id="fightDetails" class="hidden mt-4 space-y-4">
-                        {% for fight in fight_details %}
-                        <div class="p-4 bg-gray-50 rounded-lg">
-                            <div class="flex justify-between items-start mb-2">
-                                <div>
-                                    <span class="text-sm text-gray-500">{{ fight.date }}</span>
-                                    <h4 class="font-semibold text-gray-900">{{ fight.event }}</h4>
-                                </div>
-                                <span class="px-2 py-1 text-xs font-medium rounded-full {% if fight.winner == fight.younger_fighter %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                                    {{ fight.age_diff }} years
-                                </span>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="space-y-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-semibold">{{ fight.younger_fighter }}</span>
-                                        <span class="text-sm text-gray-500">({{ fight.younger_age }} years)</span>
-                                        {% if fight.fighter1_odds %}
-                                            <span class="text-sm {% if fight.fighter1_odds|int < 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                                ({{ fight.fighter1_odds }})
-                                            </span>
-                                        {% else %}
-                                            <span class="text-sm text-gray-400">(N/A)</span>
-                                        {% endif %}
-                                        {% if fight.younger_fighter_betting_status %}
-                                            <span class="text-xs px-2 py-1 rounded-full {% if fight.younger_fighter_betting_status == 'favorite' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                                                {{ fight.younger_fighter_betting_status|title }}
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="text-sm text-gray-500">Age: {{ fight.younger_age }}</div>
-                                </div>
-                                <div class="space-y-1">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-semibold">{{ fight.older_fighter }}</span>
-                                        <span class="text-sm text-gray-500">({{ fight.older_age }} years)</span>
-                                        {% if fight.fighter2_odds %}
-                                            <span class="text-sm {% if fight.fighter2_odds|int < 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                                                ({{ fight.fighter2_odds }})
-                                            </span>
-                                        {% else %}
-                                            <span class="text-sm text-gray-400">(N/A)</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="text-sm text-gray-500">Age: {{ fight.older_age }}</div>
-                                </div>
-                            </div>
-                            <div class="mt-2 text-sm text-gray-600">
-                                {{ fight.result }}
-                                {% if fight.end_round %}
-                                (Round {{ fight.end_round }}{% if fight.end_time %}, {{ fight.end_time }}{% endif %})
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
+            </div>
+        </form>
+        
+        <!-- Active Filters Display -->
+        {% set active_filters = [] %}
+        {% if request.args.get('date_range') and request.args.get('date_range') != 'all' %}
+            {% set _ = active_filters.append(request.args.get('date_range')) %}
+        {% endif %}
+        {% if request.args.get('weight_class') and request.args.get('weight_class') != 'all' %}
+            {% set _ = active_filters.append(request.args.get('weight_class').replace('_', ' ').title()) %}
+        {% endif %}
+        {% if request.args.get('card_position') and request.args.get('card_position') != 'all' %}
+            {% set _ = active_filters.append(request.args.get('card_position').replace('_', ' ').title()) %}
+        {% endif %}
+        
+        {% if active_filters %}
+        <div class="mt-4 pt-4 border-t">
+            <p class="text-sm text-gray-600 mb-2">Active Filters:</p>
+            <div class="flex flex-wrap gap-2">
+                {% for filter in active_filters %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                    {{ filter }}
+                </span>
+                {% endfor %}
+                <a href="{{ url_for('main.system_checker') }}" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition-colors">
+                    Clear All
+                </a>
             </div>
         </div>
+        {% endif %}
+    </div>
 
-        <!-- Weight Class Favorites -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Weight Class Favorites</h2>
-            <p class="text-gray-600 mb-4">Track favorite fighter performance by weight class</p>
-            <div class="space-y-4">
-                {% for weight_class, stats in weight_class_stats.items() %}
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <h3 class="font-semibold text-gray-900 mb-2">{{ weight_class }}</h3>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-600">Favorite Win Rate:</span>
-                        <span class="text-lg font-semibold text-indigo-600">{{ stats.favorite_win_rate }}%</span>
+    <!-- Analytics Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        
+        <!-- Fighter Performance Leaders -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                🏆 Top Performing Fighters
+            </h3>
+            <p class="text-gray-600 mb-4">Fighters with highest win percentage (5+ fights)</p>
+            <div class="space-y-3">
+                {% for fighter in fighter_streaks %}
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-900">{{ fighter.full_name }}</p>
+                        <p class="text-sm text-gray-600">{{ fighter.total_fights }} fights</p>
                     </div>
-                    <div class="mt-2 text-sm text-gray-500">
-                        Based on {{ stats.total_fights }} fights
+                    <div class="text-right">
+                        <p class="text-lg font-bold text-indigo-600">{{ fighter.win_percentage }}%</p>
+                        <p class="text-sm text-gray-600">{{ fighter.total_wins }}-{{ fighter.total_fights - fighter.total_wins }}</p>
                     </div>
                 </div>
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Women's Fight Analysis -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Women's Fight Analysis</h2>
-            <p class="text-gray-600 mb-4">Analyze patterns in women's fights</p>
-            <div class="space-y-4">
-                <div class="p-4 bg-gray-50 rounded-lg">
-                    <h3 class="font-semibold text-gray-900 mb-2">Fights Going the Distance</h3>
-                    <div class="flex items-center justify-between">
-                        <span class="text-gray-600">Percentage:</span>
-                        <span class="text-lg font-semibold text-indigo-600">{{ womens_distance_rate }}%</span>
+        <!-- Weight Class Finish Rates -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                ⚡ Weight Class Finish Rates
+            </h3>
+            <p class="text-gray-600 mb-4">Percentage of fights ending in finishes by division</p>
+            <div class="space-y-3">
+                {% for wc in weight_class_stats %}
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="font-medium text-gray-900">{{ wc.weight_class }}</p>
+                        <p class="text-lg font-bold text-red-600">{{ wc.finish_rate }}%</p>
+                    </div>
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>{{ wc.total_fights }} fights</span>
+                        <span>KO/TKO: {{ wc.ko_tko }} | Subs: {{ wc.submissions }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                        <div class="bg-red-600 h-2 rounded-full" style="width: {{ wc.finish_rate }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Second Row Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        
+        <!-- Betting Favorites Performance -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                💰 Betting Performance Analysis
+            </h3>
+            <p class="text-gray-600 mb-4">Favorite vs underdog performance breakdown</p>
+            {% if betting_favorites %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Favorites Performance -->
+                <div class="bg-green-50 p-4 rounded-lg border-2 border-green-200">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-700 mb-1">{{ betting_favorites.favorite_win_rate }}%</div>
+                        <p class="text-sm font-medium text-green-800">Favorite Win Rate</p>
+                        <p class="text-xs text-green-600 mt-1">{{ betting_favorites.favorite_wins }}/{{ betting_favorites.total_fights_with_odds }} fights</p>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex justify-between text-xs text-green-700 mb-1">
+                            <span>Win Rate</span>
+                            <span>{{ betting_favorites.favorite_win_rate }}%</span>
+                        </div>
+                        <div class="w-full bg-green-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full" style="width: {{ betting_favorites.favorite_win_rate }}%"></div>
+                        </div>
+                        {% if betting_favorites.favorite_finish_rate %}
+                        <div class="flex justify-between text-xs text-green-700 mb-1 mt-2">
+                            <span>Finish Rate</span>
+                            <span>{{ betting_favorites.favorite_finish_rate }}%</span>
+                        </div>
+                        <div class="w-full bg-green-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ betting_favorites.favorite_finish_rate }}%"></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Underdogs Performance -->
+                <div class="bg-red-50 p-4 rounded-lg border-2 border-red-200">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-red-700 mb-1">{{ betting_favorites.underdog_win_rate }}%</div>
+                        <p class="text-sm font-medium text-red-800">Underdog Win Rate</p>
+                        <p class="text-xs text-red-600 mt-1">{{ betting_favorites.underdog_wins }}/{{ betting_favorites.total_fights_with_odds }} fights</p>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex justify-between text-xs text-red-700 mb-1">
+                            <span>Upset Rate</span>
+                            <span>{{ betting_favorites.underdog_win_rate }}%</span>
+                        </div>
+                        <div class="w-full bg-red-200 rounded-full h-2">
+                            <div class="bg-red-600 h-2 rounded-full" style="width: {{ betting_favorites.underdog_win_rate }}%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Odds Range Analysis -->
+            {% if odds_range_analysis %}
+            <div class="border-t pt-4">
+                <h4 class="font-semibold text-gray-800 mb-3">Performance by Odds Range</h4>
+                <div class="space-y-3">
+                    {% for odds in odds_range_analysis %}
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <div>
+                                <p class="font-medium text-gray-900 text-sm">{{ odds.odds_range }}</p>
+                                <p class="text-xs text-gray-600">{{ odds.total_fights }} fights</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-lg font-bold text-indigo-600">{{ odds.favorite_win_percentage }}%</p>
+                                <p class="text-xs text-gray-500">Win Rate</p>
+                            </div>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ odds.favorite_win_percentage }}%"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
         </div>
 
-        <!-- Additional Analysis -->
-        <div class="bg-white rounded-2xl shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Additional Analysis</h2>
-            <p class="text-gray-600 mb-4">More statistical insights</p>
-            <div class="space-y-4">
-                <!-- Add more analysis sections here -->
+        <!-- Age Gap Analysis -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                📊 Age Gap Impact
+            </h3>
+            <p class="text-gray-600 mb-4">Performance analysis by age difference</p>
+            <div class="space-y-3">
+                {% for age in age_analysis %}
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <div>
+                            <p class="font-medium text-gray-900">{{ age.age_gap }}</p>
+                            <p class="text-sm text-gray-600">{{ age.total_fights }} fights</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-lg font-bold text-blue-600">{{ age.younger_fighter_win_rate }}%</p>
+                            <p class="text-xs text-gray-500">Younger wins</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
+                        <div class="bg-white p-2 rounded text-center">
+                            <div class="font-medium text-green-600">{{ age.avg_winner_age }}</div>
+                            <div class="text-gray-500">Avg Winner Age</div>
+                        </div>
+                        <div class="bg-white p-2 rounded text-center">
+                            <div class="font-medium text-red-600">{{ age.avg_loser_age }}</div>
+                            <div class="text-gray-500">Avg Loser Age</div>
+                        </div>
+                        <div class="bg-white p-2 rounded text-center">
+                            <div class="font-medium text-purple-600">{{ age.finish_rate }}%</div>
+                            <div class="text-gray-500">Finish Rate</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
         </div>
+
+        <!-- Prime Age Performance -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                🏆 Performance by Age Group
+            </h3>
+            <p class="text-gray-600 mb-4">Win rates and finishing ability across age groups</p>
+            <div class="space-y-3">
+                {% for group in prime_age_analysis %}
+                <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <div>
+                            <p class="font-bold text-lg text-gray-900">{{ group.age_group }}</p>
+                            <p class="text-sm text-gray-600">{{ group.total_fights }} fights analyzed</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-indigo-600">{{ group.win_percentage }}%</p>
+                            <p class="text-xs text-gray-500">Overall Win Rate</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-white p-3 rounded-lg border-l-4 border-red-500">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">KO Rate</span>
+                                <span class="text-lg font-bold text-red-600">{{ group.ko_rate }}%</span>
+                            </div>
+                            <div class="w-full bg-red-100 rounded-full h-2 mt-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: {{ group.ko_rate }}%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded-lg border-l-4 border-purple-500">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-gray-700">Sub Rate</span>
+                                <span class="text-lg font-bold text-purple-600">{{ group.sub_rate }}%</span>
+                            </div>
+                            <div class="w-full bg-purple-100 rounded-full h-2 mt-2">
+                                <div class="bg-purple-500 h-2 rounded-full" style="width: {{ group.sub_rate }}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Round Analysis -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                ⏱️ Finish Distribution
+            </h3>
+            <p class="text-gray-600 mb-4">When do fights typically end?</p>
+            <div class="space-y-2">
+                {% for round in round_analysis %}
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <span class="text-sm font-medium text-gray-900">
+                        {% if round.finish_round == 'Decision' %}
+                        Decision
+                        {% else %}
+                        Round {{ round.finish_round }}
+                        {% endif %}
+                    </span>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">{{ round.fights }}</span>
+                        <div class="w-16 bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-600 h-2 rounded-full" style="width: {{ round.percentage }}%"></div>
+                        </div>
+                        <span class="text-sm font-medium text-purple-600">{{ round.percentage }}%</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
     </div>
+
+    <!-- Key Insights -->
+    <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6">🔍 Key Insights</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600 mb-2">
+                    {% if betting_favorites %}{{ betting_favorites.favorite_win_rate }}%{% endif %}
+                </div>
+                <p class="text-sm text-blue-800">Favorite Success Rate</p>
+                <p class="text-xs text-blue-600 mt-1">
+                    {% if betting_favorites.favorite_win_rate|float < 70 %}
+                    Upsets are common!
+                    {% else %}
+                    Favorites dominate
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+                <div class="text-2xl font-bold text-green-600 mb-2">
+                    {% if weight_class_stats %}{{ weight_class_stats[0].finish_rate }}%{% endif %}
+                </div>
+                <p class="text-sm text-green-800">Highest Finish Rate</p>
+                <p class="text-xs text-green-600 mt-1">
+                    {% if weight_class_stats %}{{ weight_class_stats[0].weight_class }}{% endif %}
+                </p>
+            </div>
+
+            <div class="text-center p-4 bg-purple-50 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600 mb-2">
+                    {% for round in round_analysis %}
+                        {% if loop.first %}{{ round.percentage }}%{% endif %}
+                    {% endfor %}
+                </div>
+                <p class="text-sm text-purple-800">Most Common Outcome</p>
+                <p class="text-xs text-purple-600 mt-1">
+                    {% for round in round_analysis %}
+                        {% if loop.first %}
+                            {% if round.finish_round == 'Decision' %}
+                            Goes to Decision
+                            {% else %}
+                            Round {{ round.finish_round }} Finish
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+
+            <div class="text-center p-4 bg-red-50 rounded-lg">
+                <div class="text-2xl font-bold text-red-600 mb-2">
+                    {% if prime_age_analysis %}
+                        {% for group in prime_age_analysis %}
+                            {% if 'Prime' in group.age_group %}{{ group.win_percentage }}%{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                </div>
+                <p class="text-sm text-red-800">Prime Age Win Rate</p>
+                <p class="text-xs text-red-600 mt-1">Ages 26-30</p>
+            </div>
+
+        </div>
+    </div>
+
 </div>
-
-<style>
-.bg-white {
-    transition: transform 0.2s ease-in-out;
-}
-
-.bg-white:hover {
-    transform: translateY(-2px);
-}
-
-/* Custom slider styling */
-input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    height: 8px;
-    background: #e5e7eb;
-    border-radius: 4px;
-    outline: none;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 20px;
-    height: 20px;
-    background: #4f46e5;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-    background: #4338ca;
-}
-
-input[type="range"]::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
-    background: #4f46e5;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: background 0.2s;
-    border: none;
-}
-
-input[type="range"]::-moz-range-thumb:hover {
-    background: #4338ca;
-}
-</style>
-
-<script>
-function toggleFightDetails() {
-    const details = document.getElementById('fightDetails');
-    const icon = document.getElementById('expandIcon');
-    if (details.classList.contains('hidden')) {
-        details.classList.remove('hidden');
-        icon.classList.add('rotate-180');
-    } else {
-        details.classList.add('hidden');
-        icon.classList.remove('rotate-180');
-    }
-}
-</script>
-{% endblock %} 
+{% endblock %}

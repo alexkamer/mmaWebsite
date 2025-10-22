@@ -62,13 +62,25 @@
                             </div>
                         </div>
                         <!-- Center Info -->
-                        <div class="flex flex-col items-center justify-center text-center space-y-1">
+                        <div class="flex flex-col items-center justify-center text-center space-y-3">
                             <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600">
                                 {{ fight.weight_class }}
                             </span>
                             {% if fight.card_segment %}
                             <span class="text-xs text-gray-500">{{ fight.card_segment }}</span>
                             {% endif %}
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-col gap-2">
+                                <a href="{{ url_for('games.fight_preview', fighter1_id=fight.fighter_1_id, fighter2_id=fight.fighter_2_id, event_id=event.event_id, fight_id=fight.fight_id) }}"
+                                   class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition duration-300 transform hover:scale-105 shadow-md inline-block text-center">
+                                    🔍 Fight Preview
+                                </a>
+                                <a href="{{ url_for('games.tale_of_tape') }}?fighter1={{ fight.fighter_1_id }}&fighter2={{ fight.fighter_2_id }}"
+                                   class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition duration-300 transform hover:scale-105 shadow-md inline-block text-center">
+                                    ⚖️ Tale of Tape
+                                </a>
+                            </div>
                         </div>
                         <!-- Fighter 2 -->
                         <div class="flex items-center space-x-4 justify-end">
@@ -105,4 +117,6 @@
     </div>
     {% endif %}
 </div>
+
+
 {% endblock %} 

@@ -57,7 +57,7 @@
                                             <img src="{{ fight.fighter_1_headshot }}" alt="{{ fight.fighter_1_name }}" class="w-12 h-12 rounded-full object-cover">
                                         {% endif %}
                                         <div>
-                                            <a href="/fighter/{{ fight.fighter_1_id }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                            <a href="{{ url_for('fighters.fighter_page', fighter_id=fight.fighter_1_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
                                                 {{ fight.fighter_1_name }}
                                             </a>
                                             {% if fight.fighter_1_odds %}
@@ -75,7 +75,7 @@
                                     <div class="text-gray-500 font-medium">vs</div>
                                     <div class="flex-1 text-right flex items-center justify-end space-x-3">
                                         <div>
-                                            <a href="/fighter/{{ fight.fighter_2_id }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                            <a href="{{ url_for('fighters.fighter_page', fighter_id=fight.fighter_2_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
                                                 {{ fight.fighter_2_name }}
                                             </a>
                                             {% if fight.fighter_2_odds %}

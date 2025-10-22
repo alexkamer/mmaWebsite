@@ -135,6 +135,8 @@
                             <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Weight Class</th>
                             <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Rounds</th>
                             <th class="px-4 py-2 text-left text-sm font-semibold text-gray-600">Odds</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-900">Sig. Strikes</th>
+                            <th class="px-4 py-2 text-sm font-medium text-gray-900">Takedowns</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200">
@@ -142,12 +144,12 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-2 text-sm text-gray-900">{{ fight.date|format_date }}</td>
                                 <td class="px-4 py-2 text-sm text-gray-900">
-                                    <a href="{{ url_for('events', event_id=fight.event_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                    <a href="{{ url_for('events.events', event_id=fight.event_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                         {{ fight.event_name }}
                                     </a>
                                 </td>
                                 <td class="px-4 py-2 text-sm text-gray-900">
-                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                         {{ fight.opponent }}
                                     </a>
                                 </td>
@@ -191,6 +193,20 @@
                                         <span class="{% if fight.fighter_odds|int > 0 %}text-green-600{% else %}text-red-600{% endif %}">
                                             {{ fight.fighter_odds }}
                                         </span>
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">
+                                    {% if fight.sig_strikes_landed is not none and fight.sig_strikes_attempted is not none %}
+                                        {{ fight.sig_strikes_landed }}/{{ fight.sig_strikes_attempted }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 text-sm text-gray-900">
+                                    {% if fight.takedowns_landed is not none and fight.takedowns_attempted is not none %}
+                                        {{ fight.takedowns_landed }}/{{ fight.takedowns_attempted }}
                                     {% else %}
                                         N/A
                                     {% endif %}

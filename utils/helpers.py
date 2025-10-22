@@ -191,14 +191,23 @@ def process_event(url: str):
 
     evs = []
     for comp in data["competitions"]:
+        # Skip competitions with less than 2 competitors
+        competitors = comp.get("competitors", [])
+        if len(competitors) < 2:
+            continue
+
         event_status_url = f"https://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/{eid}/competitions/{comp.get('id')}/status?lang=en&region=us"
         event_status_response = httpx.get(event_status_url)
         event_status_response.raise_for_status()
         event_status_data = event_status_response.json()
 
+        # Safely get fight_title from types array
+        types = comp.get('types', [])
+        fight_title = types[0].get('text') if types else None
+
         ed = {
-            "year_league_event_id_fight_id_f1_f2": f"{year}_{league}_{eid}_{comp.get('id')}_{comp.get('competitors')[0].get('id')}_{comp.get('competitors')[1].get('id')}",
-            "fight_title" : comp.get('types',[{}])[0].get('text'),
+            "year_league_event_id_fight_id_f1_f2": f"{year}_{league}_{eid}_{comp.get('id')}_{competitors[0].get('id')}_{competitors[1].get('id')}",
+            "fight_title" : fight_title,
             "boxscoreAvailable" : comp.get('boxscoreAvailable'),
             "playByPlayAvailable" : comp.get('playByPlayAvailable'),
             "summaryAvailable" : comp.get('summaryAvailable'),

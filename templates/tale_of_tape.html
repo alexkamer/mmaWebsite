@@ -140,15 +140,27 @@
                         <div class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
+                                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
                                     <div class="text-sm text-gray-500">{{ fight.event_name }} ({{ fight.date|format_date }})</div>
                                 </div>
                                 <div class="text-right">
                                     <div class="font-medium {% if fight.won == 1 %}text-green-600{% elif fight.won == 0 %}text-red-600{% else %}text-gray-600{% endif %}">
                                         {{ fight.result_display_name }}
                                     </div>
+                                    {% if fight.end_round and fight.end_time and fight.end_time != '-' and 'Decision' not in fight.result_display_name %}
+                                    <div class="text-sm text-gray-500">R{{ fight.end_round }} {{ fight.end_time }}</div>
+                                    {% endif %}
                                     {% if fight.fighter_odds %}
                                     <div class="text-sm text-gray-500">Odds: {{ fight.fighter_odds }}</div>
+                                    {% endif %}
+                                    {% if fight.fighter_score is not none or fight.opponent_score is not none %}
+                                    <div class="text-sm text-gray-500">Score: {{ fight.fighter_score or '-' }}-{{ fight.opponent_score or '-' }}</div>
+                                    {% endif %}
+                                    {% if fight.sig_strikes_landed is not none and fight.sig_strikes_attempted is not none %}
+                                    <div class="text-sm text-gray-500">Sig. Strikes: {{ fight.sig_strikes_landed|int }}/{{ fight.sig_strikes_attempted|int }}</div>
+                                    {% endif %}
+                                    {% if fight.takedowns_landed is not none and fight.takedowns_attempted is not none %}
+                                    <div class="text-sm text-gray-500">Takedowns: {{ fight.takedowns_landed|int }}/{{ fight.takedowns_attempted|int }}</div>
                                     {% endif %}
                                 </div>
                             </div>
@@ -250,15 +262,27 @@
                         <div class="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
                             <div class="flex justify-between items-center">
                                 <div>
-                                    <a href="{{ url_for('fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
+                                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fight.opponent_id) }}" class="text-blue-600 hover:text-blue-800 font-medium">{{ fight.opponent }}</a>
                                     <div class="text-sm text-gray-500">{{ fight.event_name }} ({{ fight.date|format_date }})</div>
                                 </div>
                                 <div class="text-right">
                                     <div class="font-medium {% if fight.won == 1 %}text-green-600{% elif fight.won == 0 %}text-red-600{% else %}text-gray-600{% endif %}">
                                         {{ fight.result_display_name }}
                                     </div>
+                                    {% if fight.end_round and fight.end_time and fight.end_time != '-' and 'Decision' not in fight.result_display_name %}
+                                    <div class="text-sm text-gray-500">R{{ fight.end_round }} {{ fight.end_time }}</div>
+                                    {% endif %}
                                     {% if fight.fighter_odds %}
                                     <div class="text-sm text-gray-500">Odds: {{ fight.fighter_odds }}</div>
+                                    {% endif %}
+                                    {% if fight.fighter_score is not none or fight.opponent_score is not none %}
+                                    <div class="text-sm text-gray-500">Score: {{ fight.fighter_score or '-' }}-{{ fight.opponent_score or '-' }}</div>
+                                    {% endif %}
+                                    {% if fight.sig_strikes_landed is not none and fight.sig_strikes_attempted is not none %}
+                                    <div class="text-sm text-gray-500">Sig. Strikes: {{ fight.sig_strikes_landed|int }}/{{ fight.sig_strikes_attempted|int }}</div>
+                                    {% endif %}
+                                    {% if fight.takedowns_landed is not none and fight.takedowns_attempted is not none %}
+                                    <div class="text-sm text-gray-500">Takedowns: {{ fight.takedowns_landed|int }}/{{ fight.takedowns_attempted|int }}</div>
                                     {% endif %}
                                 </div>
                             </div>

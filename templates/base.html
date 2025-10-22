@@ -3,50 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMA Stats</title>
+    <title>Fight Intel - UFC Stats & Analysis</title>
+    <meta name="description" content="Professional UFC statistics, fighter analysis, and AI-powered fight predictions. Your data-driven MMA resource.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Dark mode initialization (before page render) -->
+    <script>
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark')
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-white shadow-lg">
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-200">
+    <nav class="bg-white dark:bg-gray-800 shadow-lg transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
-                        <a href="/" class="text-xl font-bold text-gray-800">MMA Stats</a>
+                        <a href="/" class="flex items-center space-x-2 text-xl font-bold text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 transition">
+                            <div class="w-8 h-8 bg-red-600 dark:bg-red-500 rounded-lg flex items-center justify-center">
+                                <span class="text-white font-bold text-sm">🥊</span>
+                            </div>
+                            <span class="dark:text-white">Fight Intel</span>
+                        </a>
                     </div>
-                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
-                        <a href="/" class="{% if request.path == '/' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Home
+                    <!-- Main Navigation -->
+                    <div class="hidden lg:ml-6 lg:flex lg:space-x-8 lg:h-16">
+                        <a href="/" class="{% if request.path == '/' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            🏠 Home
                         </a>
-                        <a href="/fighters" class="{% if request.path == '/fighters' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Fighters
+
+                        <a href="/fighters" class="{% if request.path == '/fighters' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            🥊 Fighters
                         </a>
-                        <a href="{{ url_for('events') }}" class="{% if request.path == '/events' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Events
+
+                        <a href="/rankings" class="{% if request.path == '/rankings' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            🏆 Rankings
                         </a>
-                        <a href="{{ url_for('next_event') }}" class="{% if request.path == '/next-event' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Next Event
+
+                        <a href="/events/" class="{% if request.path.startswith('/events') %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            📅 Events
                         </a>
-                        <a href="{{ url_for('rankings') }}" class="{% if request.path == '/rankings' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Rankings
+
+                        <a href="/next-event" class="{% if request.path == '/next-event' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            ⏰ Next Event
                         </a>
-                        <a href="{{ url_for('tale_of_tape') }}" class="{% if request.path == '/tale-of-tape' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Tale of the Tape
+
+                        <a href="/tale-of-tape" class="{% if request.path == '/tale-of-tape' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            ⚖️ Tale of Tape
                         </a>
-                        <a href="{{ url_for('fighter_wordle') }}" class="{% if request.path == '/fighter-wordle' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Fighter Wordle
+
+                        <a href="/system-checker" class="{% if request.path == '/system-checker' %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            📊 Analytics
                         </a>
-                        <a href="{{ url_for('career_timeline') }}" class="{% if request.path == '/career-timeline' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            Career Timeline
-                        </a>
-                        <a href="{{ url_for('system_checker') }}" class="{% if request.path == '/system-checker' %}border-indigo-500 text-gray-900{% else %}border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700{% endif %} inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
-                            System Checker
+
+                        <a href="/query/" class="{% if request.path.startswith('/query') %}border-red-500 text-gray-900 dark:text-white{% else %}border-transparent text-gray-600 dark:text-gray-300 hover:border-red-300 hover:text-gray-900 dark:hover:text-white{% endif %} inline-flex items-center px-1 border-b-2 text-sm font-semibold transition h-full">
+                            🤖 Ask AI
                         </a>
                     </div>
                 </div>
+
+                <!-- Search Bar & Dark Mode Toggle -->
+                <div class="hidden lg:flex lg:items-center lg:ml-6 lg:space-x-4">
+                    <!-- Dark Mode Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200" title="Toggle dark mode">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div class="relative">
+                        <input type="text"
+                               id="global-search"
+                               placeholder="Search fighters, events..."
+                               class="w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm transition"
+                               autocomplete="off">
+                        <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <!-- Search Results Dropdown -->
+                        <div id="search-results" class="absolute z-50 mt-1 w-full bg-white dark:bg-gray-700 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 hidden max-h-96 overflow-y-auto">
+                            <div class="p-3 text-sm text-gray-500 dark:text-gray-400">Start typing to search...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="lg:hidden flex items-center space-x-2">
+                    <!-- Mobile Dark Mode Toggle -->
+                    <button id="mobile-theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                        <svg class="mobile-dark-icon hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg class="mobile-light-icon hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    <button id="mobile-menu-button" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-red-500 p-2 rounded-lg transition">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="lg:hidden hidden bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <div class="px-4 py-3 space-y-3">
+                <!-- Mobile Search -->
+                <div class="relative">
+                    <input type="text"
+                           placeholder="Search fighters, events..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm"
+                           autocomplete="off">
+                    <svg class="absolute left-3 top-2.5 h-4 w-4 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+
+                <!-- Mobile Navigation Links -->
+                <a href="/" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">🏠 Home</a>
+                <a href="/fighters" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">🥊 Fighters</a>
+                <a href="/rankings" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">🏆 Rankings</a>
+                <a href="/events/" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">📅 Events</a>
+                <a href="/next-event" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">⏰ Next Event</a>
+                <a href="/tale-of-tape" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">⚖️ Tale of Tape</a>
+                <a href="/fighter-wordle" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">🔤 Fighter Wordle</a>
+                <a href="/career-timeline" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">📈 Career Timeline</a>
+                <a href="/system-checker" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">📊 Analytics</a>
+                <a href="/query/" class="block px-3 py-2 text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-gray-700 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition">🤖 Ask AI</a>
             </div>
         </div>
     </nav>
@@ -55,64 +154,185 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-white shadow-lg mt-8">
-        <div class="max-w-7xl mx-auto py-4 px-4">
-            <p class="text-center text-gray-500 text-sm">
-                <!-- © 2025 MMA Stats. All rights reserved. -->
-                 STRIP JON JONES OF THE HEAVYWEIGHT BELT
-            </p>
+    <footer class="bg-gray-900 dark:bg-black text-white mt-16 transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Brand -->
+                <div class="md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 bg-red-600 dark:bg-red-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">🥊</span>
+                        </div>
+                        <span class="text-xl font-bold">Fight Intel</span>
+                    </div>
+                    <p class="text-gray-400 dark:text-gray-500 mb-4 max-w-md">Your premier destination for UFC statistics, fighter analysis, and AI-powered fight predictions. Data-driven insights for MMA fans.</p>
+                    <p class="text-gray-500 dark:text-gray-600 text-sm">© 2025 Fight Intel. All rights reserved.</p>
+                </div>
+
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2 text-gray-400 dark:text-gray-500">
+                        <li><a href="/" class="hover:text-white dark:hover:text-gray-300 transition">🏠 Home</a></li>
+                        <li><a href="/fighters" class="hover:text-white dark:hover:text-gray-300 transition">🥊 Fighters</a></li>
+                        <li><a href="/rankings" class="hover:text-white dark:hover:text-gray-300 transition">🏆 Rankings</a></li>
+                        <li><a href="/events/" class="hover:text-white dark:hover:text-gray-300 transition">📅 Events</a></li>
+                    </ul>
+                </div>
+
+                <!-- Tools -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Tools & Games</h3>
+                    <ul class="space-y-2 text-gray-400 dark:text-gray-500">
+                        <li><a href="/next-event" class="hover:text-white dark:hover:text-gray-300 transition">⏰ Next Event</a></li>
+                        <li><a href="/tale-of-tape" class="hover:text-white dark:hover:text-gray-300 transition">⚖️ Tale of Tape</a></li>
+                        <li><a href="/system-checker" class="hover:text-white dark:hover:text-gray-300 transition">📊 Analytics</a></li>
+                        <li><a href="/query/" class="hover:text-white dark:hover:text-gray-300 transition">🤖 Ask AI</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="border-t border-gray-800 dark:border-gray-900 mt-8 pt-8 text-center text-gray-500 dark:text-gray-600 text-sm">
+                <p>Built for MMA fans, by MMA fans. Powered by real UFC data and AI analysis.</p>
+            </div>
         </div>
     </footer>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Check if we're on the rankings page
-        if (window.location.pathname === '/rankings') {
-            // Get the hash from the URL
-            const hash = window.location.hash.substring(1);
-            if (hash) {
-                // Find the tab button that matches the hash
-                const tabButton = document.querySelector(`[data-bs-target="#${hash}"]`);
-                if (tabButton) {
-                    // Remove active class from all tabs
-                    document.querySelectorAll('.nav-link-tab').forEach(tab => {
-                        tab.classList.remove('active');
-                        tab.setAttribute('aria-selected', 'false');
-                    });
-                    
-                    // Add active class to target tab
-                    tabButton.classList.add('active');
-                    tabButton.setAttribute('aria-selected', 'true');
-                    
-                    // Hide all tab panes
-                    document.querySelectorAll('.tab-pane').forEach(pane => {
-                        pane.classList.remove('show', 'active');
-                    });
-                    
-                    // Show the selected tab pane
-                    const targetPane = document.querySelector(`#${hash}`);
-                    if (targetPane) {
-                        targetPane.classList.add('show', 'active');
-                    }
-                }
+        // ===== DARK MODE FUNCTIONALITY =====
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle');
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        const mobileDarkIcons = document.querySelectorAll('.mobile-dark-icon');
+        const mobileLightIcons = document.querySelectorAll('.mobile-light-icon');
+
+        // Function to update icons based on current theme
+        function updateThemeIcons() {
+            if (document.documentElement.classList.contains('dark')) {
+                themeToggleLightIcon?.classList.remove('hidden');
+                themeToggleDarkIcon?.classList.add('hidden');
+                mobileLightIcons.forEach(icon => icon.classList.remove('hidden'));
+                mobileDarkIcons.forEach(icon => icon.classList.add('hidden'));
+            } else {
+                themeToggleDarkIcon?.classList.remove('hidden');
+                themeToggleLightIcon?.classList.add('hidden');
+                mobileDarkIcons.forEach(icon => icon.classList.remove('hidden'));
+                mobileLightIcons.forEach(icon => icon.classList.add('hidden'));
             }
         }
 
-        // Handle rankings dropdown
-        const rankingsContainer = document.querySelector('.relative.inline-block');
-        const rankingsLink = rankingsContainer.querySelector('a');
-        const rankingsDropdown = rankingsContainer.querySelector('div');
-        
-        if (rankingsContainer && rankingsLink && rankingsDropdown) {
-            rankingsContainer.addEventListener('mouseenter', () => {
-                rankingsDropdown.classList.remove('hidden');
-                rankingsDropdown.classList.add('block');
+        // Initialize icons on page load
+        updateThemeIcons();
+
+        // Toggle theme function
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcons();
+        }
+
+        // Add click listeners
+        themeToggleBtn?.addEventListener('click', toggleTheme);
+        mobileThemeToggleBtn?.addEventListener('click', toggleTheme);
+
+        // ===== END DARK MODE FUNCTIONALITY =====
+
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
             });
-            
-            rankingsContainer.addEventListener('mouseleave', () => {
-                rankingsDropdown.classList.remove('block');
-                rankingsDropdown.classList.add('hidden');
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('global-search');
+        const searchResults = document.getElementById('search-results');
+        let searchTimeout;
+
+        if (searchInput && searchResults) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+
+                clearTimeout(searchTimeout);
+
+                if (query.length === 0) {
+                    searchResults.classList.add('hidden');
+                    return;
+                }
+
+                if (query.length < 2) {
+                    searchResults.innerHTML = '<div class="p-3 text-sm text-gray-500">Type at least 2 characters...</div>';
+                    searchResults.classList.remove('hidden');
+                    return;
+                }
+
+                // Show loading state
+                searchResults.innerHTML = '<div class="p-3 text-sm text-gray-500">Searching...</div>';
+                searchResults.classList.remove('hidden');
+
+                // Debounced search
+                searchTimeout = setTimeout(() => {
+                    performSearch(query);
+                }, 300);
             });
+
+            // Hide results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                    searchResults.classList.add('hidden');
+                }
+            });
+        }
+
+        async function performSearch(query) {
+            try {
+                // Call the real API
+                const response = await fetch(`/api/fighters/search?q=${encodeURIComponent(query)}&limit=8`);
+
+                if (!response.ok) {
+                    throw new Error('Search failed');
+                }
+
+                const fighters = await response.json();
+
+                let html = '';
+
+                if (fighters.length > 0) {
+                    html += '<div class="p-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">FIGHTERS</div>';
+                    fighters.forEach(fighter => {
+                        const weightClass = fighter.weight_class || 'Unknown';
+                        const fighterImage = fighter.headshot_url
+                            ? `<img src="${fighter.headshot_url}" class="w-10 h-10 rounded-full object-cover" alt="${fighter.full_name}">`
+                            : `<div class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 text-sm font-bold">${fighter.full_name.charAt(0)}</div>`;
+
+                        html += `<a href="/fighter/${fighter.id}" class="flex items-center gap-3 px-4 py-3 hover:bg-red-50 dark:hover:bg-gray-600 border-b border-gray-100 dark:border-gray-600 last:border-b-0 transition">
+                            ${fighterImage}
+                            <div class="flex-1 min-w-0">
+                                <div class="font-medium text-gray-900 dark:text-white truncate">${fighter.full_name}</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">${weightClass}</div>
+                            </div>
+                        </a>`;
+                    });
+                } else {
+                    html = '<div class="p-3 text-sm text-gray-500 dark:text-gray-400">No fighters found for "' + query + '"</div>';
+                }
+
+                searchResults.innerHTML = html;
+            } catch (error) {
+                console.error('Search error:', error);
+                searchResults.innerHTML = '<div class="p-3 text-sm text-red-500">Search failed. Please try again.</div>';
+            }
         }
     });
     </script>
