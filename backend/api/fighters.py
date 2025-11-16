@@ -8,15 +8,56 @@ from ..models.fighter import FighterBase, FighterDetail, FighterListResponse
 router = APIRouter()
 
 
+@router.get("/filters")
+async def get_filter_options():
+    """
+    Get available filter options (weight classes, nationalities).
+    """
+    # Get weight classes with counts
+    weight_class_query = """
+        SELECT
+            weight_class,
+            COUNT(*) as count
+        FROM athletes
+        WHERE weight_class IS NOT NULL AND weight_class != ''
+        GROUP BY weight_class
+        ORDER BY count DESC
+    """
+    weight_classes = execute_query(weight_class_query)
+
+    # Get nationalities with counts
+    nationality_query = """
+        SELECT
+            association as nationality,
+            COUNT(*) as count
+        FROM athletes
+        WHERE association IS NOT NULL AND association != ''
+        GROUP BY association
+        ORDER BY count DESC
+        LIMIT 50
+    """
+    nationalities = execute_query(nationality_query)
+
+    return {
+        "weight_classes": weight_classes,
+        "nationalities": nationalities
+    }
+
+
 @router.get("/", response_model=FighterListResponse)
 async def list_fighters(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     search: Optional[str] = None,
     weight_class: Optional[str] = None,
+    weight_classes: Optional[str] = Query(None, description="Comma-separated weight classes"),
+    nationality: Optional[str] = Query(None, description="Fighter nationality/country"),
+    starts_with: Optional[str] = Query(None, description="Filter by first letter of name"),
 ):
     """
     Get list of fighters with pagination and optional filtering.
+    Supports multiple weight classes via comma-separated values.
+    Supports filtering by first letter of name.
     """
     offset = (page - 1) * page_size
 
@@ -29,9 +70,25 @@ async def list_fighters(
         search_param = f"%{search}%"
         params.extend([search_param, search_param, search_param])
 
-    if weight_class:
+    # Support both single weight_class and multiple weight_classes
+    if weight_classes:
+        wc_list = [wc.strip() for wc in weight_classes.split(",")]
+        placeholders = ",".join(["?" for _ in wc_list])
+        where_clauses.append(f"weight_class IN ({placeholders})")
+        params.extend(wc_list)
+    elif weight_class:
         where_clauses.append("weight_class = ?")
         params.append(weight_class)
+
+    if nationality:
+        where_clauses.append("association = ?")
+        params.append(nationality)
+
+    if starts_with:
+        # Filter by first letter of display_name or full_name
+        letter = starts_with.upper()
+        where_clauses.append("(UPPER(SUBSTR(COALESCE(display_name, full_name), 1, 1)) = ?)")
+        params.append(letter)
 
     where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
 
@@ -40,18 +97,27 @@ async def list_fighters(
     count_result = execute_query_one(count_query, tuple(params))
     total = count_result["total"] if count_result else 0
 
-    # Get fighters
+    # Get fighters with records
     query = f"""
         SELECT
-            id,
-            COALESCE(display_name, full_name, 'Unknown') as name,
-            nickname,
-            headshot_url as image_url,
-            weight_class,
-            association as nationality
-        FROM athletes
-        WHERE {where_sql} AND (display_name IS NOT NULL OR full_name IS NOT NULL)
-        ORDER BY COALESCE(display_name, full_name)
+            a.id,
+            COALESCE(a.display_name, a.full_name, 'Unknown') as name,
+            a.nickname,
+            a.headshot_url as image_url,
+            a.weight_class,
+            a.association as nationality,
+            (SELECT COUNT(*) FROM fights f
+             WHERE (f.fighter_1_id = a.id AND f.fighter_1_winner = 1)
+                OR (f.fighter_2_id = a.id AND f.fighter_2_winner = 1)) as wins,
+            (SELECT COUNT(*) FROM fights f
+             WHERE (f.fighter_1_id = a.id AND f.fighter_1_winner = 0 AND f.fighter_2_winner = 1)
+                OR (f.fighter_2_id = a.id AND f.fighter_2_winner = 0 AND f.fighter_1_winner = 1)) as losses,
+            (SELECT COUNT(*) FROM fights f
+             WHERE (f.fighter_1_id = a.id OR f.fighter_2_id = a.id)
+               AND f.fighter_1_winner = 0 AND f.fighter_2_winner = 0) as draws
+        FROM athletes a
+        WHERE {where_sql} AND (a.display_name IS NOT NULL OR a.full_name IS NOT NULL)
+        ORDER BY COALESCE(a.display_name, a.full_name)
         LIMIT ? OFFSET ?
     """
     params.extend([page_size, offset])

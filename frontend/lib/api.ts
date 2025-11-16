@@ -24,12 +24,35 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 // Fighter endpoints
 export const fightersAPI = {
-  list: (params?: { page?: number; page_size?: number; search?: string; weight_class?: string }) => {
+  list: (params?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    weight_class?: string;
+    weight_classes?: string[];
+    nationality?: string;
+    starts_with?: string;
+  }) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.set('page', params.page.toString());
     if (params?.page_size) queryParams.set('page_size', params.page_size.toString());
     if (params?.search) queryParams.set('search', params.search);
     if (params?.weight_class) queryParams.set('weight_class', params.weight_class);
+    if (params?.weight_classes && params.weight_classes.length > 0) {
+      queryParams.set('weight_classes', params.weight_classes.join(','));
+    }
+    if (params?.nationality) queryParams.set('nationality', params.nationality);
+    if (params?.starts_with) queryParams.set('starts_with', params.starts_with);
+
+    return fetchAPI<FighterListResponse>(`/api/fighters/?${queryParams}`);
+  },
+
+  getFilters: () => fetchAPI<FilterOptionsResponse>('/api/fighters/filters'),
+
+  search: (query: string, params?: { limit?: number }) => {
+    const queryParams = new URLSearchParams();
+    queryParams.set('search', query);
+    if (params?.limit) queryParams.set('page_size', params.limit.toString());
 
     return fetchAPI<FighterListResponse>(`/api/fighters/?${queryParams}`);
   },
@@ -59,6 +82,14 @@ export const eventsAPI = {
   getYears: () => fetchAPI<{ years: number[] }>('/api/events/years'),
 
   getNext: () => fetchAPI<Event>('/api/events/upcoming/next'),
+
+  getRecentFinishes: (params?: { limit?: number; promotion?: string }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.limit) queryParams.set('limit', params.limit.toString());
+    if (params?.promotion) queryParams.set('promotion', params.promotion);
+
+    return fetchAPI<RecentFinishesResponse>(`/api/events/recent-finishes?${queryParams}`);
+  },
 };
 
 // Rankings endpoints
@@ -140,6 +171,9 @@ export interface FighterBase {
   image_url?: string;
   weight_class?: string;
   nationality?: string;
+  wins?: number;
+  losses?: number;
+  draws?: number;
 }
 
 export interface FighterDetail extends FighterBase {
@@ -354,6 +388,7 @@ export interface FighterComparison {
       draws: number;
     };
   };
+  common_opponents?: any[];
 }
 
 export interface WordleFighter {
@@ -391,4 +426,40 @@ export interface QueryExample {
 
 export interface QueryExamplesResponse {
   examples: QueryExample[];
+}
+
+export interface RecentFinish {
+  fight_id: number;
+  event_id: number;
+  event_name: string;
+  event_date: string;
+  fighter1_id: number;
+  fighter1_name: string;
+  fighter1_image?: string;
+  fighter2_id: number;
+  fighter2_name: string;
+  fighter2_image?: string;
+  winner_name: string;
+  winner_id?: number;
+  winner_image?: string;
+  finish_type: string;
+  round: number;
+  time: string;
+  weight_class: string;
+}
+
+export interface RecentFinishesResponse {
+  finishes: RecentFinish[];
+  total: number;
+}
+
+export interface FilterOption {
+  weight_class?: string;
+  nationality?: string;
+  count: number;
+}
+
+export interface FilterOptionsResponse {
+  weight_classes: FilterOption[];
+  nationalities: FilterOption[];
 }

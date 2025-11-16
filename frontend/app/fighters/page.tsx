@@ -1,23 +1,77 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Search, Scale, Check } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { Scale, Check } from "lucide-react"
 import { fightersAPI, type FighterBase } from "@/lib/api"
+import { FighterSearch } from "@/components/fighter-search"
+import { FighterAvatar } from "@/components/fighter-avatar"
+import { FighterListSkeleton } from "@/components/skeletons"
+import { FighterFilters } from "@/components/fighter-filters"
 
 export default function FightersPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [fighters, setFighters] = useState<FighterBase[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
   const [compareMode, setCompareMode] = useState(false)
   const [selectedFighters, setSelectedFighters] = useState<number[]>([])
-  const pageSize = 24
+  const [selectedLetter, setSelectedLetter] = useState<string>("")
 
+  // Filter state
+  const [filterOptions, setFilterOptions] = useState<{
+    weightClasses: Array<{ value: string; label: string; count: number }>
+    countries: Array<{ value: string; label: string; count: number }>
+  }>({ weightClasses: [], countries: [] })
+  const [selectedWeightClasses, setSelectedWeightClasses] = useState<string[]>([])
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
+
+  const pageSize = 24
+  const observerTarget = useRef<HTMLDivElement>(null)
+
+  // Load filter options on mount
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        const data = await fightersAPI.getFilters()
+        setFilterOptions({
+          weightClasses: data.weight_classes.map(wc => ({
+            value: wc.weight_class || '',
+            label: wc.weight_class || '',
+            count: wc.count
+          })),
+          countries: data.nationalities.map(nat => ({
+            value: nat.nationality || '',
+            label: nat.nationality || '',
+            count: nat.count
+          }))
+        })
+      } catch (error) {
+        console.error("Error fetching filter options:", error)
+      }
+    }
+    fetchFilterOptions()
+  }, [])
+
+  // Load filters from URL on mount
+  useEffect(() => {
+    const wcParam = searchParams.get('weight_classes')
+    const countryParam = searchParams.get('nationality')
+
+    if (wcParam) {
+      setSelectedWeightClasses(wcParam.split(','))
+    }
+    if (countryParam) {
+      setSelectedCountries([countryParam])
+    }
+  }, [searchParams])
+
+  // Fetch fighters when page or filters change
   useEffect(() => {
     const fetchFighters = async () => {
       setLoading(true)
@@ -25,10 +79,20 @@ export default function FightersPage() {
         const data = await fightersAPI.list({
           page,
           page_size: pageSize,
-          search: search || undefined,
+          weight_classes: selectedWeightClasses.length > 0 ? selectedWeightClasses : undefined,
+          nationality: selectedCountries.length > 0 ? selectedCountries[0] : undefined,
+          starts_with: selectedLetter || undefined,
         })
-        setFighters(data.fighters)
+
+        // For infinite scroll: append if page > 1, replace if page === 1
+        if (page === 1) {
+          setFighters(data.fighters)
+        } else {
+          setFighters(prev => [...prev, ...data.fighters])
+        }
+
         setTotal(data.total)
+        setHasMore(data.fighters.length === pageSize)
       } catch (error) {
         console.error("Error fetching fighters:", error)
       } finally {
@@ -36,14 +100,54 @@ export default function FightersPage() {
       }
     }
 
-    const debounce = setTimeout(() => {
-      fetchFighters()
-    }, 300)
+    fetchFighters()
+  }, [page, selectedWeightClasses, selectedCountries, selectedLetter])
 
-    return () => clearTimeout(debounce)
-  }, [search, page])
+  // Update URL when filters change
+  useEffect(() => {
+    const params = new URLSearchParams()
+    if (selectedWeightClasses.length > 0) {
+      params.set('weight_classes', selectedWeightClasses.join(','))
+    }
+    if (selectedCountries.length > 0) {
+      params.set('nationality', selectedCountries[0])
+    }
+
+    const newUrl = params.toString() ? `/fighters?${params}` : '/fighters'
+    router.replace(newUrl, { scroll: false })
+  }, [selectedWeightClasses, selectedCountries, router])
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          setPage(prev => prev + 1)
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    const currentTarget = observerTarget.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, loading])
 
   const totalPages = Math.ceil(total / pageSize)
+
+  const handleLetterClick = (letter: string) => {
+    setSelectedLetter(letter === selectedLetter ? "" : letter)
+    setPage(1)
+    setFighters([])
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const toggleFighterSelection = (fighterId: number) => {
     setSelectedFighters(prev => {
@@ -66,6 +170,14 @@ export default function FightersPage() {
   const handleCancelCompare = () => {
     setCompareMode(false)
     setSelectedFighters([])
+  }
+
+  const handleClearFilters = () => {
+    setSelectedWeightClasses([])
+    setSelectedCountries([])
+    setSelectedLetter("")
+    setPage(1)
+    setFighters([])
   }
 
   return (
@@ -111,30 +223,54 @@ export default function FightersPage() {
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search fighters..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value)
-            setPage(1)
-          }}
-          className="w-full rounded-lg border bg-background px-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-        />
-      </div>
+      {!compareMode && <FighterSearch />}
 
-      {/* Loading State */}
-      {loading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {[...Array(12)].map((_, i) => (
-            <div
-              key={i}
-              className="h-48 animate-pulse rounded-lg border bg-muted"
-            />
+      {/* Filters */}
+      {!compareMode && (
+        <FighterFilters
+          weightClasses={filterOptions.weightClasses}
+          promotions={[]}
+          countries={filterOptions.countries}
+          selectedWeightClasses={selectedWeightClasses}
+          selectedPromotions={[]}
+          selectedCountries={selectedCountries}
+          onWeightClassChange={setSelectedWeightClasses}
+          onPromotionChange={() => {}}
+          onCountryChange={setSelectedCountries}
+          onClearAll={handleClearFilters}
+        />
+      )}
+
+      {/* Alphabet Navigation */}
+      {!compareMode && (
+        <div className="flex flex-wrap gap-1 justify-center">
+          {Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ').map((letter) => (
+            <button
+              key={letter}
+              onClick={() => handleLetterClick(letter)}
+              className={`h-9 w-9 rounded-lg text-sm font-medium transition-colors ${
+                selectedLetter === letter
+                  ? 'bg-blue-600 text-white'
+                  : 'border bg-background hover:bg-muted'
+              }`}
+            >
+              {letter}
+            </button>
           ))}
+          {selectedLetter && (
+            <button
+              onClick={() => handleLetterClick("")}
+              className="px-4 py-2 rounded-lg border bg-background hover:bg-muted text-sm font-medium transition-colors"
+            >
+              Clear
+            </button>
+          )}
         </div>
+      )}
+
+      {/* Loading State - Only show on initial load */}
+      {loading && page === 1 && fighters.length === 0 ? (
+        <FighterListSkeleton count={24} />
       ) : (
         <>
           {/* Fighters Grid */}
@@ -189,11 +325,24 @@ export default function FightersPage() {
                             "{fighter.nickname}"
                           </p>
                         )}
-                        {fighter.weight_class && (
-                          <p className="text-xs text-muted-foreground">
-                            {fighter.weight_class}
-                          </p>
-                        )}
+                        <div className="flex items-center gap-2 text-xs">
+                          {fighter.weight_class && (
+                            <span className="text-muted-foreground">
+                              {fighter.weight_class}
+                            </span>
+                          )}
+                          {(fighter.wins !== undefined || fighter.losses !== undefined) && (
+                            <>
+                              {fighter.weight_class && (
+                                <span className="text-muted-foreground">•</span>
+                              )}
+                              <span className="font-medium">
+                                {fighter.wins || 0}-{fighter.losses || 0}
+                                {fighter.draws ? `-${fighter.draws}` : ''}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </button>
                   )
@@ -233,11 +382,24 @@ export default function FightersPage() {
                           "{fighter.nickname}"
                         </p>
                       )}
-                      {fighter.weight_class && (
-                        <p className="text-xs text-muted-foreground">
-                          {fighter.weight_class}
-                        </p>
-                      )}
+                      <div className="flex items-center gap-2 text-xs">
+                        {fighter.weight_class && (
+                          <span className="text-muted-foreground">
+                            {fighter.weight_class}
+                          </span>
+                        )}
+                        {(fighter.wins !== undefined || fighter.losses !== undefined) && (
+                          <>
+                            {fighter.weight_class && (
+                              <span className="text-muted-foreground">•</span>
+                            )}
+                            <span className="font-medium">
+                              {fighter.wins || 0}-{fighter.losses || 0}
+                              {fighter.draws ? `-${fighter.draws}` : ''}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 )
@@ -246,31 +408,25 @@ export default function FightersPage() {
           ) : (
             <div className="rounded-lg border bg-card p-12 text-center">
               <p className="text-muted-foreground">
-                No fighters found matching "{search}"
+                No fighters found
               </p>
             </div>
           )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="rounded-lg border bg-background px-4 py-2 text-sm font-medium disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="rounded-lg border bg-background px-4 py-2 text-sm font-medium disabled:opacity-50"
-              >
-                Next
-              </button>
+          {/* Infinite Scroll Loader */}
+          {hasMore && (
+            <div ref={observerTarget} className="flex items-center justify-center py-8">
+              {loading && (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <span className="text-sm">Loading more fighters...</span>
+                </div>
+              )}
+            </div>
+          )}
+          {!hasMore && fighters.length > 0 && (
+            <div className="text-center py-8 text-sm text-muted-foreground">
+              Showing all {fighters.length} fighters
             </div>
           )}
         </>
