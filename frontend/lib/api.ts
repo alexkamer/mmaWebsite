@@ -199,6 +199,7 @@ export interface FighterListResponse {
 
 export interface Fight {
   id: number;
+  event_id?: number;
   event_name: string;
   date: string;
   promotion: string;
@@ -210,6 +211,8 @@ export interface Fight {
   round?: number;
   time?: string;
   result: 'win' | 'loss' | 'draw';
+  is_title_fight?: string | null;
+  fighter_odds?: string | null;
 }
 
 export interface Event {

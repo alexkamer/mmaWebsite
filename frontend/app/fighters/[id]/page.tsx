@@ -315,6 +315,9 @@ export default function FighterProfilePage() {
                     Event
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-semibold">
+                    Odds
+                  </th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold">
                     Date
                   </th>
                 </tr>
@@ -359,7 +362,41 @@ export default function FighterProfilePage() {
                         ? `R${fight.round}`
                         : "-"}
                     </td>
-                    <td className="px-4 py-3 text-sm">{fight.event_name}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        {fight.event_id ? (
+                          <Link
+                            href={`/events/${fight.event_id}`}
+                            className="hover:underline"
+                          >
+                            {fight.event_name}
+                          </Link>
+                        ) : (
+                          fight.event_name
+                        )}
+                        {fight.is_title_fight && (
+                          <span
+                            className="inline-flex items-center rounded bg-yellow-900/30 px-2 py-0.5 text-xs font-semibold text-yellow-400"
+                            title={fight.is_title_fight}
+                          >
+                            TITLE
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {fight.fighter_odds ? (
+                        <span className={`font-medium ${
+                          fight.fighter_odds.startsWith('-')
+                            ? 'text-blue-400'
+                            : 'text-green-400'
+                        }`}>
+                          {fight.fighter_odds}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">-</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       {fight.date
                         ? new Date(fight.date).toLocaleDateString()

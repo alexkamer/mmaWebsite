@@ -244,6 +244,7 @@ async def get_fighter_fights(
     query = """
         SELECT
             f.year_league_event_id_fight_id_f1_f2 as id,
+            c.event_id,
             c.event_name,
             c.date,
             f.league as promotion,
@@ -261,17 +262,31 @@ async def get_fighter_fights(
             f.fighter_2_winner,
             f.result_display_name as method,
             f.end_round as round,
-            f.end_time as time
+            f.end_time as time,
+            f.fight_title as is_title_fight,
+            CASE
+                WHEN CAST(o.home_athlete_id AS INTEGER) = ? THEN o.home_moneyLine_odds_current_american
+                WHEN CAST(o.away_athlete_id AS INTEGER) = ? THEN o.away_moneyLine_odds_current_american
+                ELSE NULL
+            END as fighter_odds
         FROM fights f
         LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
         LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
         LEFT JOIN cards c ON f.event_id = c.event_id AND f.league = c.league
+        LEFT JOIN (
+            SELECT fight_id, home_athlete_id, away_athlete_id,
+                   home_moneyLine_odds_current_american,
+                   away_moneyLine_odds_current_american
+            FROM odds
+            WHERE provider_name NOT LIKE '%-Live%'
+            GROUP BY fight_id
+        ) o ON CAST(f.fight_id AS TEXT) = o.fight_id
         WHERE f.fighter_1_id = ? OR f.fighter_2_id = ?
         ORDER BY c.date DESC, f.year_league_event_id_fight_id_f1_f2 DESC
         LIMIT ?
     """
 
-    fights = execute_query(query, (fighter_id, fighter_id, fighter_id, fighter_id, limit))
+    fights = execute_query(query, (fighter_id, fighter_id, fighter_id, fighter_id, fighter_id, fighter_id, limit))
 
     # Add win/loss/draw status
     for fight in fights:
