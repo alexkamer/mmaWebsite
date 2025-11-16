@@ -14,15 +14,16 @@ async def get_rankings():
     """
     query = """
         SELECT
-            rank,
-            athlete_id as fighter_id,
-            fighter_name,
-            division,
-            is_champion
-        FROM ufc_rankings
-        WHERE ranking_type IN ('Division', 'P4P')
+            r.rank,
+            a.id as fighter_id,
+            r.fighter_name,
+            r.division,
+            r.is_champion
+        FROM ufc_rankings r
+        LEFT JOIN athletes a ON r.fighter_name = a.full_name
+        WHERE r.ranking_type IN ('Division', 'P4P')
         ORDER BY
-            CASE division
+            CASE r.division
                 WHEN 'Men''s Pound-for-Pound' THEN 1
                 WHEN 'Women''s Pound-for-Pound' THEN 2
                 WHEN 'Heavyweight' THEN 3
@@ -38,7 +39,7 @@ async def get_rankings():
                 WHEN 'Women''s Strawweight' THEN 13
                 ELSE 99
             END,
-            rank
+            r.rank
     """
 
     results = execute_query(query)
@@ -81,15 +82,16 @@ async def get_division_rankings(division_name: str):
     """
     query = """
         SELECT
-            rank,
-            athlete_id as fighter_id,
-            fighter_name,
-            division,
-            is_champion
-        FROM ufc_rankings
-        WHERE ranking_type IN ('Division', 'P4P')
-            AND LOWER(REPLACE(division, ' ', '-')) = LOWER(?)
-        ORDER BY rank
+            r.rank,
+            a.id as fighter_id,
+            r.fighter_name,
+            r.division,
+            r.is_champion
+        FROM ufc_rankings r
+        LEFT JOIN athletes a ON r.fighter_name = a.full_name
+        WHERE r.ranking_type IN ('Division', 'P4P')
+            AND LOWER(REPLACE(r.division, ' ', '-')) = LOWER(?)
+        ORDER BY r.rank
     """
 
     results = execute_query(query, (division_name.replace('-', ' '),))
