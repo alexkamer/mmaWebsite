@@ -20,54 +20,37 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 def update_ufc_rankings():
     """Update UFC rankings with current data (as of Dec 2024)"""
 
-    # Current UFC Champions and Top Contenders (accurate as of Dec 2024)
+    # Current UFC Champions and Top Contenders (accurate as of January 2025)
     rankings_data = [
         # MEN'S DIVISION CHAMPIONS
-        {'division': 'Heavyweight', 'fighter_name': 'Jon Jones', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
+        {'division': 'Heavyweight', 'fighter_name': 'Tom Aspinall', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
         {'division': 'Light Heavyweight', 'fighter_name': 'Alex Pereira', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Middleweight', 'fighter_name': 'Dricus Du Plessis', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Welterweight', 'fighter_name': 'Belal Muhammad', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Lightweight', 'fighter_name': 'Islam Makhachev', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Featherweight', 'fighter_name': 'Ilia Topuria', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
+        {'division': 'Middleweight', 'fighter_name': 'Khamzat Chimaev', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
+        {'division': 'Welterweight', 'fighter_name': 'Jack Della Maddalena', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
+        {'division': 'Lightweight', 'fighter_name': 'Ilia Topuria', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
+        {'division': 'Featherweight', 'fighter_name': 'Alexander Volkanovski', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
         {'division': 'Bantamweight', 'fighter_name': 'Merab Dvalishvili', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
         {'division': 'Flyweight', 'fighter_name': 'Alexandre Pantoja', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
 
         # WOMEN'S DIVISION CHAMPIONS
-        {'division': "Women's Bantamweight", 'fighter_name': 'Raquel Pennington', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
+        {'division': "Women's Bantamweight", 'fighter_name': 'Kayla Harrison', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
         {'division': "Women's Flyweight", 'fighter_name': 'Valentina Shevchenko', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
-        {'division': "Women's Strawweight", 'fighter_name': 'Zhang Weili', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
+        {'division': "Women's Strawweight", 'fighter_name': 'Mackenzie Dern', 'rank': 0, 'is_champion': True, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
 
         # MEN'S P4P TOP 10
-        {'division': "Men's P4P", 'fighter_name': 'Islam Makhachev', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Jon Jones', 'rank': 2, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Alex Pereira', 'rank': 3, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Ilia Topuria', 'rank': 4, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Dricus Du Plessis', 'rank': 5, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Belal Muhammad', 'rank': 6, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Merab Dvalishvili', 'rank': 7, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Alexandre Pantoja', 'rank': 8, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Sean Strickland', 'rank': 9, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
-        {'division': "Men's P4P", 'fighter_name': 'Kamaru Usman', 'rank': 10, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Ilia Topuria', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Alex Pereira', 'rank': 2, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Islam Makhachev', 'rank': 3, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Jon Jones', 'rank': 4, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Merab Dvalishvili', 'rank': 5, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Alexandre Pantoja', 'rank': 6, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Dricus Du Plessis', 'rank': 7, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
+        {'division': "Men's P4P", 'fighter_name': 'Belal Muhammad', 'rank': 8, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'P4P'},
 
         # WOMEN'S P4P TOP 5
         {'division': "Women's P4P", 'fighter_name': 'Valentina Shevchenko', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
         {'division': "Women's P4P", 'fighter_name': 'Zhang Weili', 'rank': 2, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
-        {'division': "Women's P4P", 'fighter_name': 'Raquel Pennington', 'rank': 3, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
-        {'division': "Women's P4P", 'fighter_name': 'Alexa Grasso', 'rank': 4, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
-        {'division': "Women's P4P", 'fighter_name': 'Tatiana Suarez', 'rank': 5, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
-
-        # TOP CONTENDERS (Rank #1 in each division)
-        {'division': 'Heavyweight', 'fighter_name': 'Stipe Miocic', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Light Heavyweight', 'fighter_name': 'Magomed Ankalaev', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Middleweight', 'fighter_name': 'Sean Strickland', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Welterweight', 'fighter_name': 'Shavkat Rakhmonov', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Lightweight', 'fighter_name': 'Arman Tsarukyan', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Featherweight', 'fighter_name': 'Alexander Volkanovski', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Bantamweight', 'fighter_name': 'Umar Nurmagomedov', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': 'Flyweight', 'fighter_name': 'Kai Kara-France', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'M', 'ranking_type': 'Division'},
-        {'division': "Women's Bantamweight", 'fighter_name': 'Ketlen Vieira', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
-        {'division': "Women's Flyweight", 'fighter_name': 'Alexa Grasso', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
-        {'division': "Women's Strawweight", 'fighter_name': 'Tatiana Suarez', 'rank': 1, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'Division'},
+        {'division': "Women's P4P", 'fighter_name': 'Kayla Harrison', 'rank': 3, 'is_champion': False, 'is_interim_champion': False, 'gender': 'F', 'ranking_type': 'P4P'},
     ]
 
     db_path = "data/mma.db"

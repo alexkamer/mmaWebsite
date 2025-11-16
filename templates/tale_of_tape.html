@@ -5,7 +5,7 @@
     <!-- Title and Fighter Selection -->
     <div class="mb-12">
         <h1 class="text-4xl font-bold text-gray-900 mb-2">Tale of the Tape</h1>
-        <p class="text-gray-600 mb-8">Compare fighters' records, stats, and fight history</p>
+        <p class="text-gray-600 mb-8">Compare fighters' records, stats, and fight history for better predictions</p>
         
         <!-- Fighter Selection Form -->
         <div class="grid grid-cols-2 gap-8">
@@ -39,11 +39,382 @@
         </div>
     </div>
 
+    {% if not selected_fighter1 and not selected_fighter2 %}
+    <!-- Empty State with Suggestions -->
+    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-12 mb-12 text-center">
+        <div class="max-w-3xl mx-auto">
+            <svg class="w-24 h-24 mx-auto mb-6 text-blue-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Select Two Fighters to Compare</h2>
+            <p class="text-lg text-gray-600 mb-8">Use the search boxes above to find fighters and analyze their matchup for better fight predictions</p>
+
+            <!-- Quick Select Popular Matchups -->
+            <div class="bg-white rounded-xl p-6 mb-6 shadow-md">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">💥 Popular Matchups</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <a href="?fighter1=4705658&fighter2=4273399" class="block p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200 transform hover:scale-105">
+                        <div class="font-semibold text-gray-900">Alex Pereira vs Magomed Ankalaev</div>
+                        <div class="text-sm text-gray-600">Light Heavyweight Championship</div>
+                    </a>
+                    <a href="?fighter1=4426000&fighter2=2993650" class="block p-4 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg hover:from-purple-100 hover:to-purple-200 transition-all duration-200 transform hover:scale-105">
+                        <div class="font-semibold text-gray-900">Ciryl Gane vs Alexander Volkov</div>
+                        <div class="text-sm text-gray-600">Heavyweight Division</div>
+                    </a>
+                    <a href="?fighter1=3332412&fighter2=4419372" class="block p-4 bg-gradient-to-r from-red-50 to-red-100 rounded-lg hover:from-red-100 hover:to-red-200 transition-all duration-200 transform hover:scale-105">
+                        <div class="font-semibold text-gray-900">Islam Makhachev vs Arman Tsarukyan</div>
+                        <div class="text-sm text-gray-600">Lightweight Championship</div>
+                    </a>
+                    <a href="?fighter1=3166126&fighter2=3093653" class="block p-4 bg-gradient-to-r from-green-50 to-green-100 rounded-lg hover:from-green-100 hover:to-green-200 transition-all duration-200 transform hover:scale-105">
+                        <div class="font-semibold text-gray-900">Dricus Du Plessis vs Sean Strickland</div>
+                        <div class="text-sm text-gray-600">Middleweight Championship</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">🔍</div>
+                    <div class="font-semibold text-gray-900 mb-1">Search & Compare</div>
+                    <div class="text-sm text-gray-600">Type fighter names to search and select</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">⚙️</div>
+                    <div class="font-semibold text-gray-900 mb-1">Filter History</div>
+                    <div class="text-sm text-gray-600">Filter by promotion, weight class, and odds</div>
+                </div>
+                <div class="bg-white p-4 rounded-lg shadow-sm">
+                    <div class="text-2xl mb-2">📊</div>
+                    <div class="font-semibold text-gray-900 mb-1">Analyze Matchup</div>
+                    <div class="text-sm text-gray-600">Compare stats, records, and tendencies</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if selected_fighter1 and selected_fighter2 %}
-    <!-- VS Badge -->
-    <div class="flex justify-center mb-8">
-        <div class="bg-gradient-to-r from-blue-500 to-red-500 text-white font-bold text-2xl px-8 py-3 rounded-full shadow-lg">
-            VS
+    <!-- Fighter Matchup Header -->
+    <div class="bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 rounded-2xl shadow-2xl p-8 mb-8">
+        <div class="grid grid-cols-3 gap-6 items-center">
+            <!-- Fighter 1 Header -->
+            <div class="text-center">
+                {% if selected_fighter1.headshot_url %}
+                <img src="{{ selected_fighter1.headshot_url }}"
+                     alt="{{ selected_fighter1.full_name }}"
+                     class="w-32 h-32 mx-auto rounded-full border-4 border-white shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
+                {% endif %}
+                <h2 class="text-2xl font-bold text-white mb-2">{{ selected_fighter1.full_name }}</h2>
+                <div class="bg-blue-500/30 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                    <p class="text-white font-semibold">{{ selected_fighter1.filtered_record }}</p>
+                    <p class="text-blue-100 text-sm">Record</p>
+                </div>
+            </div>
+
+            <!-- VS Badge -->
+            <div class="text-center">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-white/20 blur-xl rounded-full"></div>
+                    <div class="relative bg-white text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-red-600 font-black text-6xl py-6 animate-pulse">
+                        VS
+                    </div>
+                </div>
+                <p class="text-white text-sm mt-2">{{ selected_fighter1.weight_class }}</p>
+            </div>
+
+            <!-- Fighter 2 Header -->
+            <div class="text-center">
+                {% if selected_fighter2.headshot_url %}
+                <img src="{{ selected_fighter2.headshot_url }}"
+                     alt="{{ selected_fighter2.full_name }}"
+                     class="w-32 h-32 mx-auto rounded-full border-4 border-white shadow-2xl mb-4 transform hover:scale-110 transition-transform duration-300">
+                {% endif %}
+                <h2 class="text-2xl font-bold text-white mb-2">{{ selected_fighter2.full_name }}</h2>
+                <div class="bg-red-500/30 backdrop-blur-sm rounded-lg px-4 py-2 inline-block">
+                    <p class="text-white font-semibold">{{ selected_fighter2.filtered_record }}</p>
+                    <p class="text-red-100 text-sm">Record</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visual Stats Comparison -->
+    <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl shadow-2xl p-8 mb-8 border border-gray-200">
+        <div class="flex items-center justify-center mb-8">
+            <div class="bg-gradient-to-r from-blue-500 to-purple-500 rounded-full p-3 mr-3">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Physical Attributes</h2>
+        </div>
+
+        <div class="space-y-6 max-w-4xl mx-auto">
+            <!-- Height Comparison -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-blue-600">{{ selected_fighter1.height or 'N/A' }}</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase">Height</span>
+                    <span class="text-sm font-semibold text-red-600">{{ selected_fighter2.height or 'N/A' }}</span>
+                </div>
+                <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+                    {% set height1 = selected_fighter1.height|replace('"', '')|replace("'", "")|replace(' ', '')|int if selected_fighter1.height else 0 %}
+                    {% set height2 = selected_fighter2.height|replace('"', '')|replace("'", "")|replace(' ', '')|int if selected_fighter2.height else 0 %}
+                    {% set max_height = [height1, height2]|max %}
+                    {% if max_height > 0 %}
+                    <div class="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-500" style="width: {{ (height1 / max_height * 50)|round(2) }}%"></div>
+                    <div class="absolute right-0 top-0 h-full bg-red-500 transition-all duration-500" style="width: {{ (height2 / max_height * 50)|round(2) }}%"></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Reach Comparison -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-blue-600">{{ selected_fighter1.reach or 'N/A' }}</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase">Reach</span>
+                    <span class="text-sm font-semibold text-red-600">{{ selected_fighter2.reach or 'N/A' }}</span>
+                </div>
+                <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+                    {% set reach1 = selected_fighter1.reach|replace('"', '')|int if selected_fighter1.reach else 0 %}
+                    {% set reach2 = selected_fighter2.reach|replace('"', '')|int if selected_fighter2.reach else 0 %}
+                    {% set max_reach = [reach1, reach2]|max %}
+                    {% if max_reach > 0 %}
+                    <div class="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-500" style="width: {{ (reach1 / max_reach * 50)|round(2) }}%"></div>
+                    <div class="absolute right-0 top-0 h-full bg-red-500 transition-all duration-500" style="width: {{ (reach2 / max_reach * 50)|round(2) }}%"></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Age Comparison -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-semibold text-blue-600">{{ selected_fighter1.age or 'N/A' }} years</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase">Age</span>
+                    <span class="text-sm font-semibold text-red-600">{{ selected_fighter2.age or 'N/A' }} years</span>
+                </div>
+                <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+                    {% set age1 = selected_fighter1.age|int if selected_fighter1.age else 0 %}
+                    {% set age2 = selected_fighter2.age|int if selected_fighter2.age else 0 %}
+                    {% set max_age = [age1, age2]|max %}
+                    {% if max_age > 0 %}
+                    <div class="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-500" style="width: {{ (age1 / max_age * 50)|round(2) }}%"></div>
+                    <div class="absolute right-0 top-0 h-full bg-red-500 transition-all duration-500" style="width: {{ (age2 / max_age * 50)|round(2) }}%"></div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Win Rate Comparison -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    {% set f1_record = selected_fighter1.filtered_record.split('-') %}
+                    {% set f2_record = selected_fighter2.filtered_record.split('-') %}
+                    {% set f1_wins = f1_record[0]|int if f1_record|length > 0 else 0 %}
+                    {% set f1_total = selected_fighter1.filtered_total_fights|int if selected_fighter1.filtered_total_fights else 1 %}
+                    {% set f2_wins = f2_record[0]|int if f2_record|length > 0 else 0 %}
+                    {% set f2_total = selected_fighter2.filtered_total_fights|int if selected_fighter2.filtered_total_fights else 1 %}
+                    <span class="text-sm font-semibold text-blue-600">{{ ((f1_wins / f1_total * 100)|round(1)) }}%</span>
+                    <span class="text-xs font-medium text-gray-500 uppercase">Win Rate</span>
+                    <span class="text-sm font-semibold text-red-600">{{ ((f2_wins / f2_total * 100)|round(1)) }}%</span>
+                </div>
+                <div class="relative h-4 bg-gray-200 rounded-full overflow-hidden">
+                    {% set f1_win_rate = (f1_wins / f1_total * 100)|round(1) %}
+                    {% set f2_win_rate = (f2_wins / f2_total * 100)|round(1) %}
+                    {% set max_win_rate = [f1_win_rate, f2_win_rate]|max %}
+                    {% if max_win_rate > 0 %}
+                    <div class="absolute left-0 top-0 h-full bg-blue-500 transition-all duration-500" style="width: {{ (f1_win_rate / max_win_rate * 50)|round(2) }}%"></div>
+                    <div class="absolute right-0 top-0 h-full bg-red-500 transition-all duration-500" style="width: {{ (f2_win_rate / max_win_rate * 50)|round(2) }}%"></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Head-to-Head History (if they've fought before) -->
+    {% set fighter1_opponents = selected_fighter1.fight_history|map(attribute='opponent_id')|list %}
+    {% if selected_fighter2.id in fighter1_opponents %}
+    <div class="bg-gradient-to-br from-yellow-100 via-orange-50 to-red-50 rounded-2xl shadow-2xl p-8 mb-8 border-4 border-yellow-400">
+        <div class="flex items-center justify-center mb-6">
+            <div class="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-3 mr-3 shadow-lg animate-pulse">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">🔥 They've Fought Before!</h2>
+        </div>
+
+        {% set head_to_head_fights = [] %}
+        {% for fight in selected_fighter1.fight_history %}
+            {% if fight.opponent_id == selected_fighter2.id %}
+                {% set _ = head_to_head_fights.append(fight) %}
+            {% endif %}
+        {% endfor %}
+
+        <div class="bg-white rounded-xl p-6 shadow-lg max-w-3xl mx-auto">
+            <h3 class="text-xl font-bold text-gray-900 mb-4 text-center">Previous Encounters: {{ head_to_head_fights|length }}</h3>
+            <div class="space-y-4">
+                {% for fight in head_to_head_fights %}
+                <div class="border-l-4 {% if fight.won %}border-green-500{% else %}border-red-500{% endif %} pl-4 py-2 bg-gray-50 rounded-r-lg">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-900">
+                                {% if fight.won %}
+                                <span class="text-green-600">✓ WON</span> vs {{ selected_fighter2.full_name }}
+                                {% else %}
+                                <span class="text-red-600">✗ LOST</span> to {{ selected_fighter2.full_name }}
+                                {% endif %}
+                            </p>
+                            <p class="text-sm text-gray-600">{{ fight.event_name }} ({{ fight.date }})</p>
+                            <p class="text-sm text-gray-800 font-medium">{{ fight.result_display_name }} {% if fight.end_round %}R{{ fight.end_round }} {{ fight.end_time }}{% endif %}</p>
+                        </div>
+                        {% if fight.fighter_odds %}
+                        <div class="text-right">
+                            <p class="text-xs text-gray-500">Odds:</p>
+                            <p class="font-bold text-gray-900">{{ fight.fighter_odds }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% set h2h_wins = head_to_head_fights|selectattr('won')|list|length %}
+            {% set h2h_total = head_to_head_fights|length %}
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <p class="text-center text-lg font-semibold text-gray-900">
+                    <span class="text-blue-600">{{ selected_fighter1.full_name }}</span> leads the series
+                    <span class="text-2xl font-bold text-purple-600">{{ h2h_wins }}-{{ h2h_total - h2h_wins }}</span>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Prediction Insights -->
+    <div class="bg-gradient-to-br from-purple-100 via-pink-50 to-red-50 rounded-2xl shadow-2xl p-8 mb-8 border-2 border-purple-200">
+        <div class="flex items-center justify-center mb-8">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-3 mr-3 shadow-lg">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Prediction Insights</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <!-- Finish Rate Analysis -->
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-orange-400">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="text-3xl mr-2">💥</div>
+                    <h3 class="font-bold text-gray-900 text-lg">Finish Rates</h3>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-xs text-blue-600 font-medium mb-1">{{ selected_fighter1.full_name.split()[-1] }}</div>
+                        {% set f1_decisions = selected_fighter1.filtered_decisions.split('/')[0]|int if selected_fighter1.filtered_decisions is string and '/' in selected_fighter1.filtered_decisions else selected_fighter1.filtered_decisions|int %}
+                        {% set f1_finishes = ((selected_fighter1.filtered_total_fights|int - f1_decisions) / selected_fighter1.filtered_total_fights|int * 100)|round(1) if selected_fighter1.filtered_total_fights|int > 0 else 0 %}
+                        <div class="text-2xl font-bold text-blue-600">{{ f1_finishes }}%</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-red-600 font-medium mb-1">{{ selected_fighter2.full_name.split()[-1] }}</div>
+                        {% set f2_decisions = selected_fighter2.filtered_decisions.split('/')[0]|int if selected_fighter2.filtered_decisions is string and '/' in selected_fighter2.filtered_decisions else selected_fighter2.filtered_decisions|int %}
+                        {% set f2_finishes = ((selected_fighter2.filtered_total_fights|int - f2_decisions) / selected_fighter2.filtered_total_fights|int * 100)|round(1) if selected_fighter2.filtered_total_fights|int > 0 else 0 %}
+                        <div class="text-2xl font-bold text-red-600">{{ f2_finishes }}%</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Higher finish rate suggests aggressive fighting style</p>
+            </div>
+
+            <!-- KO vs Sub Tendency -->
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-green-400">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="text-3xl mr-2">🎯</div>
+                    <h3 class="font-bold text-gray-900 text-lg">Fighting Style</h3>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-xs text-blue-600 font-medium mb-1">{{ selected_fighter1.full_name.split()[-1] }}</div>
+                        {% set f1_ko_wins = selected_fighter1.filtered_ko_record.split('-')[0]|int %}
+                        {% set f1_sub_wins = selected_fighter1.filtered_sub_record.split('-')[0]|int %}
+                        <div class="text-sm font-semibold text-gray-900">
+                            {% if f1_ko_wins > f1_sub_wins * 1.5 %}
+                            🥊 Striker
+                            {% elif f1_sub_wins > f1_ko_wins * 1.5 %}
+                            🤼 Grappler
+                            {% else %}
+                            ⚖️ Balanced
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-red-600 font-medium mb-1">{{ selected_fighter2.full_name.split()[-1] }}</div>
+                        {% set f2_ko_wins = selected_fighter2.filtered_ko_record.split('-')[0]|int %}
+                        {% set f2_sub_wins = selected_fighter2.filtered_sub_record.split('-')[0]|int %}
+                        <div class="text-sm font-semibold text-gray-900">
+                            {% if f2_ko_wins > f2_sub_wins * 1.5 %}
+                            🥊 Striker
+                            {% elif f2_sub_wins > f2_ko_wins * 1.5 %}
+                            🤼 Grappler
+                            {% else %}
+                            ⚖️ Balanced
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">Fighting style preference indicator</p>
+            </div>
+
+            <!-- Experience Edge -->
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-t-4 border-blue-400">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="text-3xl mr-2">📚</div>
+                    <h3 class="font-bold text-gray-900 text-lg">Experience</h3>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <div class="text-xs text-blue-600 font-medium mb-1">{{ selected_fighter1.full_name.split()[-1] }}</div>
+                        <div class="text-2xl font-bold text-blue-600">{{ selected_fighter1.filtered_total_fights }}</div>
+                        <div class="text-xs text-gray-500">fights</div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-red-600 font-medium mb-1">{{ selected_fighter2.full_name.split()[-1] }}</div>
+                        <div class="text-2xl font-bold text-red-600">{{ selected_fighter2.filtered_total_fights }}</div>
+                        <div class="text-xs text-gray-500">fights</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">More fights often means more octagon experience</p>
+            </div>
+        </div>
+
+        <!-- Key Advantages -->
+        <div class="mt-8 grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 border-l-4 border-blue-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="flex items-center mb-3">
+                    <div class="text-2xl mr-2">⚡</div>
+                    <h4 class="font-bold text-blue-900 text-lg">{{ selected_fighter1.full_name.split()[-1] }} Advantages</h4>
+                </div>
+                <ul class="text-sm text-blue-800 space-y-1">
+                    {% if reach1 > reach2 and reach1 > 0 %}<li>✓ +{{ reach1 - reach2 }}" reach advantage</li>{% endif %}
+                    {% if age1 < age2 and age1 > 0 %}<li>✓ {{ age2 - age1 }} years younger</li>{% endif %}
+                    {% if f1_win_rate > f2_win_rate %}<li>✓ Higher win rate ({{ f1_win_rate }}% vs {{ f2_win_rate }}%)</li>{% endif %}
+                    {% if f1_finishes > f2_finishes %}<li>✓ Higher finish rate ({{ f1_finishes }}% vs {{ f2_finishes }}%)</li>{% endif %}
+                    {% if selected_fighter1.filtered_total_fights|int > selected_fighter2.filtered_total_fights|int %}<li>✓ More experience ({{ selected_fighter1.filtered_total_fights }} fights)</li>{% endif %}
+                </ul>
+            </div>
+            <div class="bg-gradient-to-br from-red-50 to-red-100 border-l-4 border-red-600 p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+                <div class="flex items-center mb-3">
+                    <div class="text-2xl mr-2">⚡</div>
+                    <h4 class="font-bold text-red-900 text-lg">{{ selected_fighter2.full_name.split()[-1] }} Advantages</h4>
+                </div>
+                <ul class="text-sm text-red-800 space-y-1">
+                    {% if reach2 > reach1 and reach2 > 0 %}<li>✓ +{{ reach2 - reach1 }}" reach advantage</li>{% endif %}
+                    {% if age2 < age1 and age2 > 0 %}<li>✓ {{ age1 - age2 }} years younger</li>{% endif %}
+                    {% if f2_win_rate > f1_win_rate %}<li>✓ Higher win rate ({{ f2_win_rate }}% vs {{ f1_win_rate }}%)</li>{% endif %}
+                    {% if f2_finishes > f1_finishes %}<li>✓ Higher finish rate ({{ f2_finishes }}% vs {{ f1_finishes }}%)</li>{% endif %}
+                    {% if selected_fighter2.filtered_total_fights|int > selected_fighter1.filtered_total_fights|int %}<li>✓ More experience ({{ selected_fighter2.filtered_total_fights }} fights)</li>{% endif %}
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -399,14 +770,7 @@ function updateUrl() {
     }
 }
 
-// Remove the old form change event listeners since we're using onchange directly
-document.getElementById('fighter1-filters').removeEventListener('change', function() {
-    this.submit();
-});
-
-document.getElementById('fighter2-filters').removeEventListener('change', function() {
-    this.submit();
-});
+// Note: Using onchange directly in HTML, no need for addEventListener here
 
 function updateFilter(button, fighter) {
     const form = document.getElementById(`${fighter}-filters`);

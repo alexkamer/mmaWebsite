@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Restore some Bootstrap compatibility */
+@layer base {
+  /* Keep Bootstrap button styles */
+  .btn {
+    all: revert;
+  }
+}
+
+/* Custom utilities */

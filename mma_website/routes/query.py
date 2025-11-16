@@ -4,6 +4,7 @@ MMA Query Routes - Natural language query interface
 
 from flask import Blueprint, render_template, request, jsonify, session
 from mma_website.services.mma_query_service_agno import mma_query_service
+from mma_website.services.mma_query_service_v2 import mma_query_service_v2
 from mma_website.services.query_cache import query_cache
 import logging
 import uuid
@@ -72,6 +73,64 @@ def ask_question():
         print(f"❌ ROUTE: Traceback: {traceback.format_exc()}")
         return jsonify({
             'error': f'Route error: {str(e)}',
+            'success': False
+        })
+
+@bp.route('/ask-v2', methods=['POST'])
+def ask_question_v2():
+    """Process a natural language MMA question using V2 streamlined architecture"""
+    data = request.get_json()
+
+    if not data or 'question' not in data:
+        return jsonify({
+            'error': 'No question provided',
+            'success': False
+        }), 400
+
+    question = data['question'].strip()
+
+    if not question:
+        return jsonify({
+            'error': 'Question cannot be empty',
+            'success': False
+        }), 400
+
+    if len(question) > 500:
+        return jsonify({
+            'error': 'Question too long. Please keep it under 500 characters.',
+            'success': False
+        }), 400
+
+    print(f"🚀 V2 ROUTE: Processing MMA query: {question}")
+
+    # Get or create session ID for conversation tracking
+    if 'chat_session_id' not in session:
+        session['chat_session_id'] = str(uuid.uuid4())
+
+    session_id = session['chat_session_id']
+    print(f"🚀 V2 ROUTE: Using session ID: {session_id}")
+
+    try:
+        # Process the query using V2 service
+        print(f"🚀 V2 ROUTE: Calling mma_query_service_v2.process_query()")
+        result = mma_query_service_v2.process_query(question, session_id)
+        print(f"🚀 V2 ROUTE: Got result: {result}")
+
+        # Log the result for debugging
+        if result.get('success'):
+            print(f"✅ V2 ROUTE: Query successful. SQL: {result.get('sql_query', 'N/A')[:100]}")
+            print(f"✅ V2 ROUTE: Returned {result.get('row_count', 0)} results")
+        else:
+            print(f"❌ V2 ROUTE: Query failed: {result.get('error', 'Unknown error')}")
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"❌ V2 ROUTE: Exception in route: {e}")
+        import traceback
+        print(f"❌ V2 ROUTE: Traceback: {traceback.format_exc()}")
+        return jsonify({
+            'error': f'V2 Route error: {str(e)}',
             'success': False
         })
 

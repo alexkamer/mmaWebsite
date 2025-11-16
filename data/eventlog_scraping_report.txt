@@ -1,0 +1,87 @@
+================================================================================
+FIGHTER EVENTLOG SCRAPING REPORT
+================================================================================
+
+📊 Total eventlog entries found: 152329
+📊 Unique events discovered: 28331
+📊 Unique competitions discovered: 76210
+
+⚠️  Missing events (not in cards table): 28331
+⚠️  Missing competitions (not in fights table): 76210
+
+📈 Events by league:
+  - other: 97863
+  - ufc: 17912
+  - bellator: 6125
+  - lfa: 2577
+  - cage-warriors: 2346
+  - pfl: 2268
+  - shooto-japan: 2175
+  - ofc: 2063
+  - m1: 1791
+  - pancrase: 1553
+  - strikeforce: 1224
+  - ksw: 1215
+  - pride: 1170
+  - ifc: 960
+  - roc: 872
+  - tfc: 867
+  - ces: 866
+  - wec: 858
+  - lfc: 836
+  - bamma: 797
+  - rizin: 795
+  - rfa: 638
+  - xfc: 584
+  - tpf: 470
+  - absolute: 421
+  - mfc: 400
+  - dream: 386
+  - vfc: 376
+  - k1: 366
+  - shooto-brazil: 358
+  - ifl: 329
+  - shoxc: 214
+  - sfl: 214
+  - shark-fights: 160
+  - ringside: 76
+  - affliction: 42
+  - proelite: 36
+  - fng: 32
+  - blackout: 22
+  - brazilian-freestyle: 14
+  - bosnia: 12
+  - bang-fighting: 12
+  - battlezone: 12
+  - nhl: 4
+  - budo: 4
+  - banzay: 4
+  - banni-fight: 2
+  - barracao: 2
+  - boxe: 2
+  - big-fight: 2
+  - benevides: 2
+
+🔍 Sample missing event IDs (first 20):
+  - 401036105 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/401036105?lang=en&region=us
+  - 400558216 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400558216?lang=en&region=us
+  - 400910357 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400910357?lang=en&region=us
+  - 600012229 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/600012229?lang=en&region=us
+  - 401223011 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/401223011?lang=en&region=us
+  - 400268887 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400268887?lang=en&region=us
+  - 400872364 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400872364?lang=en&region=us
+  - 600022069 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/600022069?lang=en&region=us
+  - 400877190 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400877190?lang=en&region=us
+  - 400253683 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400253683?lang=en&region=us
+  - 400427282 (bamma): http://sports.core.api.espn.com/v2/sports/mma/leagues/bamma/events/400427282?lang=en&region=us
+  - 400451536 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400451536?lang=en&region=us
+  - 400255224 (ufc): http://sports.core.api.espn.com/v2/sports/mma/leagues/ufc/events/400255224?lang=en&region=us
+  - 400595753 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400595753?lang=en&region=us
+  - 600011320 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/600011320?lang=en&region=us
+  - 400829836 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400829836?lang=en&region=us
+  - 600000781 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/600000781?lang=en&region=us
+  - 400876667 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400876667?lang=en&region=us
+  - 600021794 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/600021794?lang=en&region=us
+  - 400468796 (other): http://sports.core.api.espn.com/v2/sports/mma/leagues/other/events/400468796?lang=en&region=us
+
+================================================================================

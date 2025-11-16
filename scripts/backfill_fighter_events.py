@@ -35,7 +35,7 @@ def get_all_fighter_ids() -> List[int]:
     return fighter_ids
 
 
-def get_existing_fight_ids() -> Set[Tuple[str, int, str]]:
+def get_existing_fight_ids() -> Set[Tuple[str, int, int]]:
     """Get all existing (league, event_id, fight_id) combinations"""
     conn = sqlite3.connect('data/mma.db')
     cursor = conn.cursor()
@@ -51,6 +51,29 @@ def get_existing_event_ids() -> Set[Tuple[str, int]]:
     events = set(cursor.execute("SELECT league, event_id FROM cards").fetchall())
     conn.close()
     return events
+
+
+def add_to_db_silent(data, model_class):
+    """
+    Wrapper around add_to_db that suppresses verbose duplicate messages.
+    Returns (success_count, duplicate_count)
+    """
+    import io
+    import sys
+    from contextlib import redirect_stdout, redirect_stderr
+    
+    # Capture stdout/stderr to suppress duplicate messages
+    f = io.StringIO()
+    try:
+        with redirect_stdout(f), redirect_stderr(f):
+            add_to_db(data, model_class)
+        # Check if it was a duplicate (IntegrityError)
+        output = f.getvalue()
+        if 'duplicate' in output.lower() or 'integrity' in output.lower():
+            return (0, 1)
+        return (1, 0)
+    except Exception:
+        return (0, 1)
 
 
 def fetch_fighter_eventlog(fighter_id: int, limit: int = 300) -> List[Dict]:
@@ -81,7 +104,8 @@ def fetch_fighter_eventlog(fighter_id: int, limit: int = 300) -> List[Dict]:
             try:
                 league = comp_ref.split('leagues/')[1].split('/')[0]
                 event_id = int(comp_ref.split('events/')[1].split('/')[0])
-                comp_id = comp_ref.split('competitions/')[1].split('?')[0]
+                comp_id_str = comp_ref.split('competitions/')[1].split('?')[0]
+                comp_id = int(comp_id_str)  # Convert to int to match database
 
                 events.append({
                     'league': league,
@@ -111,7 +135,7 @@ def find_missing_data(fighter_id: int, existing_fights: Set, existing_events: Se
     eventlog = fetch_fighter_eventlog(fighter_id)
 
     missing_fights = []
-    missing_events = []
+    missing_events_dict = {}  # Use dict to deduplicate by (league, event_id)
 
     for event in eventlog:
         league = event['league']
@@ -121,12 +145,14 @@ def find_missing_data(fighter_id: int, existing_fights: Set, existing_events: Se
         # Check if fight is missing
         if (league, event_id, comp_id) not in existing_fights:
             missing_fights.append(event)
+            
+            # If fight is missing, we need to backfill the entire event
+            # This ensures we get all fights from that event, not just this one
+            event_key = (league, event_id)
+            if event_key not in missing_events_dict:
+                missing_events_dict[event_key] = event
 
-        # Check if entire event is missing
-        if (league, event_id) not in existing_events:
-            if event not in missing_events:  # Avoid duplicates
-                missing_events.append(event)
-
+    missing_events = list(missing_events_dict.values())
     return missing_fights, missing_events
 
 
@@ -146,6 +172,8 @@ def backfill_missing_events(missing_events: List[Dict], max_workers: int = 10):
 
     added_cards = 0
     added_fights = 0
+    skipped_cards = 0
+    skipped_fights = 0
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         event_urls = [f"{event['event_url']}?lang=en&region=us" for event in unique_events.values()]
@@ -157,20 +185,21 @@ def backfill_missing_events(missing_events: List[Dict], max_workers: int = 10):
                 card, fights = future.result()
 
                 if card:
-                    add_to_db(card, Card)
-                    added_cards += 1
+                    success, duplicates = add_to_db_silent(card, Card)
+                    added_cards += success
+                    skipped_cards += duplicates
 
                 for fight in fights:
-                    try:
-                        add_to_db(fight, Fight)
-                        added_fights += 1
-                    except Exception as e:
-                        print(f"  ⚠️  Error adding fight: {e}")
+                    success, duplicates = add_to_db_silent(fight, Fight)
+                    added_fights += success
+                    skipped_fights += duplicates
 
             except Exception as e:
                 print(f"  ⚠️  Error processing event {url}: {e}")
 
-    print(f"  ✅ Added {added_cards} cards and {added_fights} fights")
+    print(f"  ✅ Added {added_cards} new cards and {added_fights} new fights")
+    if skipped_cards > 0 or skipped_fights > 0:
+        print(f"  ℹ️  Skipped {skipped_cards} duplicate cards and {skipped_fights} duplicate fights")
 
 
 def backfill_sample_fighters(sample_size: int = 100):
@@ -229,7 +258,7 @@ def backfill_sample_fighters(sample_size: int = 100):
 def backfill_all_fighters(batch_size: int = 100):
     """
     Backfill missing data for ALL fighters
-    This is a comprehensive backfill that may take hours
+    This is a comprehensive backfill that may take several hours
     """
     print("\n" + "🥊" * 30)
     print("FIGHTER EVENTLOG BACKFILL (FULL)")
@@ -251,33 +280,53 @@ def backfill_all_fighters(batch_size: int = 100):
 
     total_added_cards = 0
     total_added_fights = 0
+    total_fighters_with_missing = 0
 
     # Process in batches
-    for batch_start in range(0, len(fighter_ids), batch_size):
+    num_batches = (len(fighter_ids) + batch_size - 1) // batch_size
+    for batch_num in range(num_batches):
+        batch_start = batch_num * batch_size
         batch_end = min(batch_start + batch_size, len(fighter_ids))
         batch_fighters = fighter_ids[batch_start:batch_end]
 
-        print(f"\n📦 Batch {batch_start//batch_size + 1}: Fighters {batch_start+1}-{batch_end}")
+        print(f"\n📦 Batch {batch_num + 1}/{num_batches}: Fighters {batch_start+1}-{batch_end} ({len(batch_fighters)} fighters)")
 
         batch_missing_fights = []
         batch_missing_events = []
+        batch_fighters_with_missing = 0
 
-        for fighter_id in batch_fighters:
+        for i, fighter_id in enumerate(batch_fighters):
+            if (i + 1) % 20 == 0:
+                print(f"  Progress: {i+1}/{len(batch_fighters)} fighters in batch checked...")
+            
             missing_fights, missing_events = find_missing_data(fighter_id, existing_fights, existing_events)
-            batch_missing_fights.extend(missing_fights)
-            batch_missing_events.extend(missing_events)
+            if missing_fights or missing_events:
+                batch_fighters_with_missing += 1
+                batch_missing_fights.extend(missing_fights)
+                batch_missing_events.extend(missing_events)
 
-        print(f"  Found {len(batch_missing_fights)} missing fights, {len(batch_missing_events)} missing events")
+        print(f"  📊 Batch results:")
+        print(f"     Fighters with missing data: {batch_fighters_with_missing}/{len(batch_fighters)}")
+        print(f"     Missing fights found: {len(batch_missing_fights)}")
+        print(f"     Missing events found: {len(batch_missing_events)}")
+
+        total_fighters_with_missing += batch_fighters_with_missing
 
         if batch_missing_events:
             backfill_missing_events(batch_missing_events)
             # Update existing sets with new data
             existing_fights = get_existing_fight_ids()
             existing_events = get_existing_event_ids()
+        else:
+            print("  ✅ No missing data in this batch!")
 
     print("\n" + "="*60)
     print("✅ FULL BACKFILL COMPLETE!")
     print("="*60)
+    print(f"  Total fighters with missing data: {total_fighters_with_missing}/{len(fighter_ids)}")
+    print(f"  Final database state:")
+    print(f"    Total fights: {len(existing_fights)}")
+    print(f"    Total events: {len(existing_events)}")
 
 
 def main():

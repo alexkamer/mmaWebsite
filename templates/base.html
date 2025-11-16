@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fight Intel - UFC Stats & Analysis</title>
     <meta name="description" content="Professional UFC statistics, fighter analysis, and AI-powered fight predictions. Your data-driven MMA resource.">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <!-- Preload critical resources -->
+    <link rel="preload" as="image" href="{{ url_for('static', filename='images/octagon-pattern.jpg') }}" fetchpriority="high">
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -75,6 +79,14 @@
 
                 <!-- Search Bar & Dark Mode Toggle -->
                 <div class="hidden lg:flex lg:items-center lg:ml-6 lg:space-x-4">
+                    <!-- Admin Dashboard Link -->
+                    <a href="/admin/dashboard" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200" title="Admin Dashboard">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                    </a>
+
                     <!-- Dark Mode Toggle -->
                     <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-all duration-200" title="Toggle dark mode">
                         <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -195,6 +207,10 @@
             <!-- Bottom Bar -->
             <div class="border-t border-gray-800 dark:border-gray-900 mt-8 pt-8 text-center text-gray-500 dark:text-gray-600 text-sm">
                 <p>Built for MMA fans, by MMA fans. Powered by real UFC data and AI analysis.</p>
+                <div id="data-freshness" class="mt-2 flex items-center justify-center gap-2">
+                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span class="text-xs">Data updated: <span id="last-update-time">Loading...</span></span>
+                </div>
             </div>
         </div>
     </footer>
@@ -334,6 +350,79 @@
                 searchResults.innerHTML = '<div class="p-3 text-sm text-red-500">Search failed. Please try again.</div>';
             }
         }
+    });
+    </script>
+
+    <!-- Image Loading Skeleton Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add skeleton effect to all fighter images while they load
+        const fighterImages = document.querySelectorAll('img[loading="lazy"]');
+
+        fighterImages.forEach(img => {
+            // Skip if already loaded
+            if (img.complete) return;
+
+            // Add skeleton class
+            img.classList.add('skeleton');
+
+            // Remove skeleton when image loads
+            img.addEventListener('load', function() {
+                img.classList.remove('skeleton');
+            });
+
+            // Handle error case
+            img.addEventListener('error', function() {
+                img.classList.remove('skeleton');
+            });
+        });
+
+        // ===== DATA FRESHNESS INDICATOR =====
+        async function updateDataFreshness() {
+            try {
+                const response = await fetch('/admin/updates/status');
+                const data = await response.json();
+
+                if (data.success && data.last_updates) {
+                    // Find the most recent update
+                    let mostRecent = null;
+                    for (const [job, info] of Object.entries(data.last_updates)) {
+                        if (info.last_run) {
+                            const updateTime = new Date(info.last_run);
+                            if (!mostRecent || updateTime > mostRecent) {
+                                mostRecent = updateTime;
+                            }
+                        }
+                    }
+
+                    if (mostRecent) {
+                        const now = new Date();
+                        const hoursSince = (now - mostRecent) / (1000 * 60 * 60);
+
+                        let displayText;
+                        if (hoursSince < 1) {
+                            displayText = 'Just now';
+                        } else if (hoursSince < 24) {
+                            displayText = `${Math.floor(hoursSince)} hours ago`;
+                        } else {
+                            const daysSince = Math.floor(hoursSince / 24);
+                            displayText = `${daysSince} day${daysSince > 1 ? 's' : ''} ago`;
+                        }
+
+                        document.getElementById('last-update-time').textContent = displayText;
+                    } else {
+                        document.getElementById('last-update-time').textContent = 'Unknown';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching data freshness:', error);
+                document.getElementById('last-update-time').textContent = 'Unknown';
+            }
+        }
+
+        // Update on load and every 5 minutes
+        updateDataFreshness();
+        setInterval(updateDataFreshness, 300000); // 5 minutes
     });
     </script>
 </body>

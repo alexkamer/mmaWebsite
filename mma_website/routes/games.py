@@ -489,16 +489,16 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
                MAX(s.takedownsAttempted) as takedownsAttempted,
                MAX(s.takedownAccuracy) as takedownAccuracy,
                MAX(s.submissions) as submissions,
-               CASE
+               MAX(CASE
                    WHEN o.home_athlete_id = :fighter_id THEN o.home_moneyLine_odds_current_american
                    WHEN o.away_athlete_id = :fighter_id THEN o.away_moneyLine_odds_current_american
                    ELSE NULL
-               END as fighter_odds,
-               CASE
+               END) as fighter_odds,
+               MAX(CASE
                    WHEN o.home_athlete_id = :fighter_id THEN o.home_favorite
                    WHEN o.away_athlete_id = :fighter_id THEN o.away_favorite
                    ELSE NULL
-               END as was_favorite,
+               END) as was_favorite,
                l1.judge_1_score as fighter_judge_1,
                l1.judge_2_score as fighter_judge_2,
                l1.judge_3_score as fighter_judge_3,
@@ -521,8 +521,6 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
         GROUP BY f.fight_id, f.fighter_1_id, f.fighter_2_id, f.fighter_1_winner, f.fighter_2_winner,
                  f.result_display_name, f.end_round, f.end_time, f.event_id, f.weight_class_id,
                  c.date, c.event_name, a1.full_name, a2.full_name, a1.headshot_url, a2.headshot_url,
-                 o.home_athlete_id, o.away_athlete_id, o.home_moneyLine_odds_current_american,
-                 o.away_moneyLine_odds_current_american, o.home_favorite, o.away_favorite,
                  l1.judge_1_score, l1.judge_2_score, l1.judge_3_score,
                  l2.judge_1_score, l2.judge_2_score, l2.judge_3_score
         ORDER BY c.date DESC
@@ -548,16 +546,16 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
                MAX(s.takedownsAttempted) as takedownsAttempted,
                MAX(s.takedownAccuracy) as takedownAccuracy,
                MAX(s.submissions) as submissions,
-               CASE
+               MAX(CASE
                    WHEN o.home_athlete_id = :fighter_id THEN o.home_moneyLine_odds_current_american
                    WHEN o.away_athlete_id = :fighter_id THEN o.away_moneyLine_odds_current_american
                    ELSE NULL
-               END as fighter_odds,
-               CASE
+               END) as fighter_odds,
+               MAX(CASE
                    WHEN o.home_athlete_id = :fighter_id THEN o.home_favorite
                    WHEN o.away_athlete_id = :fighter_id THEN o.away_favorite
                    ELSE NULL
-               END as was_favorite,
+               END) as was_favorite,
                l1.judge_1_score as fighter_judge_1,
                l1.judge_2_score as fighter_judge_2,
                l1.judge_3_score as fighter_judge_3,
@@ -580,8 +578,6 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
         GROUP BY f.fight_id, f.fighter_1_id, f.fighter_2_id, f.fighter_1_winner, f.fighter_2_winner,
                  f.result_display_name, f.end_round, f.end_time, f.event_id, f.weight_class_id,
                  c.date, c.event_name, a1.full_name, a2.full_name, a1.headshot_url, a2.headshot_url,
-                 o.home_athlete_id, o.away_athlete_id, o.home_moneyLine_odds_current_american,
-                 o.away_moneyLine_odds_current_american, o.home_favorite, o.away_favorite,
                  l1.judge_1_score, l1.judge_2_score, l1.judge_3_score,
                  l2.judge_1_score, l2.judge_2_score, l2.judge_3_score
         ORDER BY c.date DESC
@@ -691,6 +687,40 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
     # Prop betting removed - ESPN API doesn't provide enough detail to distinguish prop types
     prop_data = {'fight_props': [], 'fighter1_props': [], 'fighter2_props': []}
     
+    # Get betting odds if fight_id is provided
+    odds_data = None
+    if fight_id:
+        try:
+            odds_result = db_session.execute(text("""
+                SELECT
+                    home_athlete_id,
+                    away_athlete_id,
+                    home_moneyLine_odds_current_american,
+                    away_moneyLine_odds_current_american,
+                    home_favorite
+                FROM odds
+                WHERE fight_id = :fight_id
+                LIMIT 1
+            """), {"fight_id": fight_id}).fetchone()
+
+            if odds_result:
+                odds_dict = row_to_dict(odds_result)
+                # Match odds to fighters
+                if str(fighter1_id) == odds_dict.get('home_athlete_id'):
+                    odds_data = {
+                        'fighter1_odds': odds_dict.get('home_moneyLine_odds_current_american'),
+                        'fighter2_odds': odds_dict.get('away_moneyLine_odds_current_american'),
+                        'fighter1_favorite': odds_dict.get('home_favorite', False)
+                    }
+                elif str(fighter1_id) == odds_dict.get('away_athlete_id'):
+                    odds_data = {
+                        'fighter1_odds': odds_dict.get('away_moneyLine_odds_current_american'),
+                        'fighter2_odds': odds_dict.get('home_moneyLine_odds_current_american'),
+                        'fighter1_favorite': not odds_dict.get('home_favorite', False)
+                    }
+        except Exception as e:
+            print(f"Error fetching odds: {e}")
+
     # Generate AI fight prediction
     try:
         from mma_website.services.fight_prediction_service import fight_prediction_service
@@ -698,7 +728,7 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
     except Exception as e:
         print(f"Error generating AI prediction: {e}")
         ai_prediction = {'success': False, 'error': str(e)}
-    
+
     return render_template('fight_preview.html',
                          fighter1=fighter1,
                          fighter2=fighter2,
@@ -706,7 +736,8 @@ def fight_preview(fighter1_id, fighter2_id, event_id=None, fight_id=None):
                          recent_fights=recent_fights,
                          performance_trends=performance_trends,
                          prop_data=prop_data,
-                         ai_prediction=ai_prediction)
+                         ai_prediction=ai_prediction,
+                         odds_data=odds_data)
 
 @bp.route('/fight-predictor')
 def fight_predictor():

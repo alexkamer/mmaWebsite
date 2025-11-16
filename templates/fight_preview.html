@@ -5,55 +5,60 @@
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-red-600 via-purple-600 to-blue-600 text-white rounded-xl shadow-xl p-8 mb-8">
         <div class="text-center mb-6">
-            <h1 class="text-5xl font-bold mb-2">🥊 FIGHT PREVIEW</h1>
-            <p class="text-xl text-purple-100">In-Depth Matchup Analysis</p>
+            <div class="flex items-center justify-center mb-2">
+                <h1 class="text-5xl font-bold">🥊 FIGHT PREVIEW</h1>
+                <!-- Share Button -->
+                <button onclick="shareContent()" class="ml-4 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg px-4 py-2 flex items-center space-x-2 transition duration-200 group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Share</span>
+                </button>
+            </div>
+            <p class="text-xl text-white">In-Depth Matchup Analysis</p>
         </div>
 
         <!-- Fighter Matchup Header -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
             <!-- Fighter 1 -->
             <div class="text-center">
-                {% if fighter1.headshot_url %}
-                <img src="{{ fighter1.headshot_url }}" alt="{{ fighter1.full_name }}"
+                <img src="{{ fighter1.headshot_url or 'https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/' + fighter1.id|string + '.png&h=80&w=80&scale=crop' }}"
+                     alt="{{ fighter1.full_name }}"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22%3E🥊%3C/text%3E%3C/svg%3E';"
                      class="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4 object-cover border-4 border-white shadow-lg">
-                {% else %}
-                <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4 bg-white bg-opacity-20 flex items-center justify-center border-4 border-white shadow-lg">
-                    <span class="text-4xl">🥊</span>
-                </div>
-                {% endif %}
-                <h2 class="text-2xl lg:text-3xl font-bold mb-2">{{ fighter1.full_name }}</h2>
+                <h2 class="text-2xl lg:text-3xl font-bold mb-2">
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter1.id) }}" class="hover:text-blue-100 transition duration-200">{{ fighter1.full_name }}</a>
+                </h2>
                 {% if fighter1.nickname %}
-                <p class="text-lg text-blue-200 mb-2">"{{ fighter1.nickname }}"</p>
+                <p class="text-lg text-white mb-2">"{{ fighter1.nickname }}"</p>
                 {% endif %}
                 <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
                     <p class="text-2xl font-bold">{{ fighter1.wins or 0 }}-{{ fighter1.losses or 0 }}-{{ fighter1.draws or 0 }}</p>
-                    <p class="text-sm text-blue-200">Overall Record</p>
+                    <p class="text-sm text-white">Overall Record</p>
                 </div>
             </div>
 
             <!-- VS Section -->
             <div class="text-center">
                 <div class="text-8xl font-bold mb-4 animate-pulse">VS</div>
-                <p class="text-xl text-purple-200">{{ fighter1.weight_class or 'Mixed Martial Arts' }}</p>
+                <p class="text-xl text-white">{{ fighter1.weight_class or 'Mixed Martial Arts' }}</p>
             </div>
 
             <!-- Fighter 2 -->
             <div class="text-center">
-                {% if fighter2.headshot_url %}
-                <img src="{{ fighter2.headshot_url }}" alt="{{ fighter2.full_name }}"
+                <img src="{{ fighter2.headshot_url or 'https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/' + fighter2.id|string + '.png&h=80&w=80&scale=crop' }}"
+                     alt="{{ fighter2.full_name }}"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23f3f4f6%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22%3E🥊%3C/text%3E%3C/svg%3E';"
                      class="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4 object-cover border-4 border-white shadow-lg">
-                {% else %}
-                <div class="w-24 h-24 lg:w-32 lg:h-32 rounded-full mx-auto mb-4 bg-white bg-opacity-20 flex items-center justify-center border-4 border-white shadow-lg">
-                    <span class="text-4xl">🥊</span>
-                </div>
-                {% endif %}
-                <h2 class="text-2xl lg:text-3xl font-bold mb-2">{{ fighter2.full_name }}</h2>
+                <h2 class="text-2xl lg:text-3xl font-bold mb-2">
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter2.id) }}" class="hover:text-red-100 transition duration-200">{{ fighter2.full_name }}</a>
+                </h2>
                 {% if fighter2.nickname %}
-                <p class="text-lg text-red-200 mb-2">"{{ fighter2.nickname }}"</p>
+                <p class="text-lg text-white mb-2">"{{ fighter2.nickname }}"</p>
                 {% endif %}
                 <div class="bg-white bg-opacity-20 rounded-lg px-4 py-2">
                     <p class="text-2xl font-bold">{{ fighter2.wins or 0 }}-{{ fighter2.losses or 0 }}-{{ fighter2.draws or 0 }}</p>
-                    <p class="text-sm text-red-200">Overall Record</p>
+                    <p class="text-sm text-white">Overall Record</p>
                 </div>
             </div>
         </div>
@@ -69,9 +74,27 @@
                         <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path>
                     </svg>
                 </div>
-                <div>
+                <div class="flex-1">
                     <h3 class="text-2xl font-bold text-gray-900">🔮 Fight Prediction</h3>
-                    <p class="text-green-700">AI Analysis with {{ ai_prediction.confidence.level }} Confidence</p>
+                    <div class="flex items-center mt-2">
+                        <p class="text-green-700 mr-3">AI Analysis with {{ ai_prediction.confidence.level }} Confidence</p>
+                        <!-- Mini confidence gauge -->
+                        <div class="relative w-12 h-12">
+                            <svg class="transform -rotate-90 w-12 h-12">
+                                <circle cx="24" cy="24" r="20" stroke="#e5e7eb" stroke-width="3" fill="none"/>
+                                <circle cx="24" cy="24" r="20"
+                                        stroke="#10b981"
+                                        stroke-width="3"
+                                        fill="none"
+                                        stroke-dasharray="{{ 2 * 3.14159 * 20 }}"
+                                        stroke-dashoffset="{{ 2 * 3.14159 * 20 * (1 - ai_prediction.confidence.score) }}"
+                                        stroke-linecap="round"/>
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xs font-bold text-green-700">{{ "%.0f"|format(ai_prediction.confidence.score * 100) }}%</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -120,6 +143,90 @@
     </div>
     {% endif %}
 
+    <!-- Betting Odds Comparison (if available) -->
+    {% if odds_data and odds_data.fighter1_odds and odds_data.fighter2_odds %}
+    <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl shadow-lg p-6 mb-8 border border-yellow-200">
+        <div class="flex items-center mb-6">
+            <div class="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full p-3 mr-4">
+                <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"></path>
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">💰 Vegas Betting Odds</h3>
+                <p class="text-orange-700">Sportsbook odds vs AI prediction</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Fighter 1 Odds -->
+            <div class="bg-white rounded-lg p-6 text-center shadow-md {% if odds_data.fighter1_favorite %}border-2 border-yellow-400{% endif %}">
+                {% if odds_data.fighter1_favorite %}
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-yellow-500 text-2xl mr-2">⭐</span>
+                    <span class="text-sm font-bold text-yellow-600 uppercase">Favorite</span>
+                </div>
+                {% endif %}
+                <h4 class="text-lg font-bold text-gray-700 mb-2">{{ fighter1.full_name }}</h4>
+                <p class="text-4xl font-bold text-blue-600 mb-2">{{ odds_data.fighter1_odds }}</p>
+                <p class="text-xs text-gray-600">
+                    {% if odds_data.fighter1_odds.startswith('-') %}
+                    Bet ${{ odds_data.fighter1_odds[1:] }} to win $100
+                    {% else %}
+                    Bet $100 to win ${{ odds_data.fighter1_odds[1:] }}
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- VS / Comparison -->
+            <div class="bg-gradient-to-br from-yellow-100 to-orange-100 rounded-lg p-6 text-center shadow-md flex flex-col justify-center">
+                <div class="text-3xl font-bold text-gray-700 mb-3">VS</div>
+                <div class="text-sm text-gray-600">
+                    {% if ai_prediction and ai_prediction.success and ai_prediction.prediction.predicted_winner != 'even' %}
+                        <p class="font-medium mb-1">AI Prediction:</p>
+                        <p class="text-lg font-bold {% if ai_prediction.prediction.predicted_winner == 'fighter1' %}text-blue-600{% else %}text-red-600{% endif %}">
+                            {% if ai_prediction.prediction.predicted_winner == 'fighter1' %}
+                                {{ fighter1.full_name }}
+                            {% else %}
+                                {{ fighter2.full_name }}
+                            {% endif %}
+                        </p>
+                        {% if (odds_data.fighter1_favorite and ai_prediction.prediction.predicted_winner == 'fighter1') or (not odds_data.fighter1_favorite and ai_prediction.prediction.predicted_winner == 'fighter2') %}
+                        <p class="text-xs text-green-600 mt-2">✓ Agrees with odds</p>
+                        {% else %}
+                        <p class="text-xs text-orange-600 mt-2">⚠ Differs from odds</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Fighter 2 Odds -->
+            <div class="bg-white rounded-lg p-6 text-center shadow-md {% if not odds_data.fighter1_favorite %}border-2 border-yellow-400{% endif %}">
+                {% if not odds_data.fighter1_favorite %}
+                <div class="flex items-center justify-center mb-2">
+                    <span class="text-yellow-500 text-2xl mr-2">⭐</span>
+                    <span class="text-sm font-bold text-yellow-600 uppercase">Favorite</span>
+                </div>
+                {% endif %}
+                <h4 class="text-lg font-bold text-gray-700 mb-2">{{ fighter2.full_name }}</h4>
+                <p class="text-4xl font-bold text-red-600 mb-2">{{ odds_data.fighter2_odds }}</p>
+                <p class="text-xs text-gray-600">
+                    {% if odds_data.fighter2_odds.startswith('-') %}
+                    Bet ${{ odds_data.fighter2_odds[1:] }} to win $100
+                    {% else %}
+                    Bet $100 to win ${{ odds_data.fighter2_odds[1:] }}
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-xs text-gray-500">
+            <p>Odds are provided for informational purposes. Always gamble responsibly.</p>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Quick Stats Comparison -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
         <!-- Win Percentage -->
@@ -127,14 +234,14 @@
             <h3 class="text-sm font-medium text-gray-500 mb-2">🏆 Win Rate</h3>
             <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-blue-600 font-medium">{{ fighter1.full_name[:10] }}{% if fighter1.full_name|length > 10 %}...{% endif %}</span>
+                    <span class="text-xs text-blue-600 font-medium">{{ fighter1.full_name }}</span>
                     <span class="text-lg font-bold text-blue-600">{{ "%.0f"|format(comparison_stats.win_percentage.fighter1 or 0) }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
                     <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full" style="width: {{ comparison_stats.win_percentage.fighter1 or 0 }}%"></div>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="text-xs text-red-600 font-medium">{{ fighter2.full_name[:10] }}{% if fighter2.full_name|length > 10 %}...{% endif %}</span>
+                    <span class="text-xs text-red-600 font-medium">{{ fighter2.full_name }}</span>
                     <span class="text-lg font-bold text-red-600">{{ "%.0f"|format(comparison_stats.win_percentage.fighter2 or 0) }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2">
@@ -196,21 +303,266 @@
         </div>
     </div>
 
+    <!-- Head-to-Head Statistical Comparison -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6">📊 Statistical Head-to-Head</h3>
+        <p class="text-sm text-gray-600 mb-6">Based on recent UFC performance data</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Striking Stats -->
+            <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="bg-gradient-to-r from-red-500 to-orange-500 rounded-full p-2 mr-3">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.504 1.132a1 1 0 01.992 0l1.75 1a1 1 0 11-.992 1.736L10 3.152l-1.254.716a1 1 0 11-.992-1.736l1.75-1zM5.618 4.504a1 1 0 01-.372 1.364L5.016 6l.23.132a1 1 0 11-.992 1.736L4 7.723V8a1 1 0 01-2 0V6a.996.996 0 01.52-.878l1.734-.99a1 1 0 011.364.372zm8.764 0a1 1 0 011.364-.372l1.733.99A1.002 1.002 0 0118 6v2a1 1 0 11-2 0v-.277l-.254.145a1 1 0 11-.992-1.736l.23-.132-.23-.132a1 1 0 01-.372-1.364zm-7 4a1 1 0 011.364-.372L10 8.848l1.254-.716a1 1 0 11.992 1.736L11 10.58V12a1 1 0 11-2 0v-1.42l-1.246-.712a1 1 0 01-.372-1.364zM3 11a1 1 0 011 1v1.42l1.246.712a1 1 0 11-.992 1.736l-1.75-1A1 1 0 012 14v-2a1 1 0 011-1zm14 0a1 1 0 011 1v2a1 1 0 01-.504.868l-1.75 1a1 1 0 11-.992-1.736L16 13.42V12a1 1 0 011-1zm-9.618 5.504a1 1 0 011.364-.372l.254.145V16a1 1 0 112 0v.277l.254-.145a1 1 0 11.992 1.736l-1.735.992a.995.995 0 01-1.022 0l-1.735-.992a1 1 0 01-.372-1.364z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900">💥 Striking</h4>
+                </div>
+
+                <!-- Striking Accuracy -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Striking Accuracy</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-blue-600 w-32">{{ fighter1.full_name[:15] }}{% if fighter1.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f1_strikes = 0 %}
+                                {% set f1_attempts = 0 %}
+                                {% for fight in recent_fights.fighter1 %}
+                                    {% if fight.sigStrikesLanded is not none and fight.sigStrikesAttempted is not none %}
+                                        {% set f1_strikes = f1_strikes + fight.sigStrikesLanded %}
+                                        {% set f1_attempts = f1_attempts + fight.sigStrikesAttempted %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f1_accuracy = (f1_strikes / f1_attempts * 100) if f1_attempts > 0 else 0 %}
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full transition-all duration-500" style="width: {{ f1_accuracy }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600 w-12 text-right">{{ "%.0f"|format(f1_accuracy) }}%</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-red-600 w-32">{{ fighter2.full_name[:15] }}{% if fighter2.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f2_strikes = 0 %}
+                                {% set f2_attempts = 0 %}
+                                {% for fight in recent_fights.fighter2 %}
+                                    {% if fight.sigStrikesLanded is not none and fight.sigStrikesAttempted is not none %}
+                                        {% set f2_strikes = f2_strikes + fight.sigStrikesLanded %}
+                                        {% set f2_attempts = f2_attempts + fight.sigStrikesAttempted %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f2_accuracy = (f2_strikes / f2_attempts * 100) if f2_attempts > 0 else 0 %}
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 h-3 rounded-full transition-all duration-500" style="width: {{ f2_accuracy }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 w-12 text-right">{{ "%.0f"|format(f2_accuracy) }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Knockdowns Per Fight -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Knockdowns Per Fight</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-blue-600 w-32">{{ fighter1.full_name[:15] }}{% if fighter1.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f1_kds = 0 %}
+                                {% set f1_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter1 %}
+                                    {% if fight.knockDowns is not none %}
+                                        {% set f1_kds = f1_kds + fight.knockDowns %}
+                                        {% set f1_fight_count = f1_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f1_kd_rate = (f1_kds / f1_fight_count) if f1_fight_count > 0 else 0 %}
+                                {% set f1_kd_percent = (f1_kd_rate / 3 * 100) if f1_kd_rate <= 3 else 100 %}
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full" style="width: {{ f1_kd_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600 w-12 text-right">{{ "%.1f"|format(f1_kd_rate) }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-red-600 w-32">{{ fighter2.full_name[:15] }}{% if fighter2.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f2_kds = 0 %}
+                                {% set f2_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter2 %}
+                                    {% if fight.knockDowns is not none %}
+                                        {% set f2_kds = f2_kds + fight.knockDowns %}
+                                        {% set f2_fight_count = f2_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f2_kd_rate = (f2_kds / f2_fight_count) if f2_fight_count > 0 else 0 %}
+                                {% set f2_kd_percent = (f2_kd_rate / 3 * 100) if f2_kd_rate <= 3 else 100 %}
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 h-3 rounded-full" style="width: {{ f2_kd_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 w-12 text-right">{{ "%.1f"|format(f2_kd_rate) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grappling Stats -->
+            <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="bg-gradient-to-r from-green-500 to-teal-500 rounded-full p-2 mr-3">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-900">🤼 Grappling</h4>
+                </div>
+
+                <!-- Takedown Accuracy -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Takedown Accuracy</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-blue-600 w-32">{{ fighter1.full_name[:15] }}{% if fighter1.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f1_tds = 0 %}
+                                {% set f1_td_attempts = 0 %}
+                                {% for fight in recent_fights.fighter1 %}
+                                    {% if fight.takedownsLanded is not none and fight.takedownsAttempted is not none %}
+                                        {% set f1_tds = f1_tds + fight.takedownsLanded %}
+                                        {% set f1_td_attempts = f1_td_attempts + fight.takedownsAttempted %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f1_td_accuracy = (f1_tds / f1_td_attempts * 100) if f1_td_attempts > 0 else 0 %}
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full" style="width: {{ f1_td_accuracy }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600 w-12 text-right">{{ "%.0f"|format(f1_td_accuracy) }}%</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-red-600 w-32">{{ fighter2.full_name[:15] }}{% if fighter2.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f2_tds = 0 %}
+                                {% set f2_td_attempts = 0 %}
+                                {% for fight in recent_fights.fighter2 %}
+                                    {% if fight.takedownsLanded is not none and fight.takedownsAttempted is not none %}
+                                        {% set f2_tds = f2_tds + fight.takedownsLanded %}
+                                        {% set f2_td_attempts = f2_td_attempts + fight.takedownsAttempted %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f2_td_accuracy = (f2_tds / f2_td_attempts * 100) if f2_td_attempts > 0 else 0 %}
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 h-3 rounded-full" style="width: {{ f2_td_accuracy }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 w-12 text-right">{{ "%.0f"|format(f2_td_accuracy) }}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Takedowns Per Fight -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Takedowns Per Fight</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-blue-600 w-32">{{ fighter1.full_name[:15] }}{% if fighter1.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f1_td_total = 0 %}
+                                {% set f1_td_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter1 %}
+                                    {% if fight.takedownsLanded is not none %}
+                                        {% set f1_td_total = f1_td_total + fight.takedownsLanded %}
+                                        {% set f1_td_fight_count = f1_td_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f1_td_per_fight = (f1_td_total / f1_td_fight_count) if f1_td_fight_count > 0 else 0 %}
+                                {% set f1_td_percent = (f1_td_per_fight / 5 * 100) if f1_td_per_fight <= 5 else 100 %}
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full" style="width: {{ f1_td_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600 w-12 text-right">{{ "%.1f"|format(f1_td_per_fight) }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-red-600 w-32">{{ fighter2.full_name[:15] }}{% if fighter2.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f2_td_total = 0 %}
+                                {% set f2_td_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter2 %}
+                                    {% if fight.takedownsLanded is not none %}
+                                        {% set f2_td_total = f2_td_total + fight.takedownsLanded %}
+                                        {% set f2_td_fight_count = f2_td_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f2_td_per_fight = (f2_td_total / f2_td_fight_count) if f2_td_fight_count > 0 else 0 %}
+                                {% set f2_td_percent = (f2_td_per_fight / 5 * 100) if f2_td_per_fight <= 5 else 100 %}
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 h-3 rounded-full" style="width: {{ f2_td_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 w-12 text-right">{{ "%.1f"|format(f2_td_per_fight) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submission Attempts -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-sm font-medium text-gray-700">Submission Attempts</span>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-blue-600 w-32">{{ fighter1.full_name[:15] }}{% if fighter1.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f1_subs = 0 %}
+                                {% set f1_sub_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter1 %}
+                                    {% if fight.submissions is not none %}
+                                        {% set f1_subs = f1_subs + fight.submissions %}
+                                        {% set f1_sub_fight_count = f1_sub_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f1_sub_rate = (f1_subs / f1_sub_fight_count) if f1_sub_fight_count > 0 else 0 %}
+                                {% set f1_sub_percent = (f1_sub_rate / 3 * 100) if f1_sub_rate <= 3 else 100 %}
+                                <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-3 rounded-full" style="width: {{ f1_sub_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-blue-600 w-12 text-right">{{ "%.1f"|format(f1_sub_rate) }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs font-medium text-red-600 w-32">{{ fighter2.full_name[:15] }}{% if fighter2.full_name|length > 15 %}...{% endif %}</span>
+                            <div class="flex-1 bg-gray-200 rounded-full h-3 mx-2">
+                                {% set f2_subs = 0 %}
+                                {% set f2_sub_fight_count = 0 %}
+                                {% for fight in recent_fights.fighter2 %}
+                                    {% if fight.submissions is not none %}
+                                        {% set f2_subs = f2_subs + fight.submissions %}
+                                        {% set f2_sub_fight_count = f2_sub_fight_count + 1 %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set f2_sub_rate = (f2_subs / f2_sub_fight_count) if f2_sub_fight_count > 0 else 0 %}
+                                {% set f2_sub_percent = (f2_sub_rate / 3 * 100) if f2_sub_rate <= 3 else 100 %}
+                                <div class="bg-gradient-to-r from-red-400 to-red-600 h-3 rounded-full" style="width: {{ f2_sub_percent }}%"></div>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 w-12 text-right">{{ "%.1f"|format(f2_sub_rate) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4 text-center text-xs text-gray-500">
+            <p>Statistics calculated from recent UFC fights with available data</p>
+        </div>
+    </div>
+
     <!-- Fighter Details Cards -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Fighter 1 Details -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex items-center mb-6">
-                {% if fighter1.headshot_url %}
-                <img src="{{ fighter1.headshot_url }}" alt="{{ fighter1.full_name }}"
+                <img src="{{ fighter1.headshot_url or 'https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/' + fighter1.id|string + '.png&h=80&w=80&scale=crop' }}"
+                     alt="{{ fighter1.full_name }}"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23dbeafe%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22%3E🥊%3C/text%3E%3C/svg%3E';"
                      class="w-16 h-16 rounded-full object-cover border-2 border-blue-500 mr-4">
-                {% else %}
-                <div class="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center border-2 border-blue-500 mr-4">
-                    <span class="text-2xl">🥊</span>
-                </div>
-                {% endif %}
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900">{{ fighter1.full_name }}</h3>
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter1.id) }}" class="hover:text-blue-600 transition duration-200">{{ fighter1.full_name }}</a>
+                    </h3>
                     {% if fighter1.nickname %}
                     <p class="text-gray-600">"{{ fighter1.nickname }}"</p>
                     {% endif %}
@@ -232,7 +584,7 @@
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg text-center">
                     <p class="font-medium text-gray-700">Reach</p>
-                    <p class="text-lg font-bold text-gray-800">{{ fighter1.reach or 'N/A' }}</p>
+                    <p class="text-lg font-bold text-gray-800">{% if fighter1.reach and fighter1.reach != 0 and fighter1.reach != 0.0 %}{{ fighter1.reach }}{% else %}N/A{% endif %}</p>
                 </div>
             </div>
 
@@ -259,16 +611,14 @@
         <!-- Fighter 2 Details -->
         <div class="bg-white rounded-xl shadow-lg p-6">
             <div class="flex items-center mb-6">
-                {% if fighter2.headshot_url %}
-                <img src="{{ fighter2.headshot_url }}" alt="{{ fighter2.full_name }}"
+                <img src="{{ fighter2.headshot_url or 'https://a.espncdn.com/combiner/i?img=/i/headshots/mma/players/full/' + fighter2.id|string + '.png&h=80&w=80&scale=crop' }}"
+                     alt="{{ fighter2.full_name }}"
+                     onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23fee2e2%22/%3E%3Ctext x=%2250%22 y=%2265%22 font-size=%2240%22 text-anchor=%22middle%22%3E🥊%3C/text%3E%3C/svg%3E';"
                      class="w-16 h-16 rounded-full object-cover border-2 border-red-500 mr-4">
-                {% else %}
-                <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center border-2 border-red-500 mr-4">
-                    <span class="text-2xl">🥊</span>
-                </div>
-                {% endif %}
                 <div>
-                    <h3 class="text-xl font-bold text-gray-900">{{ fighter2.full_name }}</h3>
+                    <h3 class="text-xl font-bold text-gray-900">
+                        <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter2.id) }}" class="hover:text-red-600 transition duration-200">{{ fighter2.full_name }}</a>
+                    </h3>
                     {% if fighter2.nickname %}
                     <p class="text-gray-600">"{{ fighter2.nickname }}"</p>
                     {% endif %}
@@ -290,7 +640,7 @@
                 </div>
                 <div class="bg-gray-50 p-3 rounded-lg text-center">
                     <p class="font-medium text-gray-700">Reach</p>
-                    <p class="text-lg font-bold text-gray-800">{{ fighter2.reach or 'N/A' }}</p>
+                    <p class="text-lg font-bold text-gray-800">{% if fighter2.reach and fighter2.reach != 0 and fighter2.reach != 0.0 %}{{ fighter2.reach }}{% else %}N/A{% endif %}</p>
                 </div>
             </div>
 
@@ -327,7 +677,9 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Fighter 1 Recent -->
             <div>
-                <h4 class="text-lg font-bold text-blue-600 mb-4">{{ fighter1.full_name }} - Last 3 Fights</h4>
+                <h4 class="text-lg font-bold text-blue-600 mb-4">
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter1.id) }}" class="hover:text-blue-800 transition duration-200">{{ fighter1.full_name }}</a> - Last 3 Fights
+                </h4>
                 <div class="space-y-4">
                     {% for fight in recent_fights.fighter1[:3] %}
                     <div class="border-l-4 {{ 'border-green-500 bg-green-50' if fight.won else 'border-red-500 bg-red-50' }} pl-4 py-3 rounded-r-lg">
@@ -363,7 +715,9 @@
 
             <!-- Fighter 2 Recent -->
             <div>
-                <h4 class="text-lg font-bold text-red-600 mb-4">{{ fighter2.full_name }} - Last 3 Fights</h4>
+                <h4 class="text-lg font-bold text-red-600 mb-4">
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter2.id) }}" class="hover:text-red-800 transition duration-200">{{ fighter2.full_name }}</a> - Last 3 Fights
+                </h4>
                 <div class="space-y-4">
                     {% for fight in recent_fights.fighter2[:3] %}
                     <div class="border-l-4 {{ 'border-green-500 bg-green-50' if fight.won else 'border-red-500 bg-red-50' }} pl-4 py-3 rounded-r-lg">
@@ -407,7 +761,7 @@
             <div class="bg-blue-50 p-6 rounded-lg">
                 <h4 class="font-bold text-blue-900 mb-4 flex items-center">
                     <span class="bg-blue-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold text-sm mr-3">{{ fighter1.full_name[0] }}</span>
-                    {{ fighter1.full_name }} Advantages
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter1.id) }}" class="hover:text-blue-600 transition duration-200">{{ fighter1.full_name }}</a> Advantages
                 </h4>
                 <p class="text-blue-800 leading-relaxed">{{ ai_prediction.prediction.fighter1_path_to_victory }}</p>
             </div>
@@ -415,7 +769,7 @@
             <div class="bg-red-50 p-6 rounded-lg">
                 <h4 class="font-bold text-red-900 mb-4 flex items-center">
                     <span class="bg-red-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold text-sm mr-3">{{ fighter2.full_name[0] }}</span>
-                    {{ fighter2.full_name }} Advantages
+                    <a href="{{ url_for('fighters.fighter_page', fighter_id=fighter2.id) }}" class="hover:text-red-600 transition duration-200">{{ fighter2.full_name }}</a> Advantages
                 </h4>
                 <p class="text-red-800 leading-relaxed">{{ ai_prediction.prediction.fighter2_path_to_victory }}</p>
             </div>
@@ -1222,7 +1576,7 @@
             </div>
             <div>
                 <h3 class="text-2xl font-bold">AI Fight Prediction</h3>
-                <p class="text-purple-200">Comprehensive analytical breakdown</p>
+                <p class="text-white">Comprehensive analytical breakdown</p>
             </div>
             <div class="ml-auto bg-white bg-opacity-20 rounded-lg px-3 py-1">
                 <span class="text-sm font-medium">Confidence: {{ ai_prediction.confidence.level }}</span>
@@ -1235,14 +1589,14 @@
             <div class="bg-white bg-opacity-10 rounded-lg p-4 text-center">
                 <h4 class="font-bold text-lg mb-2">Predicted Winner</h4>
                 {% if ai_prediction.prediction.predicted_winner == 'fighter1' %}
-                <p class="text-2xl font-bold text-blue-200">{{ fighter1.full_name }}</p>
-                <p class="text-sm text-purple-200">{{ ai_prediction.prediction.fighter1_advantages_count }} key advantages</p>
+                <p class="text-2xl font-bold text-blue-100">{{ fighter1.full_name }}</p>
+                <p class="text-sm text-white">{{ ai_prediction.prediction.fighter1_advantages_count }} key advantages</p>
                 {% elif ai_prediction.prediction.predicted_winner == 'fighter2' %}
-                <p class="text-2xl font-bold text-red-200">{{ fighter2.full_name }}</p>
-                <p class="text-sm text-purple-200">{{ ai_prediction.prediction.fighter2_advantages_count }} key advantages</p>
+                <p class="text-2xl font-bold text-red-100">{{ fighter2.full_name }}</p>
+                <p class="text-sm text-white">{{ ai_prediction.prediction.fighter2_advantages_count }} key advantages</p>
                 {% else %}
-                <p class="text-2xl font-bold text-yellow-200">Too Close to Call</p>
-                <p class="text-sm text-purple-200">Evenly matched</p>
+                <p class="text-2xl font-bold text-yellow-100">Too Close to Call</p>
+                <p class="text-sm text-white">Evenly matched</p>
                 {% endif %}
             </div>
 
@@ -1250,29 +1604,41 @@
             <div class="bg-white bg-opacity-10 rounded-lg p-4 text-center">
                 <h4 class="font-bold text-lg mb-2">Predicted Method</h4>
                 <p class="text-xl font-bold">{{ ai_prediction.prediction.predicted_method.method }}</p>
-                <p class="text-sm text-purple-200">{{ ai_prediction.prediction.predicted_method.round }}</p>
-                <p class="text-xs text-purple-300">{{ ai_prediction.prediction.predicted_method.probability }} probability</p>
+                <p class="text-sm text-white">{{ ai_prediction.prediction.predicted_method.round }}</p>
+                <p class="text-xs text-gray-200">{{ ai_prediction.prediction.predicted_method.probability }} probability</p>
             </div>
 
             <!-- Confidence Score -->
             <div class="bg-white bg-opacity-10 rounded-lg p-4 text-center">
                 <h4 class="font-bold text-lg mb-2">Analysis Quality</h4>
-                <div class="relative pt-1">
-                    <div class="flex mb-2 items-center justify-between">
-                        <div>
-                            <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-purple-200 bg-purple-800">
-                                {{ ai_prediction.confidence.level }}
-                            </span>
-                        </div>
-                        <div class="text-right">
-                            <span class="text-xs font-semibold inline-block text-purple-200">
-                                {{ "%.0f"|format(ai_prediction.confidence.score * 100) }}%
-                            </span>
+                <div class="flex flex-col items-center justify-center">
+                    <!-- Circular Gauge -->
+                    <div class="relative w-32 h-32 mb-3">
+                        <svg class="transform -rotate-90 w-32 h-32">
+                            <!-- Background circle -->
+                            <circle cx="64" cy="64" r="56" stroke="rgba(255, 255, 255, 0.2)" stroke-width="8" fill="none"/>
+                            <!-- Progress circle -->
+                            <circle cx="64" cy="64" r="56"
+                                    stroke="rgba(255, 255, 255, 0.9)"
+                                    stroke-width="8"
+                                    fill="none"
+                                    stroke-dasharray="{{ 2 * 3.14159 * 56 }}"
+                                    stroke-dashoffset="{{ 2 * 3.14159 * 56 * (1 - ai_prediction.confidence.score) }}"
+                                    stroke-linecap="round"
+                                    class="transition-all duration-1000 ease-out"/>
+                        </svg>
+                        <!-- Center text -->
+                        <div class="absolute inset-0 flex flex-col items-center justify-center">
+                            <span class="text-3xl font-bold text-white">{{ "%.0f"|format(ai_prediction.confidence.score * 100) }}%</span>
                         </div>
                     </div>
-                    <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-purple-800">
-                        <div style="width:{{ ai_prediction.confidence.score * 100 }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-white bg-opacity-60"></div>
-                    </div>
+                    <!-- Confidence label -->
+                    <span class="text-sm font-semibold px-3 py-1 rounded-full bg-purple-800 text-purple-100">
+                        {{ ai_prediction.confidence.level }} Confidence
+                    </span>
+                    <p class="text-xs text-white mt-2">
+                        Based on {{ ai_prediction.confidence.factors_considered }} analytical factors
+                    </p>
                 </div>
             </div>
         </div>
@@ -1280,7 +1646,7 @@
         <!-- Tactical Summary -->
         <div class="bg-white bg-opacity-10 rounded-lg p-4 mb-6">
             <h4 class="font-bold text-lg mb-3">Tactical Analysis</h4>
-            <p class="text-purple-100 leading-relaxed">{{ ai_prediction.prediction.tactical_summary }}</p>
+            <p class="text-white leading-relaxed">{{ ai_prediction.prediction.tactical_summary }}</p>
         </div>
 
         <!-- Paths to Victory -->
@@ -1310,7 +1676,7 @@
                 {% for factor in ai_prediction.key_factors %}
                 <li class="flex items-start">
                     <span class="bg-yellow-400 rounded-full w-2 h-2 mt-2 mr-3 flex-shrink-0"></span>
-                    <span class="text-purple-100">{{ factor }}</span>
+                    <span class="text-white">{{ factor }}</span>
                 </li>
                 {% endfor %}
             </ul>
@@ -1732,7 +2098,7 @@
 
     <!-- Back Button -->
     <div class="text-center">
-        <a href="{{ url_for('games.next_event') }}" 
+        <a href="{{ url_for('games.next_event') }}"
            class="inline-flex items-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition duration-300">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -1741,4 +2107,110 @@
         </a>
     </div>
 </div>
+
+<!-- Share Functionality Script -->
+<script>
+function shareContent() {
+    const url = window.location.href;
+    const fighter1Name = "{{ fighter1.full_name }}";
+    const fighter2Name = "{{ fighter2.full_name }}";
+    const shareText = `${fighter1Name} vs ${fighter2Name} - Fight Preview`;
+
+    // Check if the browser supports the Web Share API (mobile devices)
+    if (navigator.share) {
+        navigator.share({
+            title: shareText,
+            text: `Check out this detailed fight preview and AI prediction!`,
+            url: url
+        }).then(() => {
+            console.log('Shared successfully');
+        }).catch((error) => {
+            console.log('Error sharing:', error);
+            // Fallback to clipboard
+            copyToClipboard(url);
+        });
+    } else {
+        // Fallback: Copy to clipboard
+        copyToClipboard(url);
+    }
+}
+
+function copyToClipboard(text) {
+    // Create a temporary textarea element
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+
+    try {
+        document.execCommand('copy');
+        showCopyNotification();
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy link. Please copy manually: ' + text);
+    }
+
+    document.body.removeChild(textarea);
+}
+
+function showCopyNotification() {
+    // Create a notification element
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 flex items-center space-x-2 animate-fade-in';
+    notification.innerHTML = `
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+        </svg>
+        <span class="font-medium">Link copied to clipboard!</span>
+    `;
+
+    document.body.appendChild(notification);
+
+    // Remove the notification after 3 seconds
+    setTimeout(() => {
+        notification.classList.add('animate-fade-out');
+        setTimeout(() => {
+            document.body.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Add fade-in and fade-out animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fade-out {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.3s ease-out;
+    }
+
+    .animate-fade-out {
+        animation: fade-out 0.3s ease-out;
+    }
+`;
+document.head.appendChild(style);
+</script>
+
 {% endblock %}

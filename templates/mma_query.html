@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
         setLoadingState(true);
         hideError();
         
-        fetch('/query/ask', {
+        fetch('/query/ask-v2', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -445,23 +445,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const tableSection = document.getElementById('data-table-section');
         const cardsSection = document.getElementById('data-cards-section');
         
-        if (presentation && presentation.format_type === 'table' && data.data && data.data.length > 0) {
-            console.log('🔍 FRONTEND: Showing table for fight_history');
+        if (presentation && (presentation.format_type === 'comparison' || presentation.format_type === 'table') && data.data && data.data.length > 0) {
+            console.log('🔍 FRONTEND: Showing table/comparison');
+            console.log('🔍 FRONTEND: Format:', presentation.format_type);
             console.log('🔍 FRONTEND: Table headers:', presentation.table_headers);
-            
+
             // Show table section, hide cards
             tableSection.classList.remove('hidden');
             cardsSection.classList.add('hidden');
-            
+
             // Set table type badge
             const badge = document.getElementById('table-type-badge');
             const questionType = data.classification?.question_type || 'data';
             badge.textContent = questionType.replace('_', ' ').toUpperCase();
-            
+
             // Create table - use the headers from the API response
             const headers = presentation.table_headers || Object.keys(data.data[0] || {});
             console.log('🔍 FRONTEND: Using headers:', headers);
-            createDataTable(data.data, headers);
+
+            // For comparisons with side_by_side layout, use special rendering
+            if (presentation.format_type === 'comparison' && presentation.visual_layout === 'side_by_side') {
+                createComparisonTable(data.data, headers, presentation.highlight_fields);
+            } else {
+                createDataTable(data.data, headers);
+            }
             
         } else if (presentation && (presentation.format_type === 'list' || data.classification?.question_type === 'fight_history') && data.data && data.data.length > 0) {
             // Treat "list" format as table for fight history
@@ -658,7 +665,107 @@ document.addEventListener('DOMContentLoaded', function() {
             return dateString;
         }
     }
-    
+
+    function createComparisonTable(data, headers, highlightFields = []) {
+        console.log('🔍 FRONTEND: createComparisonTable called with:', {data: data.length, headers: headers.length});
+
+        const tableHead = document.getElementById('table-head');
+        const tableBody = document.getElementById('table-body');
+
+        // Clear existing content
+        tableHead.innerHTML = '';
+        tableBody.innerHTML = '';
+
+        // Create header row with "Stat" column and fighter names
+        const headerRow = document.createElement('tr');
+
+        // First column: Stat name
+        const statHeader = document.createElement('th');
+        statHeader.className = 'px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50';
+        statHeader.textContent = 'Statistic';
+        headerRow.appendChild(statHeader);
+
+        // Fighter columns
+        data.forEach(fighter => {
+            const th = document.createElement('th');
+            th.className = 'px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-blue-50';
+            th.textContent = fighter.full_name || 'Fighter';
+            headerRow.appendChild(th);
+        });
+        tableHead.appendChild(headerRow);
+
+        // Create rows for each stat
+        const priorityFields = ['full_name', 'weight_class', 'age', 'height', 'reach', 'stance', 'wins', 'losses', 'total_fights'];
+        const statFields = headers.filter(h => !['fighter_id', 'fighter_photo', 'full_name'].includes(h));
+
+        // Reorder to show priority fields first
+        const orderedFields = [
+            ...priorityFields.filter(f => statFields.includes(f)),
+            ...statFields.filter(f => !priorityFields.includes(f))
+        ];
+
+        orderedFields.forEach(field => {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-50';
+
+            // Highlight important fields
+            if (highlightFields && highlightFields.includes(field)) {
+                tr.className += ' bg-yellow-50';
+            }
+
+            // Stat name column
+            const statName = document.createElement('td');
+            statName.className = 'px-4 py-3 text-sm font-medium text-gray-900 bg-gray-50';
+            statName.textContent = formatHeaderName(field);
+            tr.appendChild(statName);
+
+            // Fighter value columns
+            data.forEach((fighter, idx) => {
+                const td = document.createElement('td');
+                td.className = 'px-4 py-3 text-sm text-center';
+
+                let value = fighter[field];
+
+                // Format value
+                if (value === null || value === undefined) {
+                    value = '-';
+                } else if (typeof value === 'number') {
+                    // Round decimals to 1-2 places
+                    value = Number.isInteger(value) ? value : value.toFixed(field.includes('avg') ? 1 : 2);
+                }
+
+                td.textContent = value;
+
+                // Add comparative styling for numeric fields (highlight better stat)
+                if (typeof fighter[field] === 'number' && data.length === 2) {
+                    const otherFighter = data[1 - idx];
+                    const otherValue = otherFighter[field];
+
+                    if (typeof otherValue === 'number') {
+                        // Higher is better for most stats
+                        const higherIsBetter = !field.includes('loss') && !field.includes('age');
+
+                        if (higherIsBetter && fighter[field] > otherValue) {
+                            td.className += ' text-green-700 font-semibold';
+                        } else if (!higherIsBetter && fighter[field] < otherValue) {
+                            td.className += ' text-green-700 font-semibold';
+                        } else if (fighter[field] === otherValue) {
+                            td.className += ' text-gray-600';
+                        } else {
+                            td.className += ' text-gray-500';
+                        }
+                    }
+                }
+
+                tr.appendChild(td);
+            });
+
+            tableBody.appendChild(tr);
+        });
+
+        console.log('🔍 FRONTEND: Comparison table created successfully');
+    }
+
     function createRecordCards(recordData) {
         const container = document.getElementById('record-cards');
         container.innerHTML = '';

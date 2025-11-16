@@ -71,7 +71,7 @@ class FightPredictionService:
             print(f"   ✅ Prediction Generation: SUCCESSFUL")
             print(f"   🎯 Winner: {prediction['predicted_winner']}")
             print(f"   📊 Confidence: {confidence['level']} ({confidence['score']:.1%})")
-            print(f"   🔧 Key Factors: {len(self._extract_key_factors(analysis))} identified")
+            print(f"   🔧 Key Factors: {len(self._extract_key_factors(analysis, fighter1_data, fighter2_data))} identified")
             print(f"   📈 Data Quality: {confidence['factors_considered']} factors analyzed")
             print(f"\n" + "="*80)
             
@@ -82,7 +82,7 @@ class FightPredictionService:
                 'analysis': analysis,
                 'prediction': prediction,
                 'confidence': confidence,
-                'key_factors': self._extract_key_factors(analysis)
+                'key_factors': self._extract_key_factors(analysis, fighter1_data, fighter2_data)
             }
             
         except Exception as e:
@@ -569,7 +569,7 @@ class FightPredictionService:
         }
     
     def _generate_tactical_prediction(self, fighter1_data: Dict, fighter2_data: Dict, analysis: Dict) -> Dict[str, Any]:
-        """Generate tactical fight prediction based on all analysis"""
+        """Generate tactical fight prediction based on weighted analysis"""
         print(f"\n🎯 TACTICAL PREDICTION GENERATION DEBUG:")
         
         # Extract key factors for prediction
@@ -577,42 +577,108 @@ class FightPredictionService:
         physical_analysis = analysis['physical_analysis']
         finishing_analysis = analysis['finishing_ability_analysis']
         trends_analysis = analysis['career_trends_analysis']
+        recent_form_analysis = analysis['recent_form_analysis']
+        experience_analysis = analysis['experience_analysis']
         
-        # Calculate advantage scores
-        f1_advantages = 0
-        f2_advantages = 0
+        # Weighted advantage scoring system
+        # Higher weights = more important for prediction
+        f1_score = 0.0
+        f2_score = 0.0
         
-        advantage_categories = [
-            'weight_class_advantage',
-            'height_advantage', 
-            'reach_advantage',
-            'finishing_advantage',
-            'momentum_advantage',
-            'experience_advantage'
-        ]
+        advantage_weights = {
+            'recent_form': 3.0,           # Most important - current performance
+            'weight_class_advantage': 2.5, # Very important - proven success at weight
+            'finishing_advantage': 2.0,    # Important - ability to end fights
+            'momentum_advantage': 1.5,     # Solid factor - winning/losing streak
+            'experience_advantage': 1.5,   # Solid factor - fight IQ
+            'reach_advantage': 1.0,        # Moderate - physical edge
+            'height_advantage': 0.5        # Minor - less impactful than reach
+        }
         
-        print(f"   Scoring advantages across {len(advantage_categories)} categories:")
+        print(f"   Scoring advantages with weighted system:")
         
-        for category in advantage_categories:
-            for analysis_name, analysis_dict in analysis.items():
-                if category in analysis_dict:
-                    advantage_holder = analysis_dict[category]
-                    print(f"   - {category}: {advantage_holder}")
-                    if advantage_holder == 'fighter1':
-                        f1_advantages += 1
-                    elif advantage_holder == 'fighter2':
-                        f2_advantages += 1
-                    break
+        # Recent form (most important)
+        recent_wins_f1 = recent_form_analysis.get('fighter1_recent_wins', 0)
+        recent_wins_f2 = recent_form_analysis.get('fighter2_recent_wins', 0)
+        if recent_wins_f1 > recent_wins_f2:
+            f1_score += advantage_weights['recent_form']
+            print(f"   - Recent Form: fighter1 ({recent_wins_f1} recent wins) +{advantage_weights['recent_form']}")
+        elif recent_wins_f2 > recent_wins_f1:
+            f2_score += advantage_weights['recent_form']
+            print(f"   - Recent Form: fighter2 ({recent_wins_f2} recent wins) +{advantage_weights['recent_form']}")
         
-        print(f"\n   📊 FINAL ADVANTAGE TALLY:")
-        print(f"   Fighter 1 Advantages: {f1_advantages}")
-        print(f"   Fighter 2 Advantages: {f2_advantages}")
+        # Weight class performance
+        if wc_analysis.get('weight_class_advantage') == 'fighter1':
+            wc_win_rate_f1 = wc_analysis.get('fighter1_wc_win_rate', 0)
+            f1_score += advantage_weights['weight_class_advantage']
+            print(f"   - Weight Class: fighter1 ({wc_win_rate_f1:.1%} win rate) +{advantage_weights['weight_class_advantage']}")
+        elif wc_analysis.get('weight_class_advantage') == 'fighter2':
+            wc_win_rate_f2 = wc_analysis.get('fighter2_wc_win_rate', 0)
+            f2_score += advantage_weights['weight_class_advantage']
+            print(f"   - Weight Class: fighter2 ({wc_win_rate_f2:.1%} win rate) +{advantage_weights['weight_class_advantage']}")
+        
+        # Finishing ability
+        if finishing_analysis.get('finishing_advantage') == 'fighter1':
+            f1_finish_rate = finishing_analysis.get('fighter1_finish_rate', 0)
+            f1_score += advantage_weights['finishing_advantage']
+            print(f"   - Finishing: fighter1 ({f1_finish_rate:.1%} finish rate) +{advantage_weights['finishing_advantage']}")
+        elif finishing_analysis.get('finishing_advantage') == 'fighter2':
+            f2_finish_rate = finishing_analysis.get('fighter2_finish_rate', 0)
+            f2_score += advantage_weights['finishing_advantage']
+            print(f"   - Finishing: fighter2 ({f2_finish_rate:.1%} finish rate) +{advantage_weights['finishing_advantage']}")
+        
+        # Momentum
+        if trends_analysis.get('momentum_advantage') == 'fighter1':
+            f1_score += advantage_weights['momentum_advantage']
+            print(f"   - Momentum: fighter1 +{advantage_weights['momentum_advantage']}")
+        elif trends_analysis.get('momentum_advantage') == 'fighter2':
+            f2_score += advantage_weights['momentum_advantage']
+            print(f"   - Momentum: fighter2 +{advantage_weights['momentum_advantage']}")
+        
+        # Experience
+        if experience_analysis.get('experience_advantage') == 'fighter1':
+            f1_fights = fighter1_data.get('career_stats', {}).get('total_fights', 0)
+            f1_score += advantage_weights['experience_advantage']
+            print(f"   - Experience: fighter1 ({f1_fights} fights) +{advantage_weights['experience_advantage']}")
+        elif experience_analysis.get('experience_advantage') == 'fighter2':
+            f2_fights = fighter2_data.get('career_stats', {}).get('total_fights', 0)
+            f2_score += advantage_weights['experience_advantage']
+            print(f"   - Experience: fighter2 ({f2_fights} fights) +{advantage_weights['experience_advantage']}")
+        
+        # Reach advantage
+        if physical_analysis.get('reach_advantage') == 'fighter1':
+            reach_diff = physical_analysis.get('reach_difference', 0)
+            f1_score += advantage_weights['reach_advantage']
+            print(f"   - Reach: fighter1 (+{reach_diff} inch advantage) +{advantage_weights['reach_advantage']}")
+        elif physical_analysis.get('reach_advantage') == 'fighter2':
+            reach_diff = abs(physical_analysis.get('reach_difference', 0))
+            f2_score += advantage_weights['reach_advantage']
+            print(f"   - Reach: fighter2 (+{reach_diff} inch advantage) +{advantage_weights['reach_advantage']}")
+        
+        # Height advantage
+        if physical_analysis.get('height_advantage') == 'fighter1':
+            height_diff = physical_analysis.get('height_difference', 0)
+            f1_score += advantage_weights['height_advantage']
+            print(f"   - Height: fighter1 (+{height_diff} inch advantage) +{advantage_weights['height_advantage']}")
+        elif physical_analysis.get('height_advantage') == 'fighter2':
+            height_diff = abs(physical_analysis.get('height_difference', 0))
+            f2_score += advantage_weights['height_advantage']
+            print(f"   - Height: fighter2 (+{height_diff} inch advantage) +{advantage_weights['height_advantage']}")
+        
+        print(f"\n   📊 WEIGHTED ADVANTAGE SCORES:")
+        print(f"   Fighter 1 Score: {f1_score:.1f}")
+        print(f"   Fighter 2 Score: {f2_score:.1f}")
         
         # Determine predicted winner
-        predicted_winner = 'fighter1' if f1_advantages > f2_advantages else 'fighter2' if f2_advantages > f1_advantages else 'even'
+        score_difference = abs(f1_score - f2_score)
+        if score_difference < 1.0:
+            predicted_winner = 'even'
+        else:
+            predicted_winner = 'fighter1' if f1_score > f2_score else 'fighter2'
+        
         print(f"   🏆 PREDICTED WINNER: {predicted_winner}")
         
-        # Generate tactical analysis
+        # Generate enhanced tactical analysis
         f1_path_to_victory = self._generate_path_to_victory(fighter1_data, analysis, 'fighter1')
         f2_path_to_victory = self._generate_path_to_victory(fighter2_data, analysis, 'fighter2')
         
@@ -625,38 +691,85 @@ class FightPredictionService:
         
         return {
             'predicted_winner': predicted_winner,
-            'fighter1_advantages_count': f1_advantages,
-            'fighter2_advantages_count': f2_advantages,
+            'fighter1_score': f1_score,
+            'fighter2_score': f2_score,
+            'fighter1_advantages_count': sum(1 for s in [f1_score] if s > 0),  # Legacy compatibility
+            'fighter2_advantages_count': sum(1 for s in [f2_score] if s > 0),  # Legacy compatibility
             'fighter1_path_to_victory': f1_path_to_victory,
             'fighter2_path_to_victory': f2_path_to_victory,
             'predicted_method': method_prediction,
-            'tactical_summary': self._generate_tactical_summary(analysis, predicted_winner)
+            'tactical_summary': self._generate_tactical_summary(analysis, predicted_winner, fighter1_data, fighter2_data)
         }
     
     def _generate_path_to_victory(self, fighter_data: Dict, analysis: Dict, fighter_num: str) -> str:
-        """Generate specific path to victory for a fighter"""
+        """Generate specific path to victory with tactical details and statistics"""
         paths = []
         
-        # Check finishing ability
+        # Extract analysis data
         finishing_analysis = analysis['finishing_ability_analysis']
-        if finishing_analysis.get(f'{fighter_num}_finish_rate', 0) > 0.6:
-            if fighter_data.get('career_stats', {}).get('ko_wins', 0) > fighter_data.get('career_stats', {}).get('sub_wins', 0):
-                paths.append("early striking exchanges and knockout power")
-            else:
-                paths.append("grappling dominance and submission opportunities")
-        
-        # Check physical advantages
         physical_analysis = analysis['physical_analysis']
-        if physical_analysis.get('reach_advantage') == fighter_num:
-            paths.append("maintaining distance and utilizing reach advantage")
-        
-        # Check recent form
         trends_analysis = analysis['career_trends_analysis']
-        if trends_analysis.get('momentum_advantage') == fighter_num:
-            paths.append("riding current momentum and confidence")
+        recent_form_analysis = analysis['recent_form_analysis']
+        wc_analysis = analysis['weight_class_analysis']
         
+        career_stats = fighter_data.get('career_stats', {})
+        
+        # Check finishing ability with specific stats
+        finish_rate = finishing_analysis.get(f'{fighter_num}_finish_rate', 0)
+        ko_wins = career_stats.get('ko_wins', 0)
+        sub_wins = career_stats.get('sub_wins', 0)
+        
+        if finish_rate > 0.6:
+            if ko_wins > sub_wins:
+                paths.append(f"Press forward with aggressive striking - {finish_rate:.0%} finish rate demonstrates dangerous knockout power")
+            elif sub_wins > 0:
+                paths.append(f"Seek takedowns and grappling exchanges - {finish_rate:.0%} finish rate with submission victories demonstrates ground dominance")
+            else:
+                paths.append(f"Apply relentless pressure to force stoppage - {finish_rate:.0%} finish rate indicates ability to break opponents")
+        
+        # Check physical advantages with specific measurements
+        if physical_analysis.get('reach_advantage') == fighter_num:
+            reach_diff = abs(physical_analysis.get('reach_difference', 0))
+            paths.append(f"Control distance and use {reach_diff}-inch reach advantage to land strikes while staying out of danger")
+        
+        # Check weight class performance
+        wc_win_rate = wc_analysis.get(f'{fighter_num}_wc_win_rate', 0)
+        wc_fights = wc_analysis.get(f'{fighter_num}_wc_fights', 0)
+        if wc_win_rate > 0.65 and wc_fights >= 3:
+            paths.append(f"Leverage proven weight class success ({wc_win_rate:.0%} win rate over {wc_fights} fights) with superior conditioning and size comfort")
+        
+        # Check recent form momentum
+        recent_wins = recent_form_analysis.get(f'{fighter_num}_recent_wins', 0)
+        if recent_wins >= 3:
+            paths.append(f"Ride momentum of {recent_wins}-fight win streak with peak confidence and timing")
+        elif trends_analysis.get('momentum_advantage') == fighter_num:
+            paths.append("Capitalize on superior current form and positive career trajectory")
+        
+        # Check striking vs grappling tendencies
+        total_wins = career_stats.get('wins', 0)
+        if total_wins > 0:
+            ko_percentage = ko_wins / total_wins if isinstance(ko_wins, (int, float)) and ko_wins < 1000 else 0
+            sub_percentage = sub_wins / total_wins if isinstance(sub_wins, (int, float)) and sub_wins < 1000 else 0
+            
+            if ko_percentage > 0.5:
+                paths.append(f"Force striking exchanges - {ko_percentage:.0%} of wins by KO/TKO indicates elite striking threat")
+            elif sub_percentage > 0.4:
+                paths.append(f"Implement wrestling-heavy gameplan - {sub_percentage:.0%} of wins by submission shows grappling superiority")
+        
+        # Defensive considerations
+        finished_rate = finishing_analysis.get(f'{fighter_num}_finished_rate', 0)
+        opponent_finish_rate = finishing_analysis.get(f'{"fighter2" if fighter_num == "fighter1" else "fighter1"}_finish_rate', 0)
+        
+        if finished_rate < 0.3 and opponent_finish_rate > 0.5:
+            paths.append("Maintain defensive responsibility - proven durability against opponent's finishing threat")
+        
+        # Fallback if no specific paths identified
         if not paths:
-            paths.append("capitalizing on experience and well-rounded skillset")
+            total_fights = career_stats.get('total_fights', 0)
+            if total_fights > 15:
+                paths.append(f"Utilize veteran experience from {total_fights} professional fights to implement well-rounded gameplan")
+            else:
+                paths.append("Execute fundamental gameplan and capitalize on opponent mistakes")
         
         return ". ".join(paths).capitalize()
     
@@ -678,38 +791,46 @@ class FightPredictionService:
         else:
             return {'method': 'Decision', 'round': 'Round 3', 'probability': 'High'}
     
-    def _generate_tactical_summary(self, analysis: Dict, predicted_winner: str) -> str:
+    def _generate_tactical_summary(self, analysis: Dict, predicted_winner: str, fighter1_data: Dict = None, fighter2_data: Dict = None) -> str:
         """Generate overall tactical fight summary"""
         key_factors = []
-        
+
+        # Get fighter names
+        f1_name = fighter1_data.get('basic', {}).get('full_name', 'Fighter 1') if fighter1_data else 'Fighter 1'
+        f2_name = fighter2_data.get('basic', {}).get('full_name', 'Fighter 2') if fighter2_data else 'Fighter 2'
+
         # Weight class performance
         wc_analysis = analysis['weight_class_analysis']
         if wc_analysis.get('weight_class_advantage') != 'even':
             winner = wc_analysis['weight_class_advantage']
-            key_factors.append(f"{winner} has superior weight class performance")
-        
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+            key_factors.append(f"{winner_name} has superior weight class performance")
+
         # Physical matchup
         physical_analysis = analysis['physical_analysis']
         if physical_analysis.get('reach_advantage') != 'even':
             winner = physical_analysis['reach_advantage']
-            key_factors.append(f"{winner} holds significant reach advantage")
-        
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+            key_factors.append(f"{winner_name} holds significant reach advantage")
+
         # Finishing ability
         finishing_analysis = analysis['finishing_ability_analysis']
         if finishing_analysis.get('finishing_advantage') != 'even':
             winner = finishing_analysis['finishing_advantage']
-            key_factors.append(f"{winner} demonstrates superior finishing ability")
-        
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+            key_factors.append(f"{winner_name} demonstrates superior finishing ability")
+
         if not key_factors:
             key_factors.append("Both fighters present evenly matched skillsets")
-        
+
         summary = "Key tactical factors: " + "; ".join(key_factors[:3]) + "."
-        
+
         if predicted_winner != 'even':
-            summary += f" Prediction favors {predicted_winner} based on cumulative advantages."
+            winner_name = f1_name if predicted_winner == 'fighter1' else f2_name
+            summary += f" Prediction favors {winner_name} based on cumulative advantages."
         else:
             summary += " Extremely close matchup with no clear favorite."
-        
+
         return summary
     
     def _calculate_prediction_confidence(self, analysis: Dict) -> Dict[str, Any]:
@@ -749,38 +870,108 @@ class FightPredictionService:
             'factors_considered': len(confidence_factors)
         }
     
-    def _extract_key_factors(self, analysis: Dict) -> List[str]:
-        """Extract the most important factors for the prediction"""
+    def _extract_key_factors(self, analysis: Dict, fighter1_data: Dict = None, fighter2_data: Dict = None) -> List[str]:
+        """Extract the most important factors with detailed context and statistics"""
         factors = []
+
+        # Get fighter names
+        f1_name = fighter1_data.get('basic', {}).get('full_name', 'Fighter 1') if fighter1_data else 'Fighter 1'
+        f2_name = fighter2_data.get('basic', {}).get('full_name', 'Fighter 2') if fighter2_data else 'Fighter 2'
+
+        # Recent form (highest priority)
+        recent_form_analysis = analysis['recent_form_analysis']
+        f1_recent_wins = recent_form_analysis.get('fighter1_recent_wins', 0)
+        f2_recent_wins = recent_form_analysis.get('fighter2_recent_wins', 0)
+        
+        if f1_recent_wins != f2_recent_wins:
+            if f1_recent_wins > f2_recent_wins:
+                if f1_recent_wins >= 3:
+                    factors.append(f"🔥 Current Form: {f1_name} riding {f1_recent_wins}-fight win streak with peak momentum and confidence")
+                else:
+                    factors.append(f"📈 Recent Performance: {f1_name} has won {f1_recent_wins} of last 5 vs {f2_name}'s {f2_recent_wins}")
+            else:
+                if f2_recent_wins >= 3:
+                    factors.append(f"🔥 Current Form: {f2_name} riding {f2_recent_wins}-fight win streak with peak momentum and confidence")
+                else:
+                    factors.append(f"📈 Recent Performance: {f2_name} has won {f2_recent_wins} of last 5 vs {f1_name}'s {f1_recent_wins}")
         
         # Weight class dominance
         wc_analysis = analysis['weight_class_analysis']
         if wc_analysis.get('weight_class_advantage') != 'even':
             winner = wc_analysis['weight_class_advantage']
+            winner_name = f1_name if winner == 'fighter1' else f2_name
             rate = wc_analysis.get(f'{winner}_wc_win_rate', 0)
-            factors.append(f"Weight class performance: {winner} ({rate:.1%} win rate)")
+            fights = wc_analysis.get(f'{winner}_wc_fights', 0)
+            if fights >= 3:
+                factors.append(f"⚖️ Weight Class Success: {winner_name} proven at this weight with {rate:.0%} win rate over {fights} fights - superior size comfort and conditioning")
         
-        # Physical advantages
-        physical_analysis = analysis['physical_analysis']
-        if physical_analysis.get('reach_advantage') != 'even':
-            winner = physical_analysis['reach_advantage']
-            diff = abs(physical_analysis.get('reach_difference_inches', 0))
-            factors.append(f"Reach advantage: {winner} (+{diff}\" reach)")
-        
-        # Finishing ability
+        # Finishing ability with context
         finishing_analysis = analysis['finishing_ability_analysis']
         if finishing_analysis.get('finishing_advantage') != 'even':
             winner = finishing_analysis['finishing_advantage']
-            rate = finishing_analysis.get(f'{winner}_finish_rate', 0)
-            factors.append(f"Finishing ability: {winner} ({rate:.1%} finish rate)")
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+            loser = "fighter2" if winner == "fighter1" else "fighter1"
+
+            winner_rate = finishing_analysis.get(f'{winner}_finish_rate', 0)
+            loser_finished_rate = finishing_analysis.get(f'{loser}_finished_rate', 0)
+
+            if winner_rate > 0.7:
+                factors.append(f"💥 Elite Finishing Threat: {winner_name} finishes {winner_rate:.0%} of victories - dangerous at all times")
+            elif loser_finished_rate > 0.5:
+                factors.append(f"🎯 Finishing Ability: {winner_name}'s {winner_rate:.0%} finish rate exploits opponent's defensive vulnerability ({loser_finished_rate:.0%} finished rate)")
+            else:
+                factors.append(f"🥊 Finishing Edge: {winner_name} with {winner_rate:.0%} finish rate shows superior ability to close fights")
         
-        # Opponent quality
+        # Physical advantages with tactical implications
+        physical_analysis = analysis['physical_analysis']
+        reach_advantage = physical_analysis.get('reach_advantage')
+
+        if reach_advantage != 'even':
+            winner_name = f1_name if reach_advantage == 'fighter1' else f2_name
+            diff = abs(physical_analysis.get('reach_difference', 0))
+
+            if diff >= 4:
+                factors.append(f"📏 Significant Reach: {winner_name}'s +{diff}\" reach advantage enables striking at range while staying safe - critical for distance control")
+            elif diff >= 2:
+                factors.append(f"📐 Reach Advantage: {winner_name}'s +{diff}\" reach provides tactical edge in striking exchanges")
+        
+        # Experience differential
+        experience_analysis = analysis['experience_analysis']
+        if experience_analysis.get('experience_advantage') != 'even':
+            winner = experience_analysis['experience_advantage']
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+
+            # Use the correct field names and validate data
+            f1_fights = experience_analysis.get('fighter1_total_fights', 0)
+            f2_fights = experience_analysis.get('fighter2_total_fights', 0)
+
+            # Only show if the numbers are reasonable (less than 100 fights)
+            if f1_fights < 100 and f2_fights < 100:
+                fight_diff = abs(f1_fights - f2_fights)
+
+                if fight_diff >= 10:
+                    more_exp_fights = max(f1_fights, f2_fights)
+                    factors.append(f"🎓 Veteran Edge: {winner_name}'s {more_exp_fights} professional fights ({fight_diff} more than opponent) brings superior fight IQ and composure")
+        
+        # Opponent quality (strength of schedule)
         opp_analysis = analysis['opponent_quality_analysis']
         if opp_analysis.get('opponent_quality_advantage') != 'even':
             winner = opp_analysis['opponent_quality_advantage']
-            factors.append(f"Strength of schedule: {winner} faced stronger opposition")
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+            factors.append(f"🏆 Competition Level: {winner_name} has consistently faced and defeated higher-caliber opponents - battle-tested against elite competition")
+
+        # Momentum trends
+        trends_analysis = analysis['career_trends_analysis']
+        if trends_analysis.get('momentum_advantage') != 'even':
+            winner = trends_analysis['momentum_advantage']
+            winner_name = f1_name if winner == 'fighter1' else f2_name
+
+            # Only include if not already covered by recent form
+            if f1_recent_wins == f2_recent_wins:
+                factors.append(f"📊 Career Trajectory: {winner_name} showing positive momentum and improvement trend over recent fights")
         
-        return factors[:4]  # Return top 4 factors
+        # Return top 5 most impactful factors
+        return factors[:5]  # Return top 4 factors
     
     def _parse_height(self, height_str: Optional[str]) -> Optional[float]:
         """Parse height string into inches"""

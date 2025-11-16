@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
 from mma_website import cache
 from mma_website.services.fighter_service import get_fighter_data
 from mma_website.services.api_service import search_fighters, get_fight_details
@@ -8,6 +8,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 bp = Blueprint('api', __name__, url_prefix='/api')
+
+def get_limiter():
+    """Helper to get limiter from app"""
+    return getattr(current_app, 'limiter', None)
 
 @bp.route('/fighter/<int:fighter_id>')
 @cache.cached(timeout=1800)  # Cache for 30 minutes

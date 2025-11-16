@@ -71,61 +71,119 @@
         </div>
 
         {% if current_champions %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {% for champion in current_champions %}
-            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
-                <div class="card fighter-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-yellow-200 dark:border-yellow-600">
-                    <!-- Champion Badge -->
-                    <div class="relative">
-                        <div class="absolute top-3 left-3 z-10">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold {{ 'bg-yellow-500 text-white' if champion.position == 'C' else 'bg-orange-500 text-white' }}">
-                                {% if champion.position == 'C' %}
-                                    🏆 CHAMPION
-                                {% else %}
-                                    🥈 INTERIM
-                                {% endif %}
-                            </span>
+        <!-- Men's Divisions -->
+        <div class="mb-12">
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Men's Divisions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
+                {% for champion in current_champions %}
+                {% if not champion.division.startswith("Women's") %}
+                <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                    <div class="card fighter-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border-2 border-yellow-400 dark:border-yellow-600 hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+                        <!-- Champion Badge -->
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 z-10">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ 'bg-yellow-500 text-white shadow-lg' if champion.position == 'C' else 'bg-orange-500 text-white shadow-lg' }}">
+                                    {% if champion.position == 'C' %}
+                                        🏆 CHAMPION
+                                    {% else %}
+                                        🥈 INTERIM
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Fighter Photo -->
+                            {% if champion.headshot_url %}
+                            <img src="{{ champion.headshot_url }}" alt="{{ champion.full_name }}" loading="lazy" class="w-full h-56 object-cover">
+                            {% else %}
+                            <div class="w-full h-56 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
+                                <span class="text-6xl">🥊</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Gradient Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+
+                            <!-- Fighter Info -->
+                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                <h3 class="text-white font-bold text-xl mb-1">{{ champion.full_name }}</h3>
+                                <p class="text-yellow-300 text-sm font-bold">{{ champion.division }}</p>
+                            </div>
                         </div>
 
-                        <!-- Fighter Photo -->
-                        {% if champion.headshot_url %}
-                        <img src="{{ champion.headshot_url }}" alt="{{ champion.full_name }}" class="w-full h-48 object-cover">
-                        {% else %}
-                        <div class="w-full h-48 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
-                            <span class="text-6xl">🥊</span>
+                        <!-- Quick Action -->
+                        <div class="p-4 bg-gradient-to-r from-red-50 to-orange-50 dark:from-gray-700 dark:to-gray-800">
+                            <a href="/fighter/{{ champion.athlete_id }}" class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105 shadow-md">
+                                View Profile →
+                            </a>
                         </div>
-                        {% endif %}
-
-                        <!-- Gradient Overlay -->
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-
-                        <!-- Fighter Info -->
-                        <div class="absolute bottom-0 left-0 right-0 p-4">
-                            <h3 class="text-white font-bold text-lg mb-1">{{ champion.full_name }}</h3>
-                            <p class="text-yellow-300 text-sm font-medium">{{ champion.division }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Quick Action -->
-                    <div class="p-4">
-                        <a href="/fighter/{{ champion.athlete_id }}" class="block w-full text-center bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition">
-                            View Profile →
-                        </a>
                     </div>
                 </div>
+                {% endif %}
+                {% endfor %}
             </div>
-            {% endfor %}
+        </div>
+
+        <!-- Women's Divisions -->
+        <div>
+            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">Women's Divisions</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                {% for champion in current_champions %}
+                {% if champion.division.startswith("Women's") %}
+                <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.05 }}s">
+                    <div class="card fighter-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border-2 border-pink-400 dark:border-pink-600 hover:shadow-2xl transition duration-300 transform hover:-translate-y-1">
+                        <!-- Champion Badge -->
+                        <div class="relative">
+                            <div class="absolute top-3 left-3 z-10">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ 'bg-pink-500 text-white shadow-lg' if champion.position == 'C' else 'bg-purple-500 text-white shadow-lg' }}">
+                                    {% if champion.position == 'C' %}
+                                        🏆 CHAMPION
+                                    {% else %}
+                                        🥈 INTERIM
+                                    {% endif %}
+                                </span>
+                            </div>
+
+                            <!-- Fighter Photo -->
+                            {% if champion.headshot_url %}
+                            <img src="{{ champion.headshot_url }}" alt="{{ champion.full_name }}" loading="lazy" class="w-full h-56 object-cover">
+                            {% else %}
+                            <div class="w-full h-56 bg-gradient-to-br from-pink-100 to-purple-200 flex items-center justify-center">
+                                <span class="text-6xl">🥊</span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Gradient Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent"></div>
+
+                            <!-- Fighter Info -->
+                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                <h3 class="text-white font-bold text-xl mb-1">{{ champion.full_name }}</h3>
+                                <p class="text-pink-300 text-sm font-bold">{{ champion.division }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Quick Action -->
+                        <div class="p-4 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-gray-700 dark:to-gray-800">
+                            <a href="/fighter/{{ champion.athlete_id }}" class="block w-full text-center bg-pink-600 hover:bg-pink-700 text-white font-bold py-2 px-4 rounded-lg transition transform hover:scale-105 shadow-md">
+                                View Profile →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
         </div>
         {% else %}
         <div class="text-center py-12">
             <div class="text-6xl mb-4">🏆</div>
-            <p class="text-gray-600">Champions data loading...</p>
+            <p class="text-gray-600 dark:text-gray-400">Champions data loading...</p>
         </div>
         {% endif %}
 
         <!-- View Rankings CTA -->
         <div class="text-center mt-12">
-            <a href="/rankings" class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-lg transition transform hover:scale-105">
+            <a href="/rankings" class="inline-flex items-center px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white font-bold rounded-xl shadow-xl transition transform hover:scale-105">
                 View Complete Rankings
                 <svg class="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -136,121 +194,45 @@
 </section>
 
 <!-- Upcoming Events Section -->
-<section class="min-h-screen flex items-center bg-white dark:bg-gray-900 py-20 transition-colors duration-200">
+<section class="bg-white dark:bg-gray-900 py-20 transition-colors duration-200">
     <div class="container mx-auto px-4">
         <div class="flex justify-between items-center mb-12">
             <div class="scroll-animate-fade-right">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">Upcoming Events</h2>
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">⏰ Upcoming Events</h2>
                 <p class="text-gray-600 dark:text-gray-400 mt-2">Don't miss the next big fights</p>
             </div>
             <a href="/events/" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-semibold group scroll-animate-fade-left">
-                View All Events 
+                View All Events
                 <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
             </a>
         </div>
+        {% if upcoming_events %}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {% for event in upcoming_events %}
             <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                    <div class="p-8">
-                        <h3 class="font-bold text-xl mb-4 text-gray-900">{{ event.event_name }}</h3>
-                        <div class="space-y-3 text-gray-600">
-                            <p class="flex items-center">
-                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                {{ event.date }}
-                            </p>
-                            <p class="flex items-center">
-                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                </svg>
-                                {{ event.venue_name }}
-                            </p>
-                            <p class="flex items-center">
-                                <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                {{ event.city }}, {{ event.country }}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- Featured Fighters Section -->
-<section class="min-h-screen flex items-center bg-gray-50 py-20">
-    <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center mb-12">
-            <div class="scroll-animate-fade-right">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Featured Fighters</h2>
-                <p class="text-gray-600 mt-2">Top ranked UFC athletes</p>
-            </div>
-            <a href="/fighters" class="text-indigo-600 hover:text-indigo-800 font-semibold group scroll-animate-fade-left">
-                View All Fighters 
-                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
-            </a>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {% for fighter in top_fighters[:4] %}
-            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition duration-300 transform hover:-translate-y-1">
-                    <div class="relative">
-                        <img src="{{ fighter.headshot_url }}" alt="{{ fighter.full_name }}" class="w-full h-64 object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-6">
-                            <h3 class="text-xl font-bold text-white">{{ fighter.full_name }}</h3>
-                            <p class="text-white/80">{{ fighter.weight_class }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</section>
-
-<!-- Recent Events Section -->
-<section class="min-h-screen flex items-center bg-white py-20">
-    <div class="container mx-auto px-4">
-        <div class="flex justify-between items-center mb-12">
-            <div class="scroll-animate-fade-right">
-                <h2 class="text-3xl md:text-4xl font-bold text-gray-900">Recent Events</h2>
-                <p class="text-gray-600 mt-2">Latest UFC fight nights</p>
-            </div>
-            <a href="/events" class="text-indigo-600 hover:text-indigo-800 font-semibold group scroll-animate-fade-left">
-                View All Events 
-                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
-            </a>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {% for event in recent_events %}
-            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
-                <a href="/events?event_id=ufc_{{ event.event_id }}" class="block transform hover:scale-105 transition duration-300">
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                        <div class="p-8">
-                            <h3 class="font-bold text-xl mb-4 text-gray-900">{{ event.event_name }}</h3>
-                            <div class="space-y-3 text-gray-600">
+                <a href="/events?event_id=ufc_{{ event.event_id }}" class="block">
+                    <div class="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-purple-500">
+                        <div class="p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex-1">{{ event.event_name }}</h3>
+                                <span class="ml-2 px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">UPCOMING</span>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
                                 <p class="flex items-center">
-                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    {{ event.date }}
+                                    <span class="font-semibold">{{ event.date }}</span>
                                 </p>
                                 <p class="flex items-center">
-                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                     {{ event.venue_name }}
                                 </p>
                                 <p class="flex items-center">
-                                    <svg class="w-5 h-5 mr-3 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-4 h-4 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     {{ event.city }}, {{ event.country }}
@@ -262,6 +244,133 @@
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <div class="text-6xl mb-4">📅</div>
+            <p class="text-gray-600 dark:text-gray-400">No upcoming events scheduled</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Featured Fighters Section -->
+<section class="bg-gray-50 dark:bg-gray-800 py-20">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <div class="scroll-animate-fade-right">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">🥊 Featured Fighters</h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">Top ranked UFC athletes</p>
+            </div>
+            <a href="/fighters" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-semibold group scroll-animate-fade-left">
+                View All Fighters
+                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+        </div>
+        {% if top_fighters %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for fighter in top_fighters[:4] %}
+            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <a href="/fighter/{{ fighter.id }}" class="block">
+                    <div class="bg-white dark:bg-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-red-500">
+                        <div class="relative">
+                            <!-- Ranking Badge -->
+                            {% if fighter.position %}
+                            <div class="absolute top-3 left-3 z-10">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg">
+                                    #{{ fighter.position }}
+                                </span>
+                            </div>
+                            {% endif %}
+
+                            {% if fighter.headshot_url %}
+                            <img src="{{ fighter.headshot_url }}" alt="{{ fighter.full_name }}" loading="lazy" class="w-full h-64 object-cover">
+                            {% else %}
+                            <div class="w-full h-64 bg-gradient-to-br from-red-400 to-orange-400 flex items-center justify-center">
+                                <span class="text-8xl">🥊</span>
+                            </div>
+                            {% endif %}
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4">
+                                <h3 class="text-xl font-bold text-white mb-1">{{ fighter.full_name }}</h3>
+                                <p class="text-white/90 text-sm font-medium">{{ fighter.division or fighter.weight_class }}</p>
+                                <div class="mt-2 flex gap-2">
+                                    <span class="inline-block px-3 py-1 bg-red-600 text-white text-xs font-bold rounded-full">
+                                        {{ fighter.fight_count }} Fights
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-white dark:bg-gray-700 rounded-xl">
+            <div class="text-6xl mb-4">🥊</div>
+            <p class="text-gray-600 dark:text-gray-400">No featured fighters available</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Recent Events Section -->
+<section class="bg-white dark:bg-gray-900 py-20">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center mb-12">
+            <div class="scroll-animate-fade-right">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">📅 Recent Events</h2>
+                <p class="text-gray-600 dark:text-gray-400 mt-2">Latest UFC fight nights</p>
+            </div>
+            <a href="/events" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-semibold group scroll-animate-fade-left">
+                View All Events
+                <span class="inline-block transition-transform group-hover:translate-x-1">→</span>
+            </a>
+        </div>
+        {% if recent_events %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for event in recent_events %}
+            <div class="scroll-animate-fade-up" style="animation-delay: {{ loop.index0 * 0.1 }}s">
+                <a href="/events?event_id=ufc_{{ event.event_id }}" class="block">
+                    <div class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 transform hover:-translate-y-2 border-2 border-transparent hover:border-indigo-500">
+                        <div class="p-6">
+                            <div class="flex items-start justify-between mb-4">
+                                <h3 class="font-bold text-lg text-gray-900 dark:text-white flex-1">{{ event.event_name }}</h3>
+                                <span class="ml-2 px-3 py-1 bg-gray-600 text-white text-xs font-bold rounded-full">COMPLETED</span>
+                            </div>
+                            <div class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                <p class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span class="font-semibold">{{ event.date }}</span>
+                                </p>
+                                <p class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                    {{ event.venue_name }}
+                                </p>
+                                <p class="flex items-center">
+                                    <svg class="w-4 h-4 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ event.city }}, {{ event.country }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl">
+            <div class="text-6xl mb-4">📅</div>
+            <p class="text-gray-600 dark:text-gray-400">No recent events found</p>
+        </div>
+        {% endif %}
     </div>
 </section>
 
