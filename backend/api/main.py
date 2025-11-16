@@ -5,6 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from .fighters import router as fighters_router
 from .events import router as events_router
 from .rankings import router as rankings_router
+from .betting import router as betting_router
+from .espn import router as espn_router
+from .wordle import router as wordle_router
+from .query import router as query_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -29,6 +33,10 @@ app.add_middleware(
 app.include_router(fighters_router, prefix="/api/fighters", tags=["fighters"])
 app.include_router(events_router, prefix="/api/events", tags=["events"])
 app.include_router(rankings_router, prefix="/api/rankings", tags=["rankings"])
+app.include_router(betting_router, prefix="/api/betting", tags=["betting"])
+app.include_router(espn_router, prefix="/api/espn", tags=["espn"])
+app.include_router(wordle_router, prefix="/api/wordle", tags=["wordle"])
+app.include_router(query_router, prefix="/api/query", tags=["query"])
 
 
 @app.get("/")

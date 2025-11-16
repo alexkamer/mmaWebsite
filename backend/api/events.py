@@ -94,38 +94,41 @@ async def get_event(event_id: int):
     # Get fights for this event
     fights_query = """
         SELECT
-            f.id,
+            f.year_league_event_id_fight_id_f1_f2 as id,
             a1.id as fighter1_id,
-            a1.display_name as fighter1_name,
+            COALESCE(a1.display_name, a1.full_name, 'Unknown') as fighter1_name,
             a1.headshot_url as fighter1_image,
             a2.id as fighter2_id,
-            a2.display_name as fighter2_name,
+            COALESCE(a2.display_name, a2.full_name, 'Unknown') as fighter2_name,
             a2.headshot_url as fighter2_image,
-            f.winner_id,
-            f.method,
-            f.method_detail,
-            f.round,
-            f.time,
+            f.fighter_1_winner,
+            f.fighter_2_winner,
+            f.result_display_name as method,
+            f.end_round as round,
+            f.end_time as time,
             f.weight_class,
-            f.is_title_fight
+            f.fight_title as is_title_fight,
+            f.match_number
         FROM fights f
-        JOIN cards c ON f.card_id = c.year_league_event_id_event_name
         LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
         LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
-        WHERE c.event_id = ?
-        ORDER BY f.bout_order DESC
+        WHERE f.event_id = ?
+        ORDER BY f.match_number DESC
     """
 
     fights = execute_query(fights_query, (event_id,))
 
     # Add winner info to each fight
     for fight in fights:
-        if fight["winner_id"] is None:
+        if fight["fighter_1_winner"] == 0 and fight["fighter_2_winner"] == 0:
             fight["result"] = "No Contest/Draw"
-        elif fight["winner_id"] == fight["fighter1_id"]:
+            fight["winner"] = None
+        elif fight["fighter_1_winner"] == 1:
             fight["winner"] = "fighter1"
-        elif fight["winner_id"] == fight["fighter2_id"]:
+        elif fight["fighter_2_winner"] == 1:
             fight["winner"] = "fighter2"
+        else:
+            fight["winner"] = None
 
     event_dict = dict(event)
     event_dict["fights"] = fights

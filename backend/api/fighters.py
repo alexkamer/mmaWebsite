@@ -96,13 +96,23 @@ async def get_fighter(fighter_id: int):
     # Get fight record
     record_query = """
         SELECT
-            SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) as wins,
-            SUM(CASE WHEN winner_id != ? AND winner_id IS NOT NULL THEN 1 ELSE 0 END) as losses,
-            SUM(CASE WHEN winner_id IS NULL THEN 1 ELSE 0 END) as draws
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 1) OR (fighter_2_id = ? AND fighter_2_winner = 1)
+                THEN 1 ELSE 0
+            END) as wins,
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 0 AND fighter_2_winner = 1) OR
+                     (fighter_2_id = ? AND fighter_2_winner = 0 AND fighter_1_winner = 1)
+                THEN 1 ELSE 0
+            END) as losses,
+            SUM(CASE
+                WHEN (fighter_1_id = ? OR fighter_2_id = ?) AND fighter_1_winner = 0 AND fighter_2_winner = 0
+                THEN 1 ELSE 0
+            END) as draws
         FROM fights
         WHERE fighter_1_id = ? OR fighter_2_id = ?
     """
-    record = execute_query_one(record_query, (fighter_id, fighter_id, fighter_id, fighter_id))
+    record = execute_query_one(record_query, (fighter_id, fighter_id, fighter_id, fighter_id, fighter_id, fighter_id, fighter_id, fighter_id))
 
     # Add record to fighter data
     fighter_dict = dict(fighter)
@@ -127,29 +137,31 @@ async def get_fighter_fights(
     """
     query = """
         SELECT
-            f.id,
+            f.year_league_event_id_fight_id_f1_f2 as id,
             c.event_name,
             c.date,
-            c.league as promotion,
+            f.league as promotion,
             CASE
-                WHEN f.fighter_1_id = ? THEN a2.display_name
-                ELSE a1.display_name
+                WHEN f.fighter_1_id = ? THEN COALESCE(a2.display_name, a2.full_name, 'Unknown')
+                ELSE COALESCE(a1.display_name, a1.full_name, 'Unknown')
             END as opponent_name,
             CASE
                 WHEN f.fighter_1_id = ? THEN a2.id
                 ELSE a1.id
             END as opponent_id,
-            f.winner_id,
-            f.method,
-            f.method_detail,
-            f.round,
-            f.time
+            f.fighter_1_id,
+            f.fighter_2_id,
+            f.fighter_1_winner,
+            f.fighter_2_winner,
+            f.result_display_name as method,
+            f.end_round as round,
+            f.end_time as time
         FROM fights f
-        JOIN cards c ON f.card_id = c.year_league_event_id_event_name
         LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
         LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
+        LEFT JOIN cards c ON f.event_id = c.event_id AND f.league = c.league
         WHERE f.fighter_1_id = ? OR f.fighter_2_id = ?
-        ORDER BY c.date DESC
+        ORDER BY c.date DESC, f.year_league_event_id_fight_id_f1_f2 DESC
         LIMIT ?
     """
 
@@ -157,11 +169,213 @@ async def get_fighter_fights(
 
     # Add win/loss/draw status
     for fight in fights:
-        if fight["winner_id"] is None:
+        if fight["fighter_1_winner"] == 0 and fight["fighter_2_winner"] == 0:
             fight["result"] = "draw"
-        elif fight["winner_id"] == fighter_id:
+        elif (fight["fighter_1_id"] == fighter_id and fight["fighter_1_winner"] == 1) or \
+             (fight["fighter_2_id"] == fighter_id and fight["fighter_2_winner"] == 1):
             fight["result"] = "win"
         else:
             fight["result"] = "loss"
 
     return {"fights": fights}
+
+
+@router.get("/compare/{fighter1_id}/{fighter2_id}")
+async def compare_fighters(fighter1_id: int, fighter2_id: int):
+    """
+    Compare two fighters side-by-side with detailed stats and head-to-head history.
+    """
+    # Get both fighters' details
+    fighters_query = """
+        SELECT
+            id,
+            COALESCE(display_name, full_name, 'Unknown') as name,
+            nickname,
+            headshot_url as image_url,
+            weight_class,
+            association as nationality,
+            display_height as height,
+            display_weight as weight,
+            reach,
+            stance,
+            date_of_birth,
+            age
+        FROM athletes
+        WHERE id IN (?, ?)
+    """
+    fighters = execute_query(fighters_query, (fighter1_id, fighter2_id))
+
+    if len(fighters) != 2:
+        raise HTTPException(status_code=404, detail="One or both fighters not found")
+
+    # Map fighters to correct positions
+    fighter1 = next((f for f in fighters if f['id'] == fighter1_id), None)
+    fighter2 = next((f for f in fighters if f['id'] == fighter2_id), None)
+
+    if not fighter1 or not fighter2:
+        raise HTTPException(status_code=404, detail="One or both fighters not found")
+
+    # Get fight records for both fighters
+    record_query = """
+        SELECT
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 1) OR (fighter_2_id = ? AND fighter_2_winner = 1)
+                THEN 1 ELSE 0
+            END) as wins,
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 0 AND fighter_2_winner = 1) OR
+                     (fighter_2_id = ? AND fighter_2_winner = 0 AND fighter_1_winner = 1)
+                THEN 1 ELSE 0
+            END) as losses,
+            SUM(CASE
+                WHEN (fighter_1_id = ? OR fighter_2_id = ?) AND fighter_1_winner = 0 AND fighter_2_winner = 0
+                THEN 1 ELSE 0
+            END) as draws,
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 1) OR (fighter_2_id = ? AND fighter_2_winner = 1)
+                THEN
+                    CASE
+                        WHEN result_display_name LIKE '%KO%' OR result_display_name LIKE '%TKO%' THEN 1
+                        ELSE 0
+                    END
+                ELSE 0
+            END) as ko_wins,
+            SUM(CASE
+                WHEN (fighter_1_id = ? AND fighter_1_winner = 1) OR (fighter_2_id = ? AND fighter_2_winner = 1)
+                THEN
+                    CASE
+                        WHEN result_display_name LIKE '%Submission%' THEN 1
+                        ELSE 0
+                    END
+                ELSE 0
+            END) as sub_wins
+        FROM fights
+        WHERE fighter_1_id = ? OR fighter_2_id = ?
+    """
+
+    record1 = execute_query_one(record_query, (
+        fighter1_id, fighter1_id, fighter1_id, fighter1_id, fighter1_id, fighter1_id,
+        fighter1_id, fighter1_id, fighter1_id, fighter1_id, fighter1_id, fighter1_id
+    ))
+    record2 = execute_query_one(record_query, (
+        fighter2_id, fighter2_id, fighter2_id, fighter2_id, fighter2_id, fighter2_id,
+        fighter2_id, fighter2_id, fighter2_id, fighter2_id, fighter2_id, fighter2_id
+    ))
+
+    # Get head-to-head fights
+    h2h_query = """
+        SELECT
+            f.year_league_event_id_fight_id_f1_f2 as id,
+            c.event_name,
+            c.date,
+            f.league as promotion,
+            f.fighter_1_id,
+            f.fighter_2_id,
+            f.fighter_1_winner,
+            f.fighter_2_winner,
+            f.result_display_name as method,
+            f.end_round as round,
+            f.end_time as time,
+            f.weight_class
+        FROM fights f
+        LEFT JOIN cards c ON f.event_id = c.event_id AND f.league = c.league
+        WHERE (f.fighter_1_id = ? AND f.fighter_2_id = ?) OR (f.fighter_1_id = ? AND f.fighter_2_id = ?)
+        ORDER BY c.date DESC
+    """
+    h2h_fights = execute_query(h2h_query, (fighter1_id, fighter2_id, fighter2_id, fighter1_id))
+
+    # Process head-to-head results
+    h2h_summary = {"fighter1_wins": 0, "fighter2_wins": 0, "draws": 0}
+    for fight in h2h_fights:
+        if fight["fighter_1_winner"] == 0 and fight["fighter_2_winner"] == 0:
+            h2h_summary["draws"] += 1
+            fight["winner_id"] = None
+        elif fight["fighter_1_winner"] == 1:
+            if fight["fighter_1_id"] == fighter1_id:
+                h2h_summary["fighter1_wins"] += 1
+                fight["winner_id"] = fighter1_id
+            else:
+                h2h_summary["fighter2_wins"] += 1
+                fight["winner_id"] = fighter2_id
+        else:
+            if fight["fighter_2_id"] == fighter1_id:
+                h2h_summary["fighter1_wins"] += 1
+                fight["winner_id"] = fighter1_id
+            else:
+                h2h_summary["fighter2_wins"] += 1
+                fight["winner_id"] = fighter2_id
+
+    # Get recent fights (last 5) for both fighters
+    recent_query = """
+        SELECT
+            f.year_league_event_id_fight_id_f1_f2 as id,
+            c.event_name,
+            c.date,
+            CASE
+                WHEN f.fighter_1_id = ? THEN COALESCE(a2.display_name, a2.full_name, 'Unknown')
+                ELSE COALESCE(a1.display_name, a1.full_name, 'Unknown')
+            END as opponent_name,
+            f.fighter_1_id,
+            f.fighter_2_id,
+            f.fighter_1_winner,
+            f.fighter_2_winner,
+            f.result_display_name as method
+        FROM fights f
+        LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
+        LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
+        LEFT JOIN cards c ON f.event_id = c.event_id AND f.league = c.league
+        WHERE f.fighter_1_id = ? OR f.fighter_2_id = ?
+        ORDER BY c.date DESC
+        LIMIT 5
+    """
+
+    recent1 = execute_query(recent_query, (fighter1_id, fighter1_id, fighter1_id))
+    recent2 = execute_query(recent_query, (fighter2_id, fighter2_id, fighter2_id))
+
+    # Add win/loss/draw status to recent fights
+    for fight in recent1:
+        if fight["fighter_1_winner"] == 0 and fight["fighter_2_winner"] == 0:
+            fight["result"] = "draw"
+        elif (fight["fighter_1_id"] == fighter1_id and fight["fighter_1_winner"] == 1) or \
+             (fight["fighter_2_id"] == fighter1_id and fight["fighter_2_winner"] == 1):
+            fight["result"] = "win"
+        else:
+            fight["result"] = "loss"
+
+    for fight in recent2:
+        if fight["fighter_1_winner"] == 0 and fight["fighter_2_winner"] == 0:
+            fight["result"] = "draw"
+        elif (fight["fighter_1_id"] == fighter2_id and fight["fighter_1_winner"] == 1) or \
+             (fight["fighter_2_id"] == fighter2_id and fight["fighter_2_winner"] == 1):
+            fight["result"] = "win"
+        else:
+            fight["result"] = "loss"
+
+    return {
+        "fighter1": {
+            **dict(fighter1),
+            "record": {
+                "wins": record1.get("wins", 0) if record1 else 0,
+                "losses": record1.get("losses", 0) if record1 else 0,
+                "draws": record1.get("draws", 0) if record1 else 0,
+                "ko_wins": record1.get("ko_wins", 0) if record1 else 0,
+                "sub_wins": record1.get("sub_wins", 0) if record1 else 0,
+            },
+            "recent_fights": recent1
+        },
+        "fighter2": {
+            **dict(fighter2),
+            "record": {
+                "wins": record2.get("wins", 0) if record2 else 0,
+                "losses": record2.get("losses", 0) if record2 else 0,
+                "draws": record2.get("draws", 0) if record2 else 0,
+                "ko_wins": record2.get("ko_wins", 0) if record2 else 0,
+                "sub_wins": record2.get("sub_wins", 0) if record2 else 0,
+            },
+            "recent_fights": recent2
+        },
+        "head_to_head": {
+            "fights": h2h_fights,
+            "summary": h2h_summary
+        }
+    }

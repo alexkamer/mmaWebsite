@@ -38,6 +38,9 @@ export const fightersAPI = {
 
   getFights: (id: number, limit = 20) =>
     fetchAPI<{ fights: Fight[] }>(`/api/fighters/${id}/fights?limit=${limit}`),
+
+  compare: (fighter1Id: number, fighter2Id: number) =>
+    fetchAPI<FighterComparison>(`/api/fighters/compare/${fighter1Id}/${fighter2Id}`),
 };
 
 // Event endpoints
@@ -64,6 +67,69 @@ export const rankingsAPI = {
 
   getDivision: (division: string) =>
     fetchAPI<{ division: string; rankings: RankingEntry[] }>(`/api/rankings/division/${division}`),
+};
+
+// ESPN endpoints
+export const espnAPI = {
+  getNextEvent: () => fetchAPI<NextEventResponse>('/api/espn/next-event'),
+};
+
+// Wordle endpoints
+export const wordleAPI = {
+  getDaily: () => fetchAPI<{ date: string; hint: string }>('/api/wordle/daily'),
+
+  submitGuess: (guessId: number) =>
+    fetchAPI<WordleGuessResponse>(`/api/wordle/guess?guess_id=${guessId}`, {
+      method: 'POST',
+    }),
+
+  reveal: () => fetchAPI<WordleFighter>('/api/wordle/reveal'),
+};
+
+// Betting endpoints
+export const bettingAPI = {
+  getYears: (league = 'ufc') =>
+    fetchAPI<{ years: number[] }>(`/api/betting/years?league=${league}`),
+
+  getOverview: (league = 'ufc', year?: string) => {
+    const queryParams = new URLSearchParams({ league });
+    if (year) queryParams.set('year', year);
+    return fetchAPI<BettingOverview>(`/api/betting/overview?${queryParams}`);
+  },
+
+  getWeightClasses: (league = 'ufc', year?: string) => {
+    const queryParams = new URLSearchParams({ league });
+    if (year) queryParams.set('year', year);
+    return fetchAPI<{ weight_classes: WeightClassStats[] }>(`/api/betting/weight-classes?${queryParams}`);
+  },
+
+  getRoundsFormat: (league = 'ufc', year?: string) => {
+    const queryParams = new URLSearchParams({ league });
+    if (year) queryParams.set('year', year);
+    return fetchAPI<{ formats: RoundsFormatStats[] }>(`/api/betting/rounds-format?${queryParams}`);
+  },
+
+  getFinishTypes: (league = 'ufc', year?: string) => {
+    const queryParams = new URLSearchParams({ league });
+    if (year) queryParams.set('year', year);
+    return fetchAPI<{ finish_types: FinishTypeStats[] }>(`/api/betting/finish-types?${queryParams}`);
+  },
+
+  getCards: (league = 'ufc', year?: string) => {
+    const queryParams = new URLSearchParams({ league });
+    if (year) queryParams.set('year', year);
+    return fetchAPI<{ cards: CardStats[]; total: number }>(`/api/betting/cards?${queryParams}`);
+  },
+};
+
+// Query endpoints
+export const queryAPI = {
+  ask: (question: string) =>
+    fetchAPI<QueryResponse>(`/api/query/?question=${encodeURIComponent(question)}`, {
+      method: 'POST',
+    }),
+
+  getExamples: () => fetchAPI<QueryExamplesResponse>('/api/query/examples'),
 };
 
 // Type definitions
@@ -159,4 +225,170 @@ export interface RankingEntry {
 export interface RankingsResponse {
   divisions: Record<string, RankingEntry[]>;
   last_updated?: string;
+}
+
+export interface BettingOverview {
+  total_fights: number;
+  favorite_wins: number;
+  underdog_wins: number;
+  favorite_win_pct: number;
+  underdog_win_pct: number;
+}
+
+export interface WeightClassStats {
+  weight_class: string;
+  total_fights: number;
+  favorite_wins: number;
+  underdog_wins: number;
+  favorite_win_pct: number;
+  underdog_win_pct: number;
+}
+
+export interface RoundsFormatStats {
+  rounds_format: number;
+  total_fights: number;
+  favorite_wins: number;
+  underdog_wins: number;
+  favorite_win_pct: number;
+  underdog_win_pct: number;
+}
+
+export interface FinishTypeStats {
+  weight_class: string;
+  total_fights: number;
+  decisions: number;
+  knockouts: number;
+  submissions: number;
+  decision_pct: number;
+  knockout_pct: number;
+  submission_pct: number;
+  finish_pct: number;
+}
+
+export interface CardStats {
+  event_id: number;
+  event_name: string;
+  date: string;
+  fights_with_odds: number;
+  favorite_wins: number;
+  underdog_wins: number;
+  decisions: number;
+  knockouts: number;
+  submissions: number;
+  favorite_win_pct: number;
+  underdog_win_pct: number;
+  decision_pct: number;
+  knockout_pct: number;
+  submission_pct: number;
+}
+
+export interface NextEventResponse {
+  event: {
+    event_id: number;
+    event_name: string;
+    date: string;
+    venue_name?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+  };
+  fights: NextEventFight[];
+  total_fights: number;
+}
+
+export interface NextEventFight {
+  fight_id: string;
+  fighter_1_id: string;
+  fighter_1_name: string;
+  fighter_1_image?: string;
+  fighter_1_record: string;
+  fighter_1_odds?: string;
+  fighter_2_id: string;
+  fighter_2_name: string;
+  fighter_2_image?: string;
+  fighter_2_record: string;
+  fighter_2_odds?: string;
+  weight_class?: string;
+  rounds_format?: number;
+  match_number?: number;
+}
+
+export interface FighterRecord {
+  wins: number;
+  losses: number;
+  draws: number;
+  ko_wins: number;
+  sub_wins: number;
+}
+
+export interface FighterComparisonData extends FighterDetail {
+  age?: number;
+  record: FighterRecord;
+  recent_fights: Fight[];
+}
+
+export interface HeadToHeadFight {
+  id: string;
+  event_name: string;
+  date: string;
+  promotion: string;
+  fighter_1_id: number;
+  fighter_2_id: number;
+  fighter_1_winner: number;
+  fighter_2_winner: number;
+  method: string;
+  round?: number;
+  time?: string;
+  weight_class?: string;
+  winner_id?: number | null;
+}
+
+export interface FighterComparison {
+  fighter1: FighterComparisonData;
+  fighter2: FighterComparisonData;
+  head_to_head: {
+    fights: HeadToHeadFight[];
+    summary: {
+      fighter1_wins: number;
+      fighter2_wins: number;
+      draws: number;
+    };
+  };
+}
+
+export interface WordleFighter {
+  id: number;
+  name: string;
+  weight_class?: string;
+  nationality?: string;
+  age?: number;
+  image_url?: string;
+}
+
+export interface WordleGuessResponse {
+  correct: boolean;
+  guess: WordleFighter;
+  hints: {
+    weight_class: string;
+    nationality: string;
+    age: string;
+  };
+  target?: WordleFighter;
+}
+
+export interface QueryResponse {
+  question: string;
+  answer: string;
+  data: any;
+  query_type: string;
+  suggestions?: string[];
+}
+
+export interface QueryExample {
+  category: string;
+  queries: string[];
+}
+
+export interface QueryExamplesResponse {
+  examples: QueryExample[];
 }
