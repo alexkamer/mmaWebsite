@@ -1,0 +1,167 @@
+"""Fighter API endpoints."""
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Query
+
+from ..database.connection import execute_query, execute_query_one
+from ..models.fighter import FighterBase, FighterDetail, FighterListResponse
+
+router = APIRouter()
+
+
+@router.get("/", response_model=FighterListResponse)
+async def list_fighters(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    search: Optional[str] = None,
+    weight_class: Optional[str] = None,
+):
+    """
+    Get list of fighters with pagination and optional filtering.
+    """
+    offset = (page - 1) * page_size
+
+    # Build query
+    where_clauses = []
+    params = []
+
+    if search:
+        where_clauses.append("(full_name LIKE ? OR display_name LIKE ? OR nickname LIKE ?)")
+        search_param = f"%{search}%"
+        params.extend([search_param, search_param, search_param])
+
+    if weight_class:
+        where_clauses.append("weight_class = ?")
+        params.append(weight_class)
+
+    where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+    # Get total count
+    count_query = f"SELECT COUNT(*) as total FROM athletes WHERE {where_sql}"
+    count_result = execute_query_one(count_query, tuple(params))
+    total = count_result["total"] if count_result else 0
+
+    # Get fighters
+    query = f"""
+        SELECT
+            id,
+            COALESCE(display_name, full_name, 'Unknown') as name,
+            nickname,
+            headshot_url as image_url,
+            weight_class,
+            association as nationality
+        FROM athletes
+        WHERE {where_sql} AND (display_name IS NOT NULL OR full_name IS NOT NULL)
+        ORDER BY COALESCE(display_name, full_name)
+        LIMIT ? OFFSET ?
+    """
+    params.extend([page_size, offset])
+
+    fighters = execute_query(query, tuple(params))
+
+    return {
+        "fighters": fighters,
+        "total": total,
+        "page": page,
+        "page_size": page_size
+    }
+
+
+@router.get("/{fighter_id}", response_model=FighterDetail)
+async def get_fighter(fighter_id: int):
+    """
+    Get detailed information about a specific fighter.
+    """
+    query = """
+        SELECT
+            id,
+            COALESCE(display_name, full_name, 'Unknown') as name,
+            nickname,
+            headshot_url as image_url,
+            weight_class,
+            association as nationality,
+            display_height as height,
+            display_weight as weight,
+            reach,
+            stance,
+            date_of_birth
+        FROM athletes
+        WHERE id = ?
+    """
+
+    fighter = execute_query_one(query, (fighter_id,))
+
+    if not fighter:
+        raise HTTPException(status_code=404, detail="Fighter not found")
+
+    # Get fight record
+    record_query = """
+        SELECT
+            SUM(CASE WHEN winner_id = ? THEN 1 ELSE 0 END) as wins,
+            SUM(CASE WHEN winner_id != ? AND winner_id IS NOT NULL THEN 1 ELSE 0 END) as losses,
+            SUM(CASE WHEN winner_id IS NULL THEN 1 ELSE 0 END) as draws
+        FROM fights
+        WHERE fighter_1_id = ? OR fighter_2_id = ?
+    """
+    record = execute_query_one(record_query, (fighter_id, fighter_id, fighter_id, fighter_id))
+
+    # Add record to fighter data
+    fighter_dict = dict(fighter)
+    if record:
+        fighter_dict.update({
+            "wins": record.get("wins", 0),
+            "losses": record.get("losses", 0),
+            "draws": record.get("draws", 0),
+            "no_contests": 0  # Not tracking NC in current schema
+        })
+
+    return fighter_dict
+
+
+@router.get("/{fighter_id}/fights")
+async def get_fighter_fights(
+    fighter_id: int,
+    limit: int = Query(20, ge=1, le=100)
+):
+    """
+    Get fight history for a specific fighter.
+    """
+    query = """
+        SELECT
+            f.id,
+            c.event_name,
+            c.date,
+            c.league as promotion,
+            CASE
+                WHEN f.fighter_1_id = ? THEN a2.display_name
+                ELSE a1.display_name
+            END as opponent_name,
+            CASE
+                WHEN f.fighter_1_id = ? THEN a2.id
+                ELSE a1.id
+            END as opponent_id,
+            f.winner_id,
+            f.method,
+            f.method_detail,
+            f.round,
+            f.time
+        FROM fights f
+        JOIN cards c ON f.card_id = c.year_league_event_id_event_name
+        LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
+        LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
+        WHERE f.fighter_1_id = ? OR f.fighter_2_id = ?
+        ORDER BY c.date DESC
+        LIMIT ?
+    """
+
+    fights = execute_query(query, (fighter_id, fighter_id, fighter_id, fighter_id, limit))
+
+    # Add win/loss/draw status
+    for fight in fights:
+        if fight["winner_id"] is None:
+            fight["result"] = "draw"
+        elif fight["winner_id"] == fighter_id:
+            fight["result"] = "win"
+        else:
+            fight["result"] = "loss"
+
+    return {"fights": fights}
