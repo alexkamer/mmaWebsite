@@ -109,15 +109,27 @@ export default function FighterProfilePage() {
       <div className="rounded-lg border bg-gray-900 p-8">
         <div className="flex flex-col gap-8 md:flex-row md:items-start">
           {/* Fighter Image */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 relative">
+            {/* Country Flag Background */}
+            {fighter.flag_url && !fighter.flag_url.includes('blank.png') && (
+              <div className="absolute inset-0 rounded-lg overflow-hidden opacity-30">
+                <img
+                  src={fighter.flag_url}
+                  alt={fighter.nationality || 'Country flag'}
+                  className="h-full w-full object-cover scale-150"
+                />
+              </div>
+            )}
+
+            {/* Fighter Image */}
             {fighter.image_url ? (
               <img
                 src={fighter.image_url}
                 alt={fighter.name}
-                className="h-48 w-48 rounded-lg object-cover"
+                className="relative h-48 w-48 rounded-lg object-cover"
               />
             ) : (
-              <div className="flex h-48 w-48 items-center justify-center rounded-lg bg-gray-800 text-6xl font-bold">
+              <div className="relative flex h-48 w-48 items-center justify-center rounded-lg bg-gray-800 text-6xl font-bold">
                 {fighter.name.charAt(0)}
               </div>
             )}
@@ -184,6 +196,12 @@ export default function FighterProfilePage() {
                 <div className="rounded border bg-gray-800 p-3">
                   <div className="text-sm text-gray-400">Nationality</div>
                   <div className="font-semibold">{fighter.nationality}</div>
+                </div>
+              )}
+              {fighter.team && (
+                <div className="rounded border bg-gray-800 p-3">
+                  <div className="text-sm text-gray-400">Team</div>
+                  <div className="font-semibold">{fighter.team}</div>
                 </div>
               )}
             </div>

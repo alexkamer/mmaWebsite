@@ -171,6 +171,8 @@ export interface FighterBase {
   image_url?: string;
   weight_class?: string;
   nationality?: string;
+  flag_url?: string;
+  team?: string;
   wins?: number;
   losses?: number;
   draws?: number;

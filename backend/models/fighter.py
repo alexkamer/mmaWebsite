@@ -11,6 +11,11 @@ class FighterBase(BaseModel):
     image_url: Optional[str] = None
     weight_class: Optional[str] = None
     nationality: Optional[str] = None
+    flag_url: Optional[str] = None
+    team: Optional[str] = None
+    wins: Optional[int] = None
+    losses: Optional[int] = None
+    draws: Optional[int] = None
 
 
 class FighterDetail(FighterBase):

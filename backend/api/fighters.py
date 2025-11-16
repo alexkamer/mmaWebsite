@@ -25,18 +25,8 @@ async def get_filter_options():
     """
     weight_classes = execute_query(weight_class_query)
 
-    # Get nationalities with counts
-    nationality_query = """
-        SELECT
-            association as nationality,
-            COUNT(*) as count
-        FROM athletes
-        WHERE association IS NOT NULL AND association != ''
-        GROUP BY association
-        ORDER BY count DESC
-        LIMIT 50
-    """
-    nationalities = execute_query(nationality_query)
+    # Get nationalities with counts (currently disabled - association field contains team/gym, not nationality)
+    nationalities = []
 
     return {
         "weight_classes": weight_classes,
@@ -105,7 +95,32 @@ async def list_fighters(
             a.nickname,
             a.headshot_url as image_url,
             a.weight_class,
-            a.association as nationality,
+            CASE
+                WHEN a.flag_url LIKE '%/usa.png' THEN 'USA'
+                WHEN a.flag_url LIKE '%/bra.png' THEN 'Brazil'
+                WHEN a.flag_url LIKE '%/rus.png' THEN 'Russia'
+                WHEN a.flag_url LIKE '%/eng.png' THEN 'England'
+                WHEN a.flag_url LIKE '%/ire.png' THEN 'Ireland'
+                WHEN a.flag_url LIKE '%/mex.png' THEN 'Mexico'
+                WHEN a.flag_url LIKE '%/can.png' THEN 'Canada'
+                WHEN a.flag_url LIKE '%/aus.png' THEN 'Australia'
+                WHEN a.flag_url LIKE '%/pol.png' THEN 'Poland'
+                WHEN a.flag_url LIKE '%/ned.png' THEN 'Netherlands'
+                WHEN a.flag_url LIKE '%/swe.png' THEN 'Sweden'
+                WHEN a.flag_url LIKE '%/fra.png' THEN 'France'
+                WHEN a.flag_url LIKE '%/ger.png' THEN 'Germany'
+                WHEN a.flag_url LIKE '%/jpn.png' THEN 'Japan'
+                WHEN a.flag_url LIKE '%/kor.png' THEN 'South Korea'
+                WHEN a.flag_url LIKE '%/chn.png' THEN 'China'
+                WHEN a.flag_url LIKE '%/ita.png' THEN 'Italy'
+                WHEN a.flag_url LIKE '%/esp.png' THEN 'Spain'
+                WHEN a.flag_url LIKE '%/ukr.png' THEN 'Ukraine'
+                WHEN a.flag_url LIKE '%/geo.png' THEN 'Georgia'
+                WHEN a.flag_url LIKE '%/blank.png' THEN NULL
+                ELSE NULL
+            END as nationality,
+            a.flag_url,
+            a.association as team,
             (SELECT COUNT(*) FROM fights f
              WHERE (f.fighter_1_id = a.id AND f.fighter_1_winner = 1)
                 OR (f.fighter_2_id = a.id AND f.fighter_2_winner = 1)) as wins,
@@ -144,7 +159,32 @@ async def get_fighter(fighter_id: int):
             nickname,
             headshot_url as image_url,
             weight_class,
-            association as nationality,
+            CASE
+                WHEN flag_url LIKE '%/usa.png' THEN 'USA'
+                WHEN flag_url LIKE '%/bra.png' THEN 'Brazil'
+                WHEN flag_url LIKE '%/rus.png' THEN 'Russia'
+                WHEN flag_url LIKE '%/eng.png' THEN 'England'
+                WHEN flag_url LIKE '%/ire.png' THEN 'Ireland'
+                WHEN flag_url LIKE '%/mex.png' THEN 'Mexico'
+                WHEN flag_url LIKE '%/can.png' THEN 'Canada'
+                WHEN flag_url LIKE '%/aus.png' THEN 'Australia'
+                WHEN flag_url LIKE '%/pol.png' THEN 'Poland'
+                WHEN flag_url LIKE '%/ned.png' THEN 'Netherlands'
+                WHEN flag_url LIKE '%/swe.png' THEN 'Sweden'
+                WHEN flag_url LIKE '%/fra.png' THEN 'France'
+                WHEN flag_url LIKE '%/ger.png' THEN 'Germany'
+                WHEN flag_url LIKE '%/jpn.png' THEN 'Japan'
+                WHEN flag_url LIKE '%/kor.png' THEN 'South Korea'
+                WHEN flag_url LIKE '%/chn.png' THEN 'China'
+                WHEN flag_url LIKE '%/ita.png' THEN 'Italy'
+                WHEN flag_url LIKE '%/esp.png' THEN 'Spain'
+                WHEN flag_url LIKE '%/ukr.png' THEN 'Ukraine'
+                WHEN flag_url LIKE '%/geo.png' THEN 'Georgia'
+                WHEN flag_url LIKE '%/blank.png' THEN NULL
+                ELSE NULL
+            END as nationality,
+            flag_url,
+            association as team,
             display_height as height,
             display_weight as weight,
             reach,
@@ -259,7 +299,32 @@ async def compare_fighters(fighter1_id: int, fighter2_id: int):
             nickname,
             headshot_url as image_url,
             weight_class,
-            association as nationality,
+            CASE
+                WHEN flag_url LIKE '%/usa.png' THEN 'USA'
+                WHEN flag_url LIKE '%/bra.png' THEN 'Brazil'
+                WHEN flag_url LIKE '%/rus.png' THEN 'Russia'
+                WHEN flag_url LIKE '%/eng.png' THEN 'England'
+                WHEN flag_url LIKE '%/ire.png' THEN 'Ireland'
+                WHEN flag_url LIKE '%/mex.png' THEN 'Mexico'
+                WHEN flag_url LIKE '%/can.png' THEN 'Canada'
+                WHEN flag_url LIKE '%/aus.png' THEN 'Australia'
+                WHEN flag_url LIKE '%/pol.png' THEN 'Poland'
+                WHEN flag_url LIKE '%/ned.png' THEN 'Netherlands'
+                WHEN flag_url LIKE '%/swe.png' THEN 'Sweden'
+                WHEN flag_url LIKE '%/fra.png' THEN 'France'
+                WHEN flag_url LIKE '%/ger.png' THEN 'Germany'
+                WHEN flag_url LIKE '%/jpn.png' THEN 'Japan'
+                WHEN flag_url LIKE '%/kor.png' THEN 'South Korea'
+                WHEN flag_url LIKE '%/chn.png' THEN 'China'
+                WHEN flag_url LIKE '%/ita.png' THEN 'Italy'
+                WHEN flag_url LIKE '%/esp.png' THEN 'Spain'
+                WHEN flag_url LIKE '%/ukr.png' THEN 'Ukraine'
+                WHEN flag_url LIKE '%/geo.png' THEN 'Georgia'
+                WHEN flag_url LIKE '%/blank.png' THEN NULL
+                ELSE NULL
+            END as nationality,
+            flag_url,
+            association as team,
             display_height as height,
             display_weight as weight,
             reach,
