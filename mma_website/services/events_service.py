@@ -63,10 +63,13 @@ def get_event_details(event_id: int) -> Optional[Dict[str, Any]]:
         
     event_dict = row_to_dict(event)
     
+    # Get event date for record calculation
+    event_date = event_dict.get('date')
+
     # Get all fights for this event with fighter details and odds
     fights = db_session.execute(text("""
         WITH latest_odds AS (
-            SELECT 
+            SELECT
                 fight_id,
                 home_athlete_id,
                 away_athlete_id,
@@ -76,18 +79,18 @@ def get_event_details(event_id: int) -> Optional[Dict[str, Any]]:
             FROM odds
             WHERE provider_id != 59
         )
-        SELECT 
-            f.*, 
+        SELECT
+            f.*,
             a1.full_name as fighter_1_name,
             a1.headshot_url as fighter_1_headshot,
             a2.full_name as fighter_2_name,
             a2.headshot_url as fighter_2_headshot,
-            CASE 
+            CASE
                 WHEN f.fighter_1_id = o.home_athlete_id THEN o.home_moneyLine_odds_current_american
                 WHEN f.fighter_1_id = o.away_athlete_id THEN o.away_moneyLine_odds_current_american
                 ELSE NULL
             END as fighter_1_odds,
-            CASE 
+            CASE
                 WHEN f.fighter_2_id = o.home_athlete_id THEN o.home_moneyLine_odds_current_american
                 WHEN f.fighter_2_id = o.away_athlete_id THEN o.away_moneyLine_odds_current_american
                 ELSE NULL
@@ -97,14 +100,60 @@ def get_event_details(event_id: int) -> Optional[Dict[str, Any]]:
         JOIN athletes a2 ON f.fighter_2_id = a2.id
         LEFT JOIN latest_odds o ON f.fight_id = o.fight_id AND o.rn = 1
         WHERE f.event_id = :event_id
-        ORDER BY f.match_number
+        ORDER BY f.match_number DESC
     """), {"event_id": event_id}).fetchall()
     
     # Process fights and check for stats availability
     event_dict['fights'] = []
     for fight in fights:
         fight_dict = row_to_dict(fight)
-        
+
+        # Calculate fighter 1 record (fights before this event)
+        if event_date:
+            record1 = db_session.execute(text("""
+                SELECT
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id AND f.fighter_1_winner = 1) OR
+                                  (f.fighter_2_id = :fighter_id AND f.fighter_2_winner = 1) THEN 1 ELSE 0 END) as wins,
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id AND f.fighter_2_winner = 1) OR
+                                  (f.fighter_2_id = :fighter_id AND f.fighter_1_winner = 1) THEN 1 ELSE 0 END) as losses,
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id OR f.fighter_2_id = :fighter_id) AND
+                                  f.fighter_1_winner = 0 AND f.fighter_2_winner = 0 THEN 1 ELSE 0 END) as draws
+                FROM fights f
+                JOIN cards c ON f.event_id = c.event_id
+                WHERE (f.fighter_1_id = :fighter_id OR f.fighter_2_id = :fighter_id)
+                AND c.date < :event_date
+            """), {"fighter_id": fight.fighter_1_id, "event_date": event_date}).fetchone()
+
+            if record1 and record1.wins is not None:
+                fight_dict['fighter_1_record'] = f"{record1.wins}-{record1.losses}-{record1.draws}"
+            else:
+                fight_dict['fighter_1_record'] = None
+        else:
+            fight_dict['fighter_1_record'] = None
+
+        # Calculate fighter 2 record (fights before this event)
+        if event_date:
+            record2 = db_session.execute(text("""
+                SELECT
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id AND f.fighter_1_winner = 1) OR
+                                  (f.fighter_2_id = :fighter_id AND f.fighter_2_winner = 1) THEN 1 ELSE 0 END) as wins,
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id AND f.fighter_2_winner = 1) OR
+                                  (f.fighter_2_id = :fighter_id AND f.fighter_1_winner = 1) THEN 1 ELSE 0 END) as losses,
+                    SUM(CASE WHEN (f.fighter_1_id = :fighter_id OR f.fighter_2_id = :fighter_id) AND
+                                  f.fighter_1_winner = 0 AND f.fighter_2_winner = 0 THEN 1 ELSE 0 END) as draws
+                FROM fights f
+                JOIN cards c ON f.event_id = c.event_id
+                WHERE (f.fighter_1_id = :fighter_id OR f.fighter_2_id = :fighter_id)
+                AND c.date < :event_date
+            """), {"fighter_id": fight.fighter_2_id, "event_date": event_date}).fetchone()
+
+            if record2 and record2.wins is not None:
+                fight_dict['fighter_2_record'] = f"{record2.wins}-{record2.losses}-{record2.draws}"
+            else:
+                fight_dict['fighter_2_record'] = None
+        else:
+            fight_dict['fighter_2_record'] = None
+
         # Check if statistics are available for this fight
         stats = db_session.execute(text("""
             SELECT COUNT(*) as count
@@ -116,10 +165,10 @@ def get_event_details(event_id: int) -> Optional[Dict[str, Any]]:
             "fighter_1_id": fight.fighter_1_id,
             "fighter_2_id": fight.fighter_2_id
         }).scalar()
-        
+
         fight_dict['has_stats'] = stats > 0
         event_dict['fights'].append(fight_dict)
-    
+
     return event_dict
 
 def get_fight_stats(fight_id: str) -> Dict[str, Any]:
