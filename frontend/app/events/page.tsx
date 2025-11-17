@@ -43,7 +43,11 @@ export default function EventsPage() {
           promotion,
           limit: 200
         })
-        setEvents(data.events)
+        // Deduplicate events by ID to fix React key warnings
+        const uniqueEvents = data.events.filter((event, index, self) =>
+          index === self.findIndex((e) => e.id === event.id)
+        )
+        setEvents(uniqueEvents)
       } catch (error) {
         console.error("Error fetching events:", error)
       } finally {
