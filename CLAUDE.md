@@ -92,19 +92,19 @@ Key tables:
 ## What's Next
 
 ### ✅ COMPLETED: FastAPI + Next.js Migration
+- ✅ **Homepage** (`/`): Professional analytics-style dashboard with champions, events, and featured fighters
 - ✅ **Events Detail Page**: Migrated with enhanced premium design (`/events/{id}`)
+- ✅ **Rankings Page** (`/rankings`): UFC rankings by division with champion spotlights, fighter photos, stats (height, reach, stance), search functionality, and tabbed navigation (Men's/Women's/P4P)
 - ✅ **shadcn/ui Setup**: Component library configured (New York style)
-- ✅ **FastAPI Backend**: Complete events API with fighter records
+- ✅ **FastAPI Backend**: Complete events, homepage, and rankings APIs with fighter records and stats
 - ✅ **Main Event Display**: Fixed fight ordering by match_number
 
 ### 🚧 Pages to Migrate from Flask
-1. **Homepage** (`/`) - Dashboard with recent/upcoming events
-2. **Fighters List** (`/fighters`) - Searchable fighter database
-3. **Fighter Detail** (`/fighters/{id}`) - Individual fighter profiles with fight history
-4. **Rankings** (`/rankings`) - UFC rankings by division
-5. **Events List** (`/events`) - Event listings by year
-6. **Games** - Fighter Wordle, Tale of the Tape
-7. **Analytics Tools** - Next Event, System Checker
+1. **Fighters List** (`/fighters`) - Searchable fighter database
+2. **Fighter Detail** (`/fighters/{id}`) - Individual fighter profiles with fight history
+3. **Events List** (`/events`) - Event listings by year
+4. **Games** - Fighter Wordle, Tale of the Tape
+5. **Analytics Tools** - Next Event, System Checker
 
 ### Feature Enhancements
 1. **Data Updates**: Automated data refresh from ESPN API
@@ -122,6 +122,16 @@ Key tables:
 2. **Performance**: Database optimization and caching
 3. **Deployment**: Production configuration for FastAPI and Next.js
 4. **API Docs**: Enhance FastAPI automatic documentation
+
+## Known Issues & Limitations
+
+### Chrome DevTools MCP
+⚠️ **CRITICAL**: When using chrome-devtools MCP tools for testing/screenshots:
+- **DO NOT use `fullPage: true` on `take_screenshot`** for long pages
+- Full-page screenshots can exceed the 8000px dimension limit
+- Error: `messages.3.content.2.image.source.base64.data: At least one of the image dimensions exceed max allowed size: 8000 pixels`
+- **Solution**: Use viewport screenshots only (default behavior without `fullPage: true`)
+- For long pages, take multiple viewport screenshots while scrolling instead
 
 ## Development Commands
 
