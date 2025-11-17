@@ -27,15 +27,26 @@ A comprehensive MMA (Mixed Martial Arts) web application featuring fighter profi
      - Compare functionality with searchable fighter modal
      - Hover effects and smooth transitions throughout
 
-2. **Event Management** (`/events/{id}`) ✅ **MIGRATED TO NEXT.JS**
-   - Premium event detail pages with dramatic gradient headers
-   - Championship main event showcase with large fighter photos (160px)
-   - Main card, prelims, and early prelims sections with progressive visual hierarchy
-   - Fighter records calculated at fight time (W-L-D format)
-   - Title fight indicators with gold borders and championship badges
-   - Fight results, methods, rounds, and timing
-   - Winner/loser badges with color coding
-   - Responsive design with shadcn/ui components
+2. **Event Management**
+   - **Events List** (`/events`) ✅ **MIGRATED TO NEXT.JS**
+     - Premium hero section with grid background pattern
+     - Year filtering with horizontal scroll buttons (2025, 2024, 2023, etc.)
+     - Promotion tabs with event counts (All/UFC/Other)
+     - Responsive event cards grid (1-3 columns)
+     - Event cards display: promotion badge, event name, date, location
+     - Hover effects with red glow on cards
+     - Direct links to event detail pages
+     - Loading skeletons for smooth UX
+     - Empty state when no events found
+   - **Event Detail** (`/events/{id}`) ✅ **MIGRATED TO NEXT.JS**
+     - Premium event detail pages with dramatic gradient headers
+     - Championship main event showcase with large fighter photos (160px)
+     - Main card, prelims, and early prelims sections with progressive visual hierarchy
+     - Fighter records calculated at fight time (W-L-D format)
+     - Title fight indicators with gold borders and championship badges
+     - Fight results, methods, rounds, and timing
+     - Winner/loser badges with color coding
+     - Responsive design with shadcn/ui components
 
 3. **UFC Rankings** (`/rankings`)
    - Current UFC rankings by division (men's and women's)
@@ -108,8 +119,9 @@ Key tables:
 
 ### ✅ COMPLETED: FastAPI + Next.js Migration
 - ✅ **Homepage** (`/`): Professional analytics-style dashboard with champions, events, and featured fighters
-- ✅ **Events Detail Page**: Migrated with enhanced premium design (`/events/{id}`)
-- ✅ **Rankings Page** (`/rankings`): UFC rankings by division with champion spotlights, fighter photos, stats (height, reach, stance), search functionality, and tabbed navigation (Men's/Women's/P4P)
+- ✅ **Events List Page** (`/events`): Year-based filtering (2015-2025), promotion tabs (All/UFC/Other), responsive event cards with dates and locations
+- ✅ **Events Detail Page** (`/events/{id}`): Migrated with enhanced premium design
+- ✅ **Rankings Page** (`/rankings`): UFC rankings by division with champion spotlights, fighter photos, stats, search, and tabbed navigation
 - ✅ **Fighters List Page** (`/fighters`): Searchable database with 36,847+ fighters, alphabet navigation, weight class filters, infinite scroll, compare mode
 - ✅ **Fighter Detail Page** (`/fighters/{id}`): Premium split-screen design with comprehensive stats, fight history with filters, win streaks, fight statistics, and compare functionality
 - ✅ **shadcn/ui Setup**: Component library configured (New York style)
@@ -118,10 +130,9 @@ Key tables:
 - ✅ **Image Configuration**: ESPN CDN configured for Next.js Image component
 
 ### 🚧 Pages to Migrate from Flask
-1. **Events List** (`/events`) - Event listings by year with promotion filtering
-2. **Fighter Compare** (`/fighters/compare`) - Side-by-side fighter comparison with head-to-head records
-3. **Games** - Fighter Wordle, Tale of the Tape
-4. **Analytics Tools** - Next Event, System Checker
+1. **Fighter Compare** (`/fighters/compare`) - Side-by-side fighter comparison with head-to-head records
+2. **Games** - Fighter Wordle, Tale of the Tape
+3. **Analytics Tools** - Next Event, System Checker
 
 ### Feature Enhancements
 1. **Data Updates**: Automated data refresh from ESPN API
