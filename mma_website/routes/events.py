@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for
 from mma_website.services.events_service import (
     get_event_years, 
     get_event_year_for_event, 
@@ -51,15 +51,8 @@ def events():
 
 @bp.route('/<int:event_id>')
 def event_detail(event_id):
-    """Individual event detail page"""
-    event = get_event_details(event_id)
-    
-    if not event:
-        return render_template('events.html', events=[], error="Event not found")
-    
-    return render_template('event_detail.html', 
-                         event=event, 
-                         fights=event.get('fights', []))
+    """Individual event detail page - redirects to events page with event_id"""
+    return redirect(url_for('events.events', event_id=event_id))
 
 @bp.route('/api/fight-stats/<fight_id>')
 def api_fight_stats(fight_id):
