@@ -58,18 +58,28 @@ A comprehensive MMA (Mixed Martial Arts) web application featuring fighter profi
      - Winner/loser badges with color coding
      - Responsive design with shadcn/ui components
 
-3. **UFC Rankings** (`/rankings`)
+3. **UFC Rankings** (`/rankings`) ✅ **MIGRATED TO NEXT.JS**
    - Current UFC rankings by division (men's and women's)
    - Pound-for-pound rankings
    - Champion and interim champion tracking
 
-4. **Interactive Games**
+4. **Analytics Tools**
+   - **Next Event** (`/next-event`) ✅ **MIGRATED TO NEXT.JS**
+     - Live upcoming UFC event data from ESPN API
+     - Premium purple/indigo gradient event header with date, venue, location
+     - Betting insights summary (total fights, clear favorites count, avg favorite probability)
+     - Main event showcase with large fighter photos (128px), records, odds
+     - Win probability calculations with visual progress bars
+     - Red/blue color coding for favorites vs underdogs (⭐ indicator)
+     - Complete fight card with fighter images, records, odds, weight classes
+     - Direct links to fighter profiles and comparison pages
+     - View Fighters and Compare buttons for each matchup
+     - Rounds format display (3 or 5 round fights)
+   - **System Checker**: Betting system analysis (age gaps, favorites, etc.) - TO BE MIGRATED
+
+5. **Interactive Games** - TO BE MIGRATED
    - **Fighter Wordle**: Guess UFC fighters with hints
    - **Tale of the Tape**: Side-by-side fighter comparisons
-
-5. **Analytics Tools**
-   - **Next Event**: Live upcoming UFC event data from ESPN API
-   - **System Checker**: Betting system analysis (age gaps, favorites, etc.)
 
 ### Technical Features
 - **FastAPI Backend**: Async Python API with Pydantic models
@@ -135,16 +145,17 @@ Key tables:
 - ✅ **Fighters List Page** (`/fighters`): Searchable database with 36,847+ fighters, alphabet navigation, weight class filters, infinite scroll, compare mode
 - ✅ **Fighter Detail Page** (`/fighters/{id}`): Premium split-screen design with comprehensive stats, fight history with filters, win streaks, fight statistics, and compare functionality
 - ✅ **Fighter Compare Page** (`/fighters/compare`): Side-by-side fighter comparison with physical attributes, fight records, recent form, and common opponents
+- ✅ **Next Event Page** (`/next-event`): Live ESPN API integration showing upcoming fights with betting insights, win probabilities, and fighter comparisons
 - ✅ **shadcn/ui Setup**: Component library configured (New York style)
-- ✅ **FastAPI Backend**: Complete events, homepage, rankings, and fighters APIs with pagination, filtering, and comparison
+- ✅ **FastAPI Backend**: Complete events, homepage, rankings, fighters, and ESPN APIs with pagination, filtering, and comparison
 - ✅ **Main Event Display**: Fixed fight ordering by match_number
 - ✅ **Image Configuration**: ESPN CDN configured for Next.js Image component
 
 ### 🚧 Pages Still to Migrate from Flask
-1. **Games** - Fighter Wordle, Tale of the Tape
-2. **Analytics Tools** - Next Event, System Checker
+1. **System Checker** (`/system-checker`) - Betting system analysis tool
+2. **Games** - Fighter Wordle, Tale of the Tape
 
-**Note**: All core database features (Homepage, Events, Fighters, Rankings, Comparisons) are now fully migrated and production-ready.
+**Note**: All core features (Homepage, Events, Fighters, Rankings, Comparisons, Next Event) are now fully migrated and production-ready!
 
 ### Feature Enhancements
 1. **Data Updates**: Automated data refresh from ESPN API
