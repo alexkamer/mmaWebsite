@@ -6,11 +6,18 @@ A comprehensive MMA (Mixed Martial Arts) web application featuring fighter profi
 ## Current Webapp Capabilities
 
 ### Core Features
-1. **Fighter Database & Profiles** (`/fighters/{id}`)
-   - Detailed fighter information with photos, stats, records
-   - Fight history with filtering by promotion, rounds, fight type, weight class, odds
-   - Career timeline visualization with fights and ranking changes
-   - Fighter search functionality with normalized name matching
+1. **Fighter Database & Profiles**
+   - **Fighters List** (`/fighters`) ✅ **MIGRATED TO NEXT.JS**
+     - Searchable database of 36,847+ fighters with infinite scroll
+     - Alphabet filter (A-Z) for quick navigation
+     - Weight class filtering with fighter counts
+     - Fighter cards displaying photos, nicknames, records, weight class
+     - Compare mode for side-by-side fighter analysis
+     - Responsive grid layout (1-4 columns based on screen size)
+   - **Fighter Detail** (`/fighters/{id}`)
+     - Detailed fighter information with photos, stats, records
+     - Fight history with filtering by promotion, rounds, fight type, weight class, odds
+     - Career timeline visualization with fights and ranking changes
 
 2. **Event Management** (`/events/{id}`) ✅ **MIGRATED TO NEXT.JS**
    - Premium event detail pages with dramatic gradient headers
@@ -95,16 +102,17 @@ Key tables:
 - ✅ **Homepage** (`/`): Professional analytics-style dashboard with champions, events, and featured fighters
 - ✅ **Events Detail Page**: Migrated with enhanced premium design (`/events/{id}`)
 - ✅ **Rankings Page** (`/rankings`): UFC rankings by division with champion spotlights, fighter photos, stats (height, reach, stance), search functionality, and tabbed navigation (Men's/Women's/P4P)
+- ✅ **Fighters List Page** (`/fighters`): Searchable database with 36,847+ fighters, alphabet navigation, weight class filters, infinite scroll, compare mode
 - ✅ **shadcn/ui Setup**: Component library configured (New York style)
-- ✅ **FastAPI Backend**: Complete events, homepage, and rankings APIs with fighter records and stats
+- ✅ **FastAPI Backend**: Complete events, homepage, rankings, and fighters APIs with pagination and filtering
 - ✅ **Main Event Display**: Fixed fight ordering by match_number
+- ✅ **Image Configuration**: ESPN CDN configured for Next.js Image component
 
 ### 🚧 Pages to Migrate from Flask
-1. **Fighters List** (`/fighters`) - Searchable fighter database
-2. **Fighter Detail** (`/fighters/{id}`) - Individual fighter profiles with fight history
-3. **Events List** (`/events`) - Event listings by year
-4. **Games** - Fighter Wordle, Tale of the Tape
-5. **Analytics Tools** - Next Event, System Checker
+1. **Fighter Detail** (`/fighters/{id}`) - Individual fighter profiles with fight history and career timeline
+2. **Events List** (`/events`) - Event listings by year with promotion filtering
+3. **Games** - Fighter Wordle, Tale of the Tape
+4. **Analytics Tools** - Next Event, System Checker
 
 ### Feature Enhancements
 1. **Data Updates**: Automated data refresh from ESPN API
