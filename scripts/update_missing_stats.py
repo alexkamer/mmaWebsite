@@ -60,16 +60,31 @@ def extract_stats_from_espn_data(data: Dict) -> Dict:
     """Extract relevant stats from ESPN API response"""
     stats = {}
 
-    # Display measurements (reach, height, weight)
+    # Display measurements (reach, height, weight) - check both formats
     if "displayMeasurements" in data:
         measurements = data["displayMeasurements"]
         stats["reach"] = measurements.get("reach")
         stats["height"] = measurements.get("height")
         stats["weight"] = measurements.get("weight")
+    else:
+        # Check for individual display fields
+        if "displayReach" in data:
+            # Remove the " character from reach if present (e.g., '79"' -> '79')
+            reach = data["displayReach"]
+            if isinstance(reach, str) and reach.endswith('"'):
+                reach = reach[:-1]
+            stats["reach"] = reach
+        if "displayHeight" in data:
+            stats["height"] = data["displayHeight"]
+        if "displayWeight" in data:
+            stats["weight"] = data["displayWeight"]
 
-    # Stance
+    # Stance - check both formats
     if "stance" in data:
-        stats["stance"] = data["stance"].get("text") or data["stance"].get("description")
+        if isinstance(data["stance"], dict):
+            stats["stance"] = data["stance"].get("text") or data["stance"].get("description")
+        elif isinstance(data["stance"], str):
+            stats["stance"] = data["stance"]
 
     # Age
     if "age" in data:
