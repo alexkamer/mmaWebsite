@@ -288,7 +288,7 @@ def execute_rankings_query(division: Optional[str]) -> Dict[str, Any]:
 
     if division:
         cursor.execute("""
-            SELECT r.rank, r.fighter_name, r.division, r.is_champion, r.is_interim,
+            SELECT r.rank, r.fighter_name, r.division, r.is_champion, r.is_interim_champion,
                    a.id as fighter_id, a.headshot_url
             FROM ufc_rankings r
             LEFT JOIN athletes a ON LOWER(r.fighter_name) = LOWER(a.full_name)
@@ -322,7 +322,7 @@ def execute_rankings_query(division: Optional[str]) -> Dict[str, Any]:
     else:
         # Get all champions
         cursor.execute("""
-            SELECT r.division, r.fighter_name, r.is_interim,
+            SELECT r.division, r.fighter_name, r.is_interim_champion,
                    a.id as fighter_id, a.headshot_url
             FROM ufc_rankings r
             LEFT JOIN athletes a ON LOWER(r.fighter_name) = LOWER(a.full_name)

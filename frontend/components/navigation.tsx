@@ -12,6 +12,7 @@ const navItems = [
   { href: "/events", label: "Events" },
   { href: "/rankings", label: "Rankings" },
   { href: "/games", label: "Games" },
+  { href: "/tools", label: "Tools" },
 ]
 
 export function Navigation() {

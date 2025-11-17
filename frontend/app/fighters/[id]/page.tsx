@@ -352,7 +352,7 @@ export default function FighterProfilePage() {
                 </div>
               )}
 
-              {fighter.reach && (
+              {fighter.reach && fighter.reach !== '0.0' && fighter.reach !== '--' && (
                 <div className="group rounded-xl border border-gray-800 bg-gray-900/50 p-4 transition-all hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-600/10">
                   <div className="flex items-center gap-2 text-gray-400 text-xs mb-1.5">
                     <Maximize2 className="h-3.5 w-3.5" />
@@ -362,7 +362,7 @@ export default function FighterProfilePage() {
                 </div>
               )}
 
-              {fighter.stance && (
+              {fighter.stance && fighter.stance !== '--' && (
                 <div className="group rounded-xl border border-gray-800 bg-gray-900/50 p-4 transition-all hover:border-blue-600/50 hover:shadow-lg hover:shadow-blue-600/10">
                   <div className="flex items-center gap-2 text-gray-400 text-xs mb-1.5">
                     <Activity className="h-3.5 w-3.5" />

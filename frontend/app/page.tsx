@@ -1,8 +1,32 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
+import { Flame } from "lucide-react"
 import { FadeIn } from "@/components/animations/fade-in"
 import { StaggerContainer, StaggerItem } from "@/components/animations/stagger-container"
+import { eventsAPI, type RecentFinish } from "@/lib/api"
 
 export default function HomePage() {
+  const [finishes, setFinishes] = useState<RecentFinish[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchFinishes = async () => {
+      try {
+        const data = await eventsAPI.getRecentFinishes({ limit: 6 })
+        setFinishes(data.finishes)
+      } catch (error) {
+        console.error("Error fetching recent finishes:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFinishes()
+  }, [])
+
   return (
     <div className="space-y-12">
       {/* Hero Section */}
@@ -18,7 +42,7 @@ export default function HomePage() {
       </FadeIn>
 
       {/* Quick Links Grid */}
-      <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" staggerDelay={0.1}>
+      <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5" staggerDelay={0.1}>
         <StaggerItem>
           <Link
             href="/fighters"
@@ -79,7 +103,115 @@ export default function HomePage() {
             </div>
           </Link>
         </StaggerItem>
+
+        <StaggerItem>
+          <Link
+            href="/tools"
+            className="block group relative overflow-hidden rounded-lg border bg-card p-6 hover:shadow-lg transition-all"
+          >
+            <div className="space-y-2">
+              <h3 className="text-2xl font-semibold">Tools</h3>
+              <p className="text-sm text-muted-foreground">
+                Analytics, betting systems, and advanced queries
+              </p>
+            </div>
+          </Link>
+        </StaggerItem>
       </StaggerContainer>
+
+      {/* Recent Finishes Section */}
+      <FadeIn delay={0.2} duration={0.6}>
+        <section className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Flame className="h-6 w-6 text-orange-500" />
+              <h2 className="text-2xl font-bold">Recent Finishes</h2>
+            </div>
+            <Link
+              href="/events"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              View All Events →
+            </Link>
+          </div>
+
+          {loading ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-40 animate-pulse rounded-lg border bg-muted"
+                />
+              ))}
+            </div>
+          ) : finishes.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {finishes.map((finish) => (
+                <div
+                  key={finish.fight_id}
+                  className="group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-lg"
+                >
+                  <div className="p-4 space-y-3">
+                    {/* Finish Type Badge */}
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-orange-500/10 px-2.5 py-0.5 text-xs font-semibold text-orange-500">
+                        {finish.finish_type}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        R{finish.round} {finish.time}
+                      </span>
+                    </div>
+
+                    {/* Winner */}
+                    <Link
+                      href={`/fighters/${finish.winner_id}`}
+                      className="block hover:underline"
+                    >
+                      <div className="flex items-center gap-3">
+                        {finish.winner_image ? (
+                          <div className="relative h-12 w-12 overflow-hidden rounded-full border-2 border-orange-500">
+                            <Image
+                              src={finish.winner_image}
+                              alt={finish.winner_name}
+                              fill
+                              sizes="48px"
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-orange-500 bg-muted text-sm font-bold">
+                            {finish.winner_name.charAt(0)}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate">
+                            {finish.winner_name}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            defeated {finish.fighter1_id === finish.winner_id ? finish.fighter2_name : finish.fighter1_name}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Event Info */}
+                    <Link
+                      href={`/events/${finish.event_id}`}
+                      className="block text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {finish.event_name}
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border bg-card p-12 text-center">
+              <p className="text-muted-foreground">No recent finishes found</p>
+            </div>
+          )}
+        </section>
+      </FadeIn>
 
       {/* Stats Section */}
       <FadeIn delay={0.3} duration={0.6}>

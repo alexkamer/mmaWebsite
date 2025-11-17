@@ -67,6 +67,69 @@ async def get_event_years():
     return {"years": [int(r["year"]) for r in results if r["year"]]}
 
 
+@router.get("/recent-finishes")
+async def get_recent_finishes(
+    limit: int = Query(12, ge=1, le=50, description="Number of recent finishes to return"),
+    promotion: Optional[str] = Query("ufc", description="Filter by promotion (e.g., 'ufc')")
+):
+    """
+    Get recent spectacular finishes (KOs, TKOs, and Submissions).
+    Returns fights with finish details and fighter information.
+    """
+    query = """
+        SELECT
+            f.fight_id,
+            f.event_id,
+            c.event_name,
+            c.date as event_date,
+            a1.id as fighter1_id,
+            COALESCE(a1.display_name, a1.full_name, 'Unknown') as fighter1_name,
+            a1.headshot_url as fighter1_image,
+            a2.id as fighter2_id,
+            COALESCE(a2.display_name, a2.full_name, 'Unknown') as fighter2_name,
+            a2.headshot_url as fighter2_image,
+            CASE
+                WHEN f.fighter_1_winner = 1 THEN COALESCE(a1.display_name, a1.full_name, 'Unknown')
+                WHEN f.fighter_2_winner = 1 THEN COALESCE(a2.display_name, a2.full_name, 'Unknown')
+                ELSE 'Unknown'
+            END as winner_name,
+            CASE
+                WHEN f.fighter_1_winner = 1 THEN a1.id
+                WHEN f.fighter_2_winner = 1 THEN a2.id
+                ELSE NULL
+            END as winner_id,
+            CASE
+                WHEN f.fighter_1_winner = 1 THEN a1.headshot_url
+                WHEN f.fighter_2_winner = 1 THEN a2.headshot_url
+                ELSE NULL
+            END as winner_image,
+            f.result_display_name as finish_type,
+            f.end_round as round,
+            f.end_time as time,
+            f.weight_class
+        FROM fights f
+        JOIN cards c ON f.event_id = c.event_id
+        LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
+        LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
+        WHERE (
+            f.result_display_name LIKE 'KO%'
+            OR f.result_display_name LIKE 'TKO%'
+            OR f.result_display_name LIKE 'Submission%'
+        )
+        AND c.league = LOWER(?)
+        AND c.date IS NOT NULL
+        ORDER BY c.date DESC, f.match_number DESC
+        LIMIT ?
+    """
+
+    finishes = execute_query(query, (promotion, limit))
+
+    return {
+        "finishes": finishes,
+        "total": len(finishes)
+    }
+
+
 @router.get("/{event_id}")
 async def get_event(event_id: int):
     """
