@@ -148,11 +148,32 @@ Key tables:
 - **Styling**: Tailwind CSS 4 with shadcn/ui (New York style)
 - **API Integration**: TanStack React Query for data fetching
 
-### ⚠️ Legacy Implementation (Flask - DEPRECATED)
-- **Status**: Flask templates in `templates/` and `mma_website/` are deprecated
-- **Migration**: Gradually moving all features to Next.js frontend
-- **Note**: Flask app (`run.py`, `app.py`) should not be used for new development
-- **Reference**: Available at `http://127.0.0.1:5004` for comparison only
+### ⛔ Legacy Implementation (Flask - OBSOLETE)
+- **Status**: ⛔ **MIGRATION COMPLETE** - All Flask functionality has been replaced by Next.js
+- **Deprecated Files**:
+  - `mma_website/`: Flask blueprints (can be removed)
+  - `templates/`: Jinja2 templates (can be removed)
+  - `app.py`: Monolithic Flask app (obsolete)
+  - `run.py`: Flask entry point Port 5004 (obsolete)
+- **Action Required**: Flask files can be safely deleted from the repository
+- **Note**: All features now available in Next.js frontend with improved design and UX
+
+## Flask Cleanup (Optional)
+
+The Flask-to-Next.js migration is complete. The following Flask files are now obsolete and can be safely removed:
+
+```bash
+# Files/directories that can be deleted:
+rm -rf mma_website/          # Flask blueprints and routes
+rm -rf templates/            # Jinja2 HTML templates
+rm app.py                    # Monolithic Flask application
+rm run.py                    # Flask entry point (Port 5004)
+```
+
+**⚠️ Important**: Before deleting, ensure:
+1. All features are working correctly in Next.js (Port 3000)
+2. You have a git backup: `git tag flask-backup-$(date +%Y%m%d)`
+3. The FastAPI backend (Port 8000) is running properly
 
 ## What's Next
 
@@ -235,10 +256,17 @@ open http://localhost:3000
 # grabData.ipynb - Initial data collection
 ```
 
-### Legacy (DEPRECATED - DO NOT USE)
+### ⛔ Legacy Flask App - DEPRECATED AND OBSOLETE
 ```bash
-# Flask app (for reference only)
-uv run run.py  # Port 5004
+# ⚠️ DO NOT USE - Flask has been fully replaced by Next.js frontend
+# The following files and directories are obsolete and can be removed:
+# - mma_website/: Flask blueprints and routes
+# - templates/: Jinja2 HTML templates
+# - app.py: Monolithic Flask application
+# - run.py: Flask entry point (PORT 5004)
+#
+# If you need to reference old functionality, all features have been
+# migrated to frontend/app/ with enhanced designs and better UX.
 ```
 
 ## Key Files & Directories
@@ -257,8 +285,10 @@ uv run run.py  # Port 5004
 - **`data/mma.db`**: Main SQLite database (82MB)
 - **`scripts/`**: Data update scripts
 
-### Legacy (DEPRECATED)
-- `mma_website/`: Flask blueprints and templates
-- `templates/`: Jinja2 HTML templates
-- `app.py`: Monolithic Flask app
-- `run.py`: Modular Flask app
+### ⛔ Obsolete Flask Files (Safe to Delete)
+- `mma_website/`: Flask blueprints and routes - **OBSOLETE**
+- `templates/`: Jinja2 HTML templates - **OBSOLETE**
+- `app.py`: Monolithic Flask application - **OBSOLETE**
+- `run.py`: Flask entry point (Port 5004) - **OBSOLETE**
+
+**Note**: These files are no longer needed. All functionality has been migrated to the Next.js frontend with enhanced designs and better performance.
