@@ -100,7 +100,7 @@ def get_event_details(event_id: int) -> Optional[Dict[str, Any]]:
         JOIN athletes a2 ON f.fighter_2_id = a2.id
         LEFT JOIN latest_odds o ON f.fight_id = o.fight_id AND o.rn = 1
         WHERE f.event_id = :event_id
-        ORDER BY f.match_number DESC
+        ORDER BY f.match_number ASC
     """), {"event_id": event_id}).fetchall()
     
     # Process fights and check for stats availability
