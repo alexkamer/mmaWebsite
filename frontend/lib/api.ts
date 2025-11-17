@@ -233,9 +233,13 @@ export interface EventFight {
   fighter1_id: number;
   fighter1_name: string;
   fighter1_image?: string;
+  fighter1_record?: string;
+  fighter1_odds?: string;
   fighter2_id: number;
   fighter2_name: string;
   fighter2_image?: string;
+  fighter2_record?: string;
+  fighter2_odds?: string;
   winner_id?: number;
   method?: string;
   method_detail?: string;
@@ -245,6 +249,8 @@ export interface EventFight {
   is_title_fight?: boolean;
   winner?: 'fighter1' | 'fighter2';
   result?: string;
+  card_segment?: string;
+  match_number?: number;
 }
 
 export interface EventListResponse {

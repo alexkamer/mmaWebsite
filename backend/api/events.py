@@ -154,7 +154,7 @@ async def get_event(event_id: int):
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    # Get fights for this event
+    # Get fights for this event with fighter records and odds
     fights_query = """
         SELECT
             f.year_league_event_id_fight_id_f1_f2 as id,
@@ -171,7 +171,8 @@ async def get_event(event_id: int):
             f.end_time as time,
             f.weight_class,
             f.fight_title as is_title_fight,
-            f.match_number
+            f.match_number,
+            f.card_segment
         FROM fights f
         LEFT JOIN athletes a1 ON f.fighter_1_id = a1.id
         LEFT JOIN athletes a2 ON f.fighter_2_id = a2.id
@@ -180,6 +181,74 @@ async def get_event(event_id: int):
     """
 
     fights = execute_query(fights_query, (event_id,))
+
+    # Get fighter records and odds for each fight
+    for fight in fights:
+        # Calculate fighter 1 record
+        record_query = """
+            SELECT
+                SUM(CASE WHEN (f.fighter_1_id = ? AND f.fighter_1_winner = 1) OR
+                              (f.fighter_2_id = ? AND f.fighter_2_winner = 1) THEN 1 ELSE 0 END) as wins,
+                SUM(CASE WHEN (f.fighter_1_id = ? AND f.fighter_2_winner = 1) OR
+                              (f.fighter_2_id = ? AND f.fighter_1_winner = 1) THEN 1 ELSE 0 END) as losses,
+                SUM(CASE WHEN (f.fighter_1_id = ? OR f.fighter_2_id = ?) AND
+                              f.fighter_1_winner = 0 AND f.fighter_2_winner = 0 THEN 1 ELSE 0 END) as draws
+            FROM fights f
+            JOIN cards c ON f.event_id = c.event_id
+            WHERE (f.fighter_1_id = ? OR f.fighter_2_id = ?)
+            AND c.date < (SELECT date FROM cards WHERE event_id = ?)
+        """
+
+        fighter1_id = fight["fighter1_id"]
+        fighter2_id = fight["fighter2_id"]
+
+        if fighter1_id:
+            record1 = execute_query_one(record_query, (
+                fighter1_id, fighter1_id, fighter1_id, fighter1_id,
+                fighter1_id, fighter1_id, fighter1_id, fighter1_id, event_id
+            ))
+            if record1 and record1["wins"] is not None:
+                fight["fighter1_record"] = f"{record1['wins']}-{record1['losses']}-{record1['draws']}"
+            else:
+                fight["fighter1_record"] = None
+
+        if fighter2_id:
+            record2 = execute_query_one(record_query, (
+                fighter2_id, fighter2_id, fighter2_id, fighter2_id,
+                fighter2_id, fighter2_id, fighter2_id, fighter2_id, event_id
+            ))
+            if record2 and record2["wins"] is not None:
+                fight["fighter2_record"] = f"{record2['wins']}-{record2['losses']}-{record2['draws']}"
+            else:
+                fight["fighter2_record"] = None
+
+        # Get odds if available
+        odds_query = """
+            SELECT
+                CASE WHEN home_athlete_id = ? THEN home_moneyLine_odds_current_american
+                     WHEN away_athlete_id = ? THEN away_moneyLine_odds_current_american
+                     ELSE NULL END as fighter1_odds,
+                CASE WHEN home_athlete_id = ? THEN home_moneyLine_odds_current_american
+                     WHEN away_athlete_id = ? THEN away_moneyLine_odds_current_american
+                     ELSE NULL END as fighter2_odds
+            FROM odds
+            WHERE fight_id = ?
+            ORDER BY provider_name = 'consensus' DESC
+            LIMIT 1
+        """
+
+        odds = execute_query_one(odds_query, (
+            str(fighter1_id), str(fighter1_id),
+            str(fighter2_id), str(fighter2_id),
+            str(fight["id"])
+        ))
+
+        if odds:
+            fight["fighter1_odds"] = odds.get("fighter1_odds")
+            fight["fighter2_odds"] = odds.get("fighter2_odds")
+        else:
+            fight["fighter1_odds"] = None
+            fight["fighter2_odds"] = None
 
     # Add winner info to each fight
     for fight in fights:
