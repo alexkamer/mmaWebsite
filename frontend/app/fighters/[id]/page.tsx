@@ -659,7 +659,7 @@ export default function FighterProfilePage() {
               <tbody className="divide-y divide-gray-800">
                 {filteredFights.map((fight, idx) => (
                   <tr
-                    key={fight.id}
+                    key={`${fight.id}-${idx}`}
                     className="bg-gray-900/40 hover:bg-gray-800/60 transition-colors group"
                   >
                     <td className="px-6 py-4">
