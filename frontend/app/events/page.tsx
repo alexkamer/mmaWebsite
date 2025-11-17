@@ -2,21 +2,28 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Calendar, MapPin } from "lucide-react"
+import { Calendar, MapPin, Trophy } from "lucide-react"
 import { eventsAPI, type Event } from "@/lib/api"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
-  const [total, setTotal] = useState(0)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [availableYears, setAvailableYears] = useState<number[]>([])
+  const [selectedPromotion, setSelectedPromotion] = useState<string>("all")
 
   useEffect(() => {
     const fetchYears = async () => {
       try {
         const data = await eventsAPI.getYears()
         setAvailableYears(data.years)
+        if (data.years.length > 0) {
+          setSelectedYear(data.years[0]) // Select most recent year by default
+        }
       } catch (error) {
         console.error("Error fetching years:", error)
       }
@@ -26,14 +33,17 @@ export default function EventsPage() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      if (!selectedYear) return
+
       setLoading(true)
       try {
+        const promotion = selectedPromotion === "all" ? undefined : selectedPromotion
         const data = await eventsAPI.list({
-          year: selectedYear || undefined,
-          limit: 100,
+          year: selectedYear,
+          promotion,
+          limit: 200
         })
         setEvents(data.events)
-        setTotal(data.total)
       } catch (error) {
         console.error("Error fetching events:", error)
       } finally {
@@ -42,123 +52,146 @@ export default function EventsPage() {
     }
 
     fetchEvents()
-  }, [selectedYear])
+  }, [selectedYear, selectedPromotion])
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
+  }
+
+  // Group events by promotion
+  const ufcEvents = events.filter(e => e.promotion?.toLowerCase() === 'ufc')
+  const otherEvents = events.filter(e => e.promotion?.toLowerCase() !== 'ufc')
+
+  const displayEvents = selectedPromotion === "ufc" ? ufcEvents :
+                       selectedPromotion === "other" ? otherEvents :
+                       events
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="space-y-4">
-        <h1 className="text-4xl font-bold">Events</h1>
-        <p className="text-muted-foreground">
-          Browse {total.toLocaleString()} MMA events
-        </p>
+      <div className="flex flex-col gap-4">
+        <h1 className="text-4xl font-bold">Fight Events</h1>
+        <p className="text-muted-foreground">Browse MMA events by year and promotion</p>
       </div>
 
-      {/* Year Filter */}
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedYear(null)}
-          className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-            selectedYear === null
-              ? "bg-primary text-primary-foreground"
-              : "bg-background hover:bg-muted"
-          }`}
-        >
-          All Years
-        </button>
-        {availableYears.map((year) => (
-          <button
-            key={year}
-            onClick={() => setSelectedYear(year)}
-            className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
-              selectedYear === year
-                ? "bg-primary text-primary-foreground"
-                : "bg-background hover:bg-muted"
-            }`}
-          >
-            {year}
-          </button>
-        ))}
+      {/* Year Selection - Horizontal Scrollable */}
+      <div className="space-y-2">
+        <h2 className="text-sm font-medium text-muted-foreground">Select Year</h2>
+        <div className="relative">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+            {availableYears.map((year) => (
+              <button
+                key={year}
+                onClick={() => setSelectedYear(year)}
+                className={`px-6 py-2 rounded-lg font-semibold whitespace-nowrap transition-all ${
+                  selectedYear === year
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "bg-muted hover:bg-muted/80"
+                }`}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Loading State */}
+      {/* Promotion Tabs */}
+      <Tabs value={selectedPromotion} onValueChange={setSelectedPromotion}>
+        <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsTrigger value="all">All Events</TabsTrigger>
+          <TabsTrigger value="ufc">
+            UFC ({ufcEvents.length})
+          </TabsTrigger>
+          <TabsTrigger value="other">
+            Other ({otherEvents.length})
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {/* Events List */}
       {loading ? (
-        <div className="space-y-4">
-          {[...Array(8)].map((_, i) => (
-            <div
-              key={i}
-              className="h-24 animate-pulse rounded-lg border bg-muted"
-            />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <Skeleton className="h-6 w-3/4 mb-3" />
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
           ))}
         </div>
+      ) : displayEvents.length === 0 ? (
+        <Card>
+          <CardContent className="p-12 text-center">
+            <Trophy className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-semibold mb-2">No Events Found</h3>
+            <p className="text-muted-foreground">
+              No events found for {selectedYear} in this category.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <>
-          {/* Events List */}
-          {events.length > 0 ? (
-            <div className="space-y-4">
-              {events.map((event) => {
-                const eventDate = event.date
-                  ? new Date(event.date)
-                  : null
-                const isPast = eventDate ? eventDate < new Date() : false
-                const isUpcoming = eventDate ? eventDate >= new Date() : false
+          {/* Event Count */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Trophy className="w-4 h-4" />
+            <span>
+              {displayEvents.length} event{displayEvents.length !== 1 ? 's' : ''} in {selectedYear}
+            </span>
+          </div>
 
-                return (
-                  <Link
-                    key={event.id}
-                    href={`/events/${event.id}`}
-                    className="group block rounded-lg border bg-card p-6 transition-all hover:shadow-lg"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-xl font-semibold group-hover:underline">
-                            {event.name}
-                          </h3>
-                          {isUpcoming && (
-                            <span className="rounded bg-green-900/30 px-2 py-1 text-xs font-semibold text-green-400">
-                              UPCOMING
-                            </span>
-                          )}
+          {/* Events Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {displayEvents.map((event) => (
+              <Link
+                key={event.id}
+                href={`/events/${event.id}`}
+                className="group"
+              >
+                <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50">
+                  <CardContent className="p-6">
+                    {/* Promotion Badge */}
+                    {event.promotion && (
+                      <Badge
+                        variant={event.promotion.toLowerCase() === 'ufc' ? 'default' : 'secondary'}
+                        className="mb-3"
+                      >
+                        {event.promotion.toUpperCase()}
+                      </Badge>
+                    )}
+
+                    {/* Event Name */}
+                    <h3 className="text-lg font-bold mb-3 group-hover:text-primary transition-colors line-clamp-2">
+                      {event.name}
+                    </h3>
+
+                    {/* Event Details */}
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      {event.date && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          <span>{formatDate(event.date)}</span>
                         </div>
-
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                          {event.date && (
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              {eventDate?.toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </div>
-                          )}
-                          {event.location && (
-                            <div className="flex items-center gap-1">
-                              <MapPin className="h-4 w-4" />
-                              {event.location}
-                            </div>
-                          )}
+                      )}
+                      {event.location && (
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-1">{event.location}</span>
                         </div>
-                      </div>
-
-                      <div className="text-right">
-                        <span className="inline-block rounded border px-3 py-1 text-xs font-medium uppercase">
-                          {event.promotion}
-                        </span>
-                      </div>
+                      )}
                     </div>
-                  </Link>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="rounded-lg border bg-card p-12 text-center">
-              <p className="text-muted-foreground">
-                No events found for {selectedYear || "all years"}
-              </p>
-            </div>
-          )}
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </>
       )}
     </div>

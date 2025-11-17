@@ -3,8 +3,256 @@
 import { useState, useEffect } from "react"
 import { useParams } from "next/navigation"
 import Link from "next/link"
-import { ArrowLeft, Calendar, MapPin, Trophy } from "lucide-react"
-import { eventsAPI, type EventDetail } from "@/lib/api"
+import { ArrowLeft, Calendar, MapPin, Trophy, TrendingUp } from "lucide-react"
+import { eventsAPI, type EventDetail, type EventFight } from "@/lib/api"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
+
+// Fighter Card Component
+function FighterCard({
+  fighter,
+  isWinner,
+  isMainEvent = false
+}: {
+  fighter: {
+    id: number
+    name: string
+    image?: string
+    record?: string
+    odds?: string
+  }
+  isWinner: boolean
+  isMainEvent?: boolean
+}) {
+  const photoSize = isMainEvent ? "w-40 h-40" : "w-20 h-20"
+  const nameSize = isMainEvent ? "text-2xl" : "text-lg"
+
+  return (
+    <div className="flex flex-col items-center text-center space-y-3">
+      <Link href={`/fighters/${fighter.id}`}>
+        <Avatar className={`${photoSize} ${isWinner ? 'ring-4 ring-green-500' : ''} cursor-pointer hover:opacity-80 transition-opacity`}>
+          <AvatarImage src={fighter.image} alt={fighter.name} />
+          <AvatarFallback className="text-2xl font-bold">
+            {fighter.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+      </Link>
+
+      <div className="space-y-2">
+        <Link
+          href={`/fighters/${fighter.id}`}
+          className={`${nameSize} font-bold text-blue-600 hover:text-blue-800 hover:underline block`}
+        >
+          {fighter.name}
+        </Link>
+
+        {fighter.record && (
+          <div className="text-sm font-mono text-muted-foreground">
+            {fighter.record}
+          </div>
+        )}
+
+        {fighter.odds && (
+          <div className={`text-sm font-bold font-mono ${
+            fighter.odds.startsWith('-') ? 'text-blue-600' : 'text-orange-600'
+          }`}>
+            {fighter.odds}
+          </div>
+        )}
+
+        {isWinner !== null && (
+          <Badge variant={isWinner ? "default" : "destructive"} className="font-bold">
+            {isWinner ? "✓ WINNER" : "LOST"}
+          </Badge>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Main Event Card Component
+function MainEventCard({ fight }: { fight: EventFight }) {
+  const isTitleFight = fight.is_title_fight
+
+  return (
+    <Card className={`${isTitleFight ? 'border-yellow-500 border-4' : ''}`}>
+      <CardHeader className={`${isTitleFight ? 'bg-gradient-to-r from-yellow-50 to-orange-50' : 'bg-gradient-to-r from-red-50 to-orange-50'}`}>
+        <CardTitle className="flex items-center gap-3">
+          <Trophy className="w-8 h-8" />
+          <span>Main Event</span>
+          {isTitleFight && (
+            <Badge variant="default" className="bg-yellow-500 text-white">
+              CHAMPIONSHIP
+            </Badge>
+          )}
+        </CardTitle>
+      </CardHeader>
+
+      <CardContent className="p-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
+          {/* Fighter 1 */}
+          <FighterCard
+            fighter={{
+              id: fight.fighter1_id,
+              name: fight.fighter1_name,
+              image: fight.fighter1_image,
+              record: fight.fighter1_record,
+              odds: fight.fighter1_odds
+            }}
+            isWinner={fight.winner === 'fighter1'}
+            isMainEvent={true}
+          />
+
+          {/* VS Section */}
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <div className="text-5xl font-black text-muted-foreground">VS</div>
+
+            {fight.method && (
+              <Card className="w-full">
+                <CardContent className="p-4 text-center">
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                    Result
+                  </div>
+                  <div className="text-lg font-bold">{fight.method}</div>
+                  {fight.round && (
+                    <div className="text-sm text-muted-foreground mt-1">
+                      Round {fight.round} {fight.time && `• ${fight.time}`}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {fight.weight_class && (
+              <Badge variant="secondary" className="px-4 py-2">
+                {fight.weight_class}
+              </Badge>
+            )}
+          </div>
+
+          {/* Fighter 2 */}
+          <FighterCard
+            fighter={{
+              id: fight.fighter2_id,
+              name: fight.fighter2_name,
+              image: fight.fighter2_image,
+              record: fight.fighter2_record,
+              odds: fight.fighter2_odds
+            }}
+            isWinner={fight.winner === 'fighter2'}
+            isMainEvent={true}
+          />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+// Regular Fight Card Component
+function FightCard({ fight, isMainCard = false }: { fight: EventFight, isMainCard?: boolean }) {
+  const photoSize = isMainCard ? "w-20 h-20" : "w-16 h-16"
+
+  return (
+    <Card className={`hover:shadow-lg transition-shadow ${fight.is_title_fight ? 'border-l-4 border-yellow-400' : ''}`}>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1">
+            <Link href={`/fighters/${fight.fighter1_id}`}>
+              <Avatar className={`${photoSize} ${fight.winner === 'fighter1' ? 'ring-2 ring-green-500' : ''} cursor-pointer hover:opacity-80 transition-opacity`}>
+                <AvatarImage src={fight.fighter1_image} alt={fight.fighter1_name} />
+                <AvatarFallback>{fight.fighter1_name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Link>
+
+            <div>
+              <Link
+                href={`/fighters/${fight.fighter1_id}`}
+                className="text-base font-bold text-blue-600 hover:text-blue-800 hover:underline block"
+              >
+                {fight.fighter1_name}
+              </Link>
+              {fight.fighter1_record && (
+                <div className="text-xs font-mono text-muted-foreground">{fight.fighter1_record}</div>
+              )}
+              <div className="flex items-center gap-2 mt-1">
+                {fight.fighter1_odds && (
+                  <span className={`text-xs font-mono font-bold ${
+                    fight.fighter1_odds.startsWith('-') ? 'text-blue-600' : 'text-orange-600'
+                  }`}>
+                    {fight.fighter1_odds}
+                  </span>
+                )}
+                {fight.winner === 'fighter1' && (
+                  <Badge variant="default" className="text-xs">Won</Badge>
+                )}
+                {fight.winner === 'fighter2' && (
+                  <Badge variant="destructive" className="text-xs">Lost</Badge>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="text-xl font-bold text-muted-foreground px-4">VS</div>
+
+          <div className="flex items-center gap-3 flex-1 flex-row-reverse">
+            <Link href={`/fighters/${fight.fighter2_id}`}>
+              <Avatar className={`${photoSize} ${fight.winner === 'fighter2' ? 'ring-2 ring-green-500' : ''} cursor-pointer hover:opacity-80 transition-opacity`}>
+                <AvatarImage src={fight.fighter2_image} alt={fight.fighter2_name} />
+                <AvatarFallback>{fight.fighter2_name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Link>
+
+            <div className="text-right">
+              <Link
+                href={`/fighters/${fight.fighter2_id}`}
+                className="text-base font-bold text-blue-600 hover:text-blue-800 hover:underline block"
+              >
+                {fight.fighter2_name}
+              </Link>
+              {fight.fighter2_record && (
+                <div className="text-xs font-mono text-muted-foreground">{fight.fighter2_record}</div>
+              )}
+              <div className="flex items-center justify-end gap-2 mt-1">
+                {fight.fighter2_odds && (
+                  <span className={`text-xs font-mono font-bold ${
+                    fight.fighter2_odds.startsWith('-') ? 'text-blue-600' : 'text-orange-600'
+                  }`}>
+                    {fight.fighter2_odds}
+                  </span>
+                )}
+                {fight.winner === 'fighter2' && (
+                  <Badge variant="default" className="text-xs">Won</Badge>
+                )}
+                {fight.winner === 'fighter1' && (
+                  <Badge variant="destructive" className="text-xs">Lost</Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Fight Details */}
+        <div className="mt-4 flex flex-col items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary">{fight.weight_class}</Badge>
+            {fight.is_title_fight && (
+              <Badge className="bg-yellow-500 text-white">Title Fight</Badge>
+            )}
+          </div>
+          {fight.method && (
+            <div className="text-sm text-muted-foreground">
+              {fight.method}
+              {fight.round && ` • Round ${fight.round}`}
+              {fight.time && ` • ${fight.time}`}
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -34,9 +282,9 @@ export default function EventDetailPage() {
   if (loading) {
     return (
       <div className="space-y-8">
-        <div className="h-8 w-48 animate-pulse rounded bg-gray-700" />
-        <div className="h-32 animate-pulse rounded-lg bg-gray-700" />
-        <div className="h-96 animate-pulse rounded-lg bg-gray-700" />
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-32 rounded-lg" />
+        <Skeleton className="h-96 rounded-lg" />
       </div>
     )
   }
@@ -52,212 +300,116 @@ export default function EventDetailPage() {
     )
   }
 
-  const eventDate = event.date ? new Date(event.date) : null
+  // Group fights by card segment
+  // Main event has the lowest match_number (typically 1)
+  const mainEventFight = event.fights?.reduce((prev, curr) =>
+    (curr.match_number < prev.match_number) ? curr : prev
+  )
+  const mainEvent = mainEventFight ? [mainEventFight] : []
+  const mainCard = event.fights?.filter(f =>
+    f.card_segment?.toLowerCase().includes('main') &&
+    f.match_number !== mainEventFight?.match_number
+  ) || []
+  const prelims = event.fights?.filter(f =>
+    f.card_segment?.toLowerCase().includes('prelim') &&
+    !f.card_segment?.toLowerCase().includes('early')
+  ) || []
+  const earlyPrelims = event.fights?.filter(f =>
+    f.card_segment?.toLowerCase().includes('early')
+  ) || []
 
   return (
     <div className="space-y-8">
       {/* Back Button */}
       <Link
         href="/events"
-        className="inline-flex items-center gap-2 text-sm hover:underline"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="w-4 h-4" />
         Back to events
       </Link>
 
       {/* Event Header */}
-      <div className="rounded-lg border bg-card p-8">
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold">{event.name}</h1>
-
-          <div className="flex flex-wrap gap-4 text-muted-foreground">
-            {eventDate && (
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                {eventDate.toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </div>
-            )}
-            {event.location && (
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
-                {event.location}
-              </div>
-            )}
-            {event.venue && (
-              <div className="flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
-                {event.venue}
-              </div>
-            )}
+      <Card className="overflow-hidden">
+        <div className="bg-gradient-to-br from-red-700 via-red-600 to-orange-600 text-white p-8 relative">
+          {/* Background Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{
+              backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px)'
+            }} />
           </div>
 
-          {event.promotion && (
-            <div className="inline-block rounded border px-3 py-1 text-sm font-medium uppercase">
-              {event.promotion}
+          <div className="relative z-10">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-lg">
+              {event.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-4 text-red-50">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5" />
+                <span className="text-lg font-semibold">{event.date}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5" />
+                <span className="text-lg">
+                  {event.venue && `${event.venue}, `}
+                  {event.location}
+                </span>
+              </div>
+              {event.fights && (
+                <Badge variant="secondary" className="bg-white/20 text-white backdrop-blur-sm">
+                  {event.fights.length} Fights
+                </Badge>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </Card>
 
-      {/* Fight Card */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold">Fight Card</h2>
+      {/* Main Event */}
+      {mainEvent.length > 0 && (
+        <div className="space-y-4">
+          <MainEventCard fight={mainEvent[0]} />
+        </div>
+      )}
 
-        {event.fights && event.fights.length > 0 ? (
-          <div className="space-y-6">
-            {/* Group fights by card segment */}
-            {(() => {
-              const mainEvent = event.fights.filter(f => f.match_number === Math.max(...event.fights.map(ff => ff.match_number || 0)))
-              const mainCard = event.fights.filter(f =>
-                f.card_segment?.toLowerCase().includes('main') &&
-                f.match_number !== Math.max(...event.fights.map(ff => ff.match_number || 0))
-              )
-              const prelims = event.fights.filter(f =>
-                f.card_segment?.toLowerCase().includes('prelim') &&
-                !f.card_segment?.toLowerCase().includes('early')
-              )
-              const earlyPrelims = event.fights.filter(f =>
-                f.card_segment?.toLowerCase().includes('early')
-              )
-
-              const sections = [
-                { title: "Main Event", fights: mainEvent, highlight: true },
-                { title: "Main Card", fights: mainCard, highlight: false },
-                { title: "Prelims", fights: prelims, highlight: false },
-                { title: "Early Prelims", fights: earlyPrelims, highlight: false },
-              ].filter(section => section.fights.length > 0)
-
-              return sections.map((section, sectionIdx) => (
-                <div key={sectionIdx} className="space-y-4">
-                  <h3 className={`text-xl font-bold ${section.highlight ? 'text-yellow-400' : ''}`}>
-                    {section.title}
-                  </h3>
-
-                  {section.fights.map((fight) => (
-                    <div
-                      key={fight.id}
-                      className={`rounded-lg border bg-card p-4 md:p-6 transition-all hover:shadow-lg ${
-                        fight.is_title_fight ? 'border-yellow-500/50' : ''
-                      }`}
-                    >
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        {/* Fighter 1 */}
-                        <Link
-                          href={`/fighters/${fight.fighter1_id}`}
-                          className="flex flex-1 items-center gap-3 md:gap-4 hover:underline"
-                        >
-                          {fight.fighter1_image ? (
-                            <img
-                              src={fight.fighter1_image}
-                              alt={fight.fighter1_name}
-                              className="h-12 w-12 md:h-16 md:w-16 rounded-full object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-full bg-gray-800 text-xl md:text-2xl font-bold flex-shrink-0">
-                              {fight.fighter1_name.charAt(0)}
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-semibold text-base md:text-lg truncate">
-                              {fight.fighter1_name}
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs md:text-sm text-muted-foreground">
-                              {fight.fighter1_record && (
-                                <span className="font-mono">{fight.fighter1_record}</span>
-                              )}
-                              {fight.fighter1_odds && (
-                                <span className={`font-mono ${
-                                  fight.fighter1_odds.startsWith('-') ? 'text-blue-400' : 'text-orange-400'
-                                }`}>
-                                  {fight.fighter1_odds}
-                                </span>
-                              )}
-                            </div>
-                            {fight.winner === "fighter1" && (
-                              <span className="text-xs md:text-sm text-green-400 font-semibold">Winner</span>
-                            )}
-                          </div>
-                        </Link>
-
-                        {/* VS and Result */}
-                        <div className="flex flex-col items-center gap-2 px-2 md:px-4 self-center">
-                          <div className="text-xl md:text-2xl font-bold text-muted-foreground">
-                            VS
-                          </div>
-                          {fight.method && (
-                            <div className="text-center">
-                              <div className="text-xs md:text-sm font-medium">{fight.method}</div>
-                              {fight.round && fight.time && (
-                                <div className="text-xs text-muted-foreground">
-                                  R{fight.round} {fight.time}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Fighter 2 */}
-                        <Link
-                          href={`/fighters/${fight.fighter2_id}`}
-                          className="flex flex-1 flex-row-reverse items-center gap-3 md:gap-4 hover:underline"
-                        >
-                          {fight.fighter2_image ? (
-                            <img
-                              src={fight.fighter2_image}
-                              alt={fight.fighter2_name}
-                              className="h-12 w-12 md:h-16 md:w-16 rounded-full object-cover flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="flex h-12 w-12 md:h-16 md:w-16 items-center justify-center rounded-full bg-gray-800 text-xl md:text-2xl font-bold flex-shrink-0">
-                              {fight.fighter2_name.charAt(0)}
-                            </div>
-                          )}
-                          <div className="flex-1 text-right min-w-0">
-                            <div className="font-semibold text-base md:text-lg truncate">
-                              {fight.fighter2_name}
-                            </div>
-                            <div className="flex flex-wrap items-center justify-end gap-2 text-xs md:text-sm text-muted-foreground">
-                              {fight.fighter2_odds && (
-                                <span className={`font-mono ${
-                                  fight.fighter2_odds.startsWith('-') ? 'text-blue-400' : 'text-orange-400'
-                                }`}>
-                                  {fight.fighter2_odds}
-                                </span>
-                              )}
-                              {fight.fighter2_record && (
-                                <span className="font-mono">{fight.fighter2_record}</span>
-                              )}
-                            </div>
-                            {fight.winner === "fighter2" && (
-                              <span className="text-xs md:text-sm text-green-400 font-semibold">Winner</span>
-                            )}
-                          </div>
-                        </Link>
-                      </div>
-
-                      {/* Weight Class */}
-                      {fight.weight_class && (
-                        <div className="mt-3 md:mt-4 text-center text-xs md:text-sm text-muted-foreground">
-                          {fight.weight_class}
-                          {fight.is_title_fight && " • ⭐ Title Fight"}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))
-            })()}
+      {/* Main Card */}
+      {mainCard.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold flex items-center gap-2">
+            <TrendingUp className="w-6 h-6" />
+            Main Card
+          </h2>
+          <div className="space-y-4">
+            {mainCard.map((fight) => (
+              <FightCard key={fight.id} fight={fight} isMainCard={true} />
+            ))}
           </div>
-        ) : (
-          <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
-            No fights scheduled for this event yet
+        </div>
+      )}
+
+      {/* Prelims */}
+      {prelims.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-muted-foreground">Prelims</h2>
+          <div className="space-y-3">
+            {prelims.map((fight) => (
+              <FightCard key={fight.id} fight={fight} />
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      {/* Early Prelims */}
+      {earlyPrelims.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-lg font-bold text-muted-foreground">Early Prelims</h2>
+          <div className="space-y-3">
+            {earlyPrelims.map((fight) => (
+              <FightCard key={fight.id} fight={fight} />
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

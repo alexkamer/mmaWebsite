@@ -1,22 +1,26 @@
 # MMA Website - Claude Code Analysis
 
 ## Overview
-A comprehensive MMA (Mixed Martial Arts) Flask web application featuring fighter profiles, event management, rankings, and interactive games. The app currently uses the older Flask structure (single app.py) but has a newer modular structure available in the `mma_website/` package.
+A comprehensive MMA (Mixed Martial Arts) web application featuring fighter profiles, event management, rankings, and interactive games. The application uses a **FastAPI backend** with a **Next.js frontend** for a modern, professional architecture.
 
 ## Current Webapp Capabilities
 
 ### Core Features
-1. **Fighter Database & Profiles** (`/fighter/<id>`)
+1. **Fighter Database & Profiles** (`/fighters/{id}`)
    - Detailed fighter information with photos, stats, records
    - Fight history with filtering by promotion, rounds, fight type, weight class, odds
    - Career timeline visualization with fights and ranking changes
    - Fighter search functionality with normalized name matching
 
-2. **Event Management** (`/events`)
-   - Event listings by year with fight cards
-   - Detailed event pages showing all fights with fighter photos and odds
-   - Fight statistics when available
-   - Recent and upcoming events on homepage
+2. **Event Management** (`/events/{id}`) ✅ **MIGRATED TO NEXT.JS**
+   - Premium event detail pages with dramatic gradient headers
+   - Championship main event showcase with large fighter photos (160px)
+   - Main card, prelims, and early prelims sections with progressive visual hierarchy
+   - Fighter records calculated at fight time (W-L-D format)
+   - Title fight indicators with gold borders and championship badges
+   - Fight results, methods, rounds, and timing
+   - Winner/loser badges with color coding
+   - Responsive design with shadcn/ui components
 
 3. **UFC Rankings** (`/rankings`)
    - Current UFC rankings by division (men's and women's)
@@ -24,19 +28,23 @@ A comprehensive MMA (Mixed Martial Arts) Flask web application featuring fighter
    - Champion and interim champion tracking
 
 4. **Interactive Games**
-   - **Fighter Wordle** (`/fighter-wordle`): Guess UFC fighters with hints
-   - **Tale of the Tape** (`/tale-of-tape`): Side-by-side fighter comparisons
+   - **Fighter Wordle**: Guess UFC fighters with hints
+   - **Tale of the Tape**: Side-by-side fighter comparisons
 
 5. **Analytics Tools**
-   - **Next Event** (`/next-event`): Live upcoming UFC event data from ESPN API
-   - **System Checker** (`/system-checker`): Betting system analysis (age gaps, favorites, etc.)
+   - **Next Event**: Live upcoming UFC event data from ESPN API
+   - **System Checker**: Betting system analysis (age gaps, favorites, etc.)
 
 ### Technical Features
-- SQLite database with comprehensive MMA data (82MB database)
+- **FastAPI Backend**: Async Python API with Pydantic models
+- **Next.js 16 Frontend**: React 19 with App Router and server components
+- **shadcn/ui Components**: Premium UI components (New York style)
+- **Tailwind CSS 4**: Modern utility-first CSS framework
+- **SQLite Database**: Comprehensive MMA data (82MB database)
 - Real-time odds integration from multiple providers
 - Fighter name normalization for international characters
-- Responsive design with Tailwind CSS
-- Search functionality across fighters
+- Responsive design optimized for all devices
+- Fighter search functionality
 
 ## Database Schema
 Key tables:
@@ -49,67 +57,121 @@ Key tables:
 
 ## Architecture Status
 
-### ✅ Current Implementation (Modular - MIGRATED!)
-- **Structure**: Clean modular Flask app using blueprints
-- **Entry Point**: `uv run run.py` (uses application factory pattern)
-- **Blueprints**: Organized routes in `mma_website/routes/`
-  - `main.py`: Home, fighters list, career timeline, system checker
-  - `events.py`: Event listings and details with services
-  - `games.py`: Fighter Wordle, Tale of Tape, **Next Event with ESPN API**
-  - `api.py`: RESTful API endpoints
-- **Services**: Business logic separated in `services/`
-- **Models**: Database models and Pydantic schemas
-- **Utils**: Helper functions and text processing
-- **Templates**: Updated to use blueprint URL routing
+### ✅ Current Implementation (FastAPI + Next.js)
 
-### ⚠️ Legacy Implementation (app.py - DEPRECATED)
-- Single monolithic Flask app (~1800 lines)  
-- **Status**: Still works but should not be used for new development
-- **Usage**: `uv run app.py` (for reference only)
+**Backend - FastAPI** (`backend/`)
+- **Entry Point**: `cd backend && python run.py` (Port 8000)
+- **Structure**: Clean async API with Pydantic models
+- **API Routes**: Organized in `backend/api/`
+  - `events.py`: Event listings and detailed event data with fighter records
+  - `fighters.py`: Fighter profiles and statistics
+  - `rankings.py`: UFC rankings by division
+- **Services**: Business logic separated for maintainability
+- **Database**: SQLite with async support
+- **Features**: CORS enabled, automatic API docs at `/docs`
+
+**Frontend - Next.js** (`frontend/`)
+- **Entry Point**: `cd frontend && npm run dev` (Port 3000)
+- **Structure**: Next.js 16 App Router with React 19
+- **Pages**: Organized in `frontend/app/`
+  - `events/[id]/page.tsx`: ✅ Enhanced event detail pages (MIGRATED)
+  - Other pages: Still need migration from Flask
+- **Components**: Reusable React components with shadcn/ui
+  - `FighterCard`: Display fighter info with photos and records
+  - `MainEventCard`: Premium main event showcase
+  - `FightCard`: Regular fight display for main card/prelims
+- **Styling**: Tailwind CSS 4 with shadcn/ui (New York style)
+- **API Integration**: TanStack React Query for data fetching
+
+### ⚠️ Legacy Implementation (Flask - DEPRECATED)
+- **Status**: Flask templates in `templates/` and `mma_website/` are deprecated
+- **Migration**: Gradually moving all features to Next.js frontend
+- **Note**: Flask app (`run.py`, `app.py`) should not be used for new development
+- **Reference**: Available at `http://127.0.0.1:5004` for comparison only
 
 ## What's Next
 
-### ✅ COMPLETED: Architecture Migration
-- ✅ **Migrated to Modular Structure**: Fully functional blueprint-based app
-- ✅ **Next Event ESPN Integration**: Working in modular structure with Fight Preview
-- ✅ **Template Updates**: All navigation uses blueprint URLs
-- ✅ **Testing**: Confirmed working on `http://127.0.0.1:5000`
+### ✅ COMPLETED: FastAPI + Next.js Migration
+- ✅ **Events Detail Page**: Migrated with enhanced premium design (`/events/{id}`)
+- ✅ **shadcn/ui Setup**: Component library configured (New York style)
+- ✅ **FastAPI Backend**: Complete events API with fighter records
+- ✅ **Main Event Display**: Fixed fight ordering by match_number
+
+### 🚧 Pages to Migrate from Flask
+1. **Homepage** (`/`) - Dashboard with recent/upcoming events
+2. **Fighters List** (`/fighters`) - Searchable fighter database
+3. **Fighter Detail** (`/fighters/{id}`) - Individual fighter profiles with fight history
+4. **Rankings** (`/rankings`) - UFC rankings by division
+5. **Events List** (`/events`) - Event listings by year
+6. **Games** - Fighter Wordle, Tale of the Tape
+7. **Analytics Tools** - Next Event, System Checker
 
 ### Feature Enhancements
-1. **Data Updates**: Implement automated data refresh from ESPN API
-2. **User Features**: 
+1. **Data Updates**: Automated data refresh from ESPN API
+2. **User Features**:
    - Favorite fighters
    - Fight predictions/picks
-   - Fighter comparison tools
-3. **Analytics**: 
+   - Enhanced fighter comparison tools
+3. **Analytics**:
    - Advanced betting system analysis
    - Fighter performance trends
    - Historical data visualization
 
 ### Technical Improvements
-1. **API Enhancement**: RESTful API endpoints for external consumption
+1. **Testing**: Add test suite for frontend and backend
 2. **Performance**: Database optimization and caching
-3. **Testing**: Add test suite for reliability
-4. **Deployment**: Production configuration and deployment setup
+3. **Deployment**: Production configuration for FastAPI and Next.js
+4. **API Docs**: Enhance FastAPI automatic documentation
 
 ## Development Commands
+
+### Current Stack (FastAPI + Next.js)
 ```bash
-# Run modular app (CURRENT - RECOMMENDED)
-uv run run.py
+# Start FastAPI backend (Port 8000)
+cd backend && python run.py
 
-# Run legacy app (DEPRECATED - for reference only)
-uv run app.py
+# Start Next.js frontend (Port 3000)
+cd frontend && npm run dev
 
-# Database operations (Jupyter notebooks)
-# updateData.ipynb - Main data updates
+# View FastAPI docs
+open http://localhost:8000/docs
+
+# View Next.js app
+open http://localhost:3000
+```
+
+### Database Operations
+```bash
+# Data updates (Jupyter notebooks)
+# scripts/update_data.py - Main data updates via CLI
+# updateData.ipynb - Interactive data updates
 # grabData.ipynb - Initial data collection
 ```
 
-## Key Files
-- `run.py`: **CURRENT** Entry point for modular app
-- `mma_website/`: **CURRENT** Modular application structure (blueprints, services, models)
-- `app.py`: **LEGACY** Monolithic application (1800+ lines) - for reference only
-- `requirements.txt`: Python dependencies
-- `data/mma.db`: Main SQLite database (82MB)
-- `templates/`: Jinja2 HTML templates (updated for blueprint routing)
-- `updateData.ipynb`: Data update scripts
+### Legacy (DEPRECATED - DO NOT USE)
+```bash
+# Flask app (for reference only)
+uv run run.py  # Port 5004
+```
+
+## Key Files & Directories
+
+### Current Stack
+- **`backend/`**: FastAPI application
+  - `backend/run.py`: FastAPI entry point
+  - `backend/api/`: API route handlers
+  - `backend/services/`: Business logic layer
+  - `backend/models/`: Pydantic models
+- **`frontend/`**: Next.js application
+  - `frontend/app/`: Next.js pages (App Router)
+  - `frontend/components/`: React components
+  - `frontend/lib/`: Utilities and API client
+  - `frontend/components.json`: shadcn/ui configuration
+- **`data/mma.db`**: Main SQLite database (82MB)
+- **`scripts/`**: Data update scripts
+
+### Legacy (DEPRECATED)
+- `mma_website/`: Flask blueprints and templates
+- `templates/`: Jinja2 HTML templates
+- `app.py`: Monolithic Flask app
+- `run.py`: Modular Flask app
