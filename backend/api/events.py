@@ -24,7 +24,8 @@ async def list_events(
         where_clauses.append("strftime('%Y', date) = ?")
         params.append(str(year))
 
-    if promotion:
+    # Only apply promotion filter if it's not "all" or empty
+    if promotion and promotion.lower() != "all":
         where_clauses.append("LOWER(league) = LOWER(?)")
         params.append(promotion)
 
