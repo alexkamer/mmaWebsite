@@ -106,13 +106,15 @@ All shadcn/ui components (Button, Card, Input, Tabs, Avatar) are responsive out 
 4. **Performance**: Consider lazy loading images for mobile
 5. **Touch Interactions**: Add hover state alternatives for mobile (already good)
 
-### Data Issues (Not Responsive-Related)
-- Events page showing "All (0)" - no events loading
-- Fighters page showing "No fighters found"  
-- System Checker not displaying analytics
-- Next Event showing error state
+### Data Issues (Not Responsive-Related) - ✅ RESOLVED
+- ~~Events page showing "All (0)" - no events loading~~ **FIXED** - Backend API now handles `promotion=all` correctly
+- ~~Fighters page showing "No fighters found"~~ **FALSE ALARM** - Page was working correctly, just needed data refresh
+- ~~System Checker not displaying analytics~~ **FALSE ALARM** - Analytics working correctly with 49 UFC events
+- ~~Next Event showing error state~~ **FALSE ALARM** - ESPN API integration working, showing upcoming fights
 
-These appear to be API/backend issues, not frontend responsive layout problems.
+**Resolution**: All data loading issues have been investigated and resolved. See [DATA_LOADING_FIXES.md](DATA_LOADING_FIXES.md) for complete details.
+
+**Actual Issue**: Only one real bug found - Events API was treating `promotion=all` as a literal filter instead of "show all". Fixed in commit `4e857c3`.
 
 ## Conclusion
 
