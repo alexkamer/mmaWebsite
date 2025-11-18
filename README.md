@@ -1,15 +1,16 @@
 # MMA Website 🥊
 
-A comprehensive MMA (Mixed Martial Arts) web application built with Flask, featuring 17,000+ fighter profiles, event management, live rankings, and interactive games powered by ESPN API data.
+A comprehensive MMA (Mixed Martial Arts) web application built with FastAPI and Next.js, featuring 36,847+ fighter profiles, event management, live rankings, and interactive games powered by ESPN API data.
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
-[![Flask](https://img.shields.io/badge/flask-3.1+-green.svg)](https://flask.palletsprojects.com/)
+[![FastAPI](https://img.shields.io/badge/fastapi-0.121+-green.svg)](https://fastapi.tiangolo.com/)
+[![Next.js 16](https://img.shields.io/badge/next.js-16-black.svg)](https://nextjs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## ✨ Features
 
 ### Core Features
-- **🥊 Fighter Database** - 17,000+ fighters with detailed profiles, fight history, and career statistics
+- **🥊 Fighter Database** - 36,847+ fighters with detailed profiles, fight history, and career statistics
 - **📅 Event Management** - Complete UFC and regional promotion event tracking with live updates
 - **🏆 UFC Rankings** - Real-time rankings across all divisions
 - **⚔️ Tale of the Tape** - Side-by-side fighter comparisons with advanced filtering
@@ -18,12 +19,12 @@ A comprehensive MMA (Mixed Martial Arts) web application built with Flask, featu
 - **🔴 Live Events** - ESPN API integration for upcoming UFC events
 
 ### Technical Features
-- Modular Flask application with blueprints
-- SQLite database (94MB) with 17K+ fighters
+- FastAPI backend with async Python and Pydantic models
+- Next.js 16 frontend with React 19 and App Router
+- SQLite database (82MB) with 36K+ fighters
 - ESPN API integration for real-time data
-- RESTful API endpoints
-- Responsive Tailwind CSS design
-- Advanced text normalization for international fighters
+- shadcn/ui components with Tailwind CSS 4
+- Responsive design optimized for all devices
 
 ## 🚀 Quick Start
 
@@ -79,29 +80,31 @@ uv run run.py
 
 ## 📊 Project Stats
 
-- **Fighters**: 17,000+ athlete profiles
+- **Fighters**: 36,847+ athlete profiles
 - **Events**: Thousands of historical and upcoming events
 - **Fights**: Complete fight history with statistics
-- **Database**: 94MB SQLite with multi-provider odds
-- **Code**: Modular architecture with blueprints
+- **Database**: 82MB SQLite with multi-provider odds
+- **Code**: Modern FastAPI + Next.js architecture
 
 ## 🗂️ Project Structure
 
 ```
 mmaWebsite/
-├── mma_website/              # Main Flask application (modular)
-│   ├── routes/              # Blueprint-based routing
-│   ├── services/            # Business logic layer
-│   ├── models/              # Database models & schemas
-│   └── utils/               # Helper functions
-├── scripts/                 # Data update scripts
+├── backend/                 # FastAPI backend (Port 8000)
+│   ├── api/                # API route handlers
+│   ├── services/           # Business logic layer
+│   ├── models/             # Pydantic models
+│   └── database/           # SQLAlchemy models
+├── frontend/               # Next.js frontend (Port 3000)
+│   ├── app/               # Next.js App Router pages
+│   ├── components/        # React components
+│   └── lib/               # Utilities
+├── scripts/               # Data update scripts
 │   ├── incremental_update.py      # Daily updates (2-10 min)
 │   ├── backfill_fighter_events.py # Full sync (3-8 hours)
 │   └── update_data.py             # Initial setup
-├── templates/               # Jinja2 HTML templates
-├── static/                  # CSS, JavaScript, images
-├── docs/                    # Documentation
-└── data/                    # SQLite database (not in repo)
+├── docs/                  # Documentation
+└── data/                  # SQLite database (not in repo)
 ```
 
 ## 🔄 Data Updates
@@ -149,12 +152,13 @@ See [docs/DATA_UPDATE_GUIDE.md](docs/DATA_UPDATE_GUIDE.md) for details.
 
 ## 🛠️ Tech Stack
 
-- **Backend**: Flask 3.1+, SQLAlchemy 2.0+
-- **Database**: SQLite (94MB)
-- **Frontend**: Jinja2, Tailwind CSS
+- **Backend**: FastAPI 0.121+, SQLAlchemy 2.0+
+- **Frontend**: Next.js 16, React 19, shadcn/ui
+- **Database**: SQLite (82MB)
 - **Data Source**: ESPN API
+- **Styling**: Tailwind CSS 4
 - **Validation**: Pydantic 2.11+
-- **Package Manager**: uv / pip
+- **Package Manager**: uv / npm
 
 ## 🤝 Contributing
 
