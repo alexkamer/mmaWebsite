@@ -115,18 +115,67 @@ Tests that make external API calls or are time-intensive:
 - ESPN API integration
 - Response time validation
 
-## Frontend Testing (Coming Soon)
+## Frontend Testing
 
-### Planned Technology Stack
-- **Jest**: Testing framework
-- **React Testing Library**: Component testing
-- **Playwright**: E2E testing
+### Technology Stack
+- **Jest 30.2**: Testing framework configured for Next.js
+- **React Testing Library 16.3**: Component testing
+- **@testing-library/jest-dom**: Custom Jest matchers
+- **jsdom**: Browser environment simulation
 
-### Planned Tests
-- Component rendering tests
-- User interaction tests
-- API integration tests
-- E2E user flows
+### Running Tests
+
+```bash
+# Run all frontend tests
+cd frontend && npm test
+
+# Run tests in watch mode
+cd frontend && npm run test:watch
+
+# Run tests with coverage
+cd frontend && npm run test:coverage
+```
+
+### Test Structure
+
+```
+frontend/__tests__/
+├── components/
+│   ├── theme-toggle.test.tsx      # 6 tests - Theme toggle component
+│   └── fighter-avatar.test.tsx    # 11 tests - Fighter avatar component
+└── lib/
+    └── utils.test.ts              # 7 tests - Utility functions
+```
+
+### Current Test Coverage
+
+**Overall: 22 tests, all passing** ✨
+
+Tested Components:
+- **utils.ts**: 100% coverage (7 tests)
+- **theme-toggle.tsx**: 100% coverage (6 tests)
+- **fighter-avatar.tsx**: 100% coverage (11 tests)
+
+### Test Categories
+
+#### Component Tests
+Tests that verify React components render and behave correctly:
+- Rendering behavior and conditionals
+- User interactions (clicks, inputs)
+- Accessibility (ARIA labels, roles)
+- CSS classes and styling
+- Error handling and fallbacks
+
+#### Utility Tests
+Tests that verify helper functions work correctly:
+- Class name merging (cn utility)
+- Data transformations
+- API helpers (planned)
+
+### Next Steps
+- Add tests for complex components (FighterSearch, FighterFilters)
+- Add page-level tests
+- Add E2E tests with Playwright
 
 ## Continuous Integration
 
@@ -138,18 +187,22 @@ Tests run automatically on:
 - Manual workflow dispatch
 
 **Workflow includes:**
-1. Backend tests with coverage
-2. Frontend linting and build
-3. Integration health checks
-4. Coverage upload to Codecov
+1. Backend tests with coverage (pytest)
+2. Frontend tests (Jest)
+3. Frontend linting and build
+4. Integration health checks
+5. Coverage upload to Codecov
 
 View workflow: `.github/workflows/tests.yml`
 
 ### CI Commands
 
 ```bash
-# Same commands used in CI
+# Backend tests (same commands used in CI)
 uv run pytest backend/tests/ -v --cov=backend --cov-report=xml
+
+# Frontend tests
+cd frontend && npm test
 cd frontend && npm run lint
 cd frontend && npm run build
 ```
