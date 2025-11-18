@@ -9,6 +9,7 @@ from .betting import router as betting_router
 from .espn import router as espn_router
 from .wordle import router as wordle_router
 from .query import router as query_router
+from .homepage import router as homepage_router
 
 # Create FastAPI app
 app = FastAPI(
@@ -30,6 +31,7 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(homepage_router, prefix="/api/homepage", tags=["homepage"])
 app.include_router(fighters_router, prefix="/api/fighters", tags=["fighters"])
 app.include_router(events_router, prefix="/api/events", tags=["events"])
 app.include_router(rankings_router, prefix="/api/rankings", tags=["rankings"])
