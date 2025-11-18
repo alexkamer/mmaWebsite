@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project uses comprehensive automated testing to ensure code quality and reliability. We have 43 backend tests with 60% code coverage and counting.
+This project uses comprehensive automated testing to ensure code quality and reliability. We have 84 backend tests with 74% code coverage and counting.
 
 ## Backend Testing
 
@@ -64,16 +64,16 @@ uv run pytest -m unit
 
 ### Current Test Coverage
 
-**Overall: 60% (430/1267 statements)**
+**Overall: 74% (1193/1614 statements)**
 
 By Module:
+- **Betting API**: 98% ✨
 - **Rankings API**: 91% ✨
 - **Main API**: 92% ✨
 - **Events API**: 85% ✨
 - **ESPN API**: 79%
 - **Fighters API**: 74%
-- **Betting API**: 17% (needs tests)
-- **Wordle API**: 10% (needs tests)
+- **Wordle API**: 64%
 - **Query API**: 8% (needs tests)
 - **Homepage API**: 14% (needs tests)
 
@@ -88,7 +88,9 @@ backend/tests/
 │   ├── test_fighters.py     # 16 tests - Fighters API
 │   ├── test_events.py       # 18 tests - Events API
 │   ├── test_rankings.py     # 6 tests - Rankings API
-│   └── test_espn.py         # 3 tests - ESPN API integration
+│   ├── test_espn.py         # 4 tests - ESPN API integration
+│   ├── test_betting.py      # 25 tests - Betting API
+│   └── test_wordle.py       # 16 tests - Wordle API
 └── services/                # (Future) Service layer tests
 ```
 
@@ -251,19 +253,19 @@ def test_example(self, client):
 
 ### Current Progress
 - ✅ Test infrastructure: Complete
-- ✅ Core API tests: 60% coverage
-- ⬜ Remaining APIs: 40% to cover
+- ✅ Core API tests: 74% coverage
+- ✅ Betting API: Complete (98% coverage)
+- ✅ Wordle API: Complete (64% coverage)
+- ⬜ Remaining APIs: 6% to reach 80%
 - ⬜ Frontend tests: Not started
 - ⬜ E2E tests: Not started
 
 ### Next Steps to 80% Coverage
 
-1. **Add Betting API tests** (~10 tests, +15% coverage)
-2. **Add Wordle API tests** (~8 tests, +10% coverage)
-3. **Add Homepage API tests** (~5 tests, +8% coverage)
-4. **Add Query API tests** (~12 tests, +15% coverage)
+1. **Add Homepage API tests** (~5-7 tests, +6% coverage) - Would reach 80% goal ✨
+2. **Add Query API tests** (~10-12 tests, +12% coverage) - Would reach 86%+
 
-Estimated effort: 4-6 hours
+Estimated effort: 2-3 hours
 
 ## Troubleshooting
 
@@ -318,15 +320,17 @@ When adding new features:
 ```bash
 # Latest test run
 ============================= test session starts ==============================
-collected 43 items
+collected 84 items
 
-backend/tests/api/test_events.py ..................         [ 41%]
-backend/tests/api/test_fighters.py ................         [ 78%]
-backend/tests/api/test_rankings.py ......                   [ 92%]
-backend/tests/api/test_espn.py ...                          [100%]
+backend/tests/api/test_betting.py .........................  [ 29%]
+backend/tests/api/test_espn.py ....                          [ 34%]
+backend/tests/api/test_events.py ..................          [ 55%]
+backend/tests/api/test_fighters.py ................          [ 74%]
+backend/tests/api/test_rankings.py ......                    [ 81%]
+backend/tests/api/test_wordle.py ................            [100%]
 
-============================== 43 passed in 22.22s ==============================
-Coverage: 60% (430/1267 statements)
+======================== 84 passed in 86.24s (0:01:26) =========================
+Coverage: 74% (1193/1614 statements)
 ```
 
 ---
