@@ -61,7 +61,8 @@ def parse_event_query(question: str) -> Optional[Dict[str, Any]]:
     for pattern in patterns:
         match = re.search(pattern, question, re.IGNORECASE)
         if match:
-            timing = match.group(1).lower() if match.lastindex >= 1 else "next"
+            # Safely handle case where match.lastindex is None or no groups captured
+            timing = match.group(1).lower() if match.lastindex and match.lastindex >= 1 else "next"
             return {"type": "event_query", "timing": timing}
     return None
 
@@ -94,7 +95,8 @@ def parse_rankings_query(question: str) -> Optional[Dict[str, Any]]:
     for pattern in patterns:
         match = re.search(pattern, question, re.IGNORECASE)
         if match:
-            division = match.group(1).strip() if match.lastindex >= 1 else None
+            # Safely handle case where match.lastindex is None or no groups captured
+            division = match.group(1).strip() if match.lastindex and match.lastindex >= 1 else None
             return {"type": "rankings", "division": division}
     return None
 
