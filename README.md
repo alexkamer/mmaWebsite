@@ -5,8 +5,8 @@ A comprehensive MMA (Mixed Martial Arts) web application built with FastAPI and 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/fastapi-0.121+-green.svg)](https://fastapi.tiangolo.com/)
 [![Next.js 16](https://img.shields.io/badge/next.js-16-black.svg)](https://nextjs.org/)
-[![Tests](https://img.shields.io/badge/tests-106%20passing-brightgreen.svg)](TESTING.md)
-[![Coverage](https://img.shields.io/badge/coverage-78%25-brightgreen.svg)](TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-137%20passing-brightgreen.svg)](TESTING.md)
+[![Coverage](https://img.shields.io/badge/coverage-88%25-brightgreen.svg)](TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## ✨ Features
@@ -146,7 +146,7 @@ See [docs/DATA_UPDATE_GUIDE.md](docs/DATA_UPDATE_GUIDE.md) for details.
 
 ## 🧪 Testing
 
-This project has comprehensive automated testing with **106 tests** and **78% code coverage**.
+This project has comprehensive automated testing with **137 tests** and **88% code coverage**.
 
 ### Run Tests
 
@@ -165,6 +165,7 @@ uv run pytest backend/tests/api/test_fighters.py -v
 - Betting API: **98%** ✨
 - Rankings API: **91%** ✨
 - Events API: **85%** ✨
+- Query API: **84%** ✨
 - ESPN API: **79%**
 - Homepage API: **79%**
 - Fighters API: **74%**

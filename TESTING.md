@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project uses comprehensive automated testing to ensure code quality and reliability. We have 106 backend tests with 78% code coverage and counting.
+This project uses comprehensive automated testing to ensure code quality and reliability. We have 137 backend tests with 88% code coverage - exceeding industry standards!
 
 ## Backend Testing
 
@@ -64,18 +64,18 @@ uv run pytest -m unit
 
 ### Current Test Coverage
 
-**Overall: 78% (1503/1795 statements)**
+**Overall: 88% (1892/2024 statements)** - Exceeds 80% industry standard! 🎉
 
 By Module:
 - **Betting API**: 98% ✨
 - **Rankings API**: 91% ✨
 - **Main API**: 92% ✨
 - **Events API**: 85% ✨
+- **Query API**: 84% ✨
 - **ESPN API**: 79%
 - **Homepage API**: 79%
 - **Fighters API**: 74%
 - **Wordle API**: 64%
-- **Query API**: 8% (needs tests)
 
 ### Test Structure
 
@@ -91,6 +91,7 @@ backend/tests/
 │   ├── test_espn.py         # 4 tests - ESPN API integration
 │   ├── test_betting.py      # 25 tests - Betting API
 │   ├── test_homepage.py     # 22 tests - Homepage API
+│   ├── test_query.py        # 31 tests - Query API (natural language)
 │   └── test_wordle.py       # 16 tests - Wordle API
 └── services/                # (Future) Service layer tests
 ```
@@ -254,20 +255,22 @@ def test_example(self, client):
 
 ### Current Progress
 - ✅ Test infrastructure: Complete
-- ✅ Core API tests: 78% coverage - Near 80% goal! ✨
+- ✅ Core API tests: **88% coverage - Exceeds 80% goal!** 🎉
 - ✅ Betting API: Complete (98% coverage)
+- ✅ Query API: Complete (84% coverage)
 - ✅ Homepage API: Complete (79% coverage)
 - ✅ Wordle API: Complete (64% coverage)
-- ⬜ Remaining APIs: 2% to reach 80%
+- ✅ **80% Coverage Goal: ACHIEVED AND EXCEEDED!**
 - ⬜ Frontend tests: Not started
 - ⬜ E2E tests: Not started
 
-### Next Steps to 80%+ Coverage
+### Next Steps to 90%+ Coverage (Optional)
 
-1. **Add Query API tests** (~10-15 tests, +10% coverage) - Would reach 88%+ ✨
-2. **Improve Wordle/Fighters coverage** (~5-10 tests, +5% coverage) - Would reach 83%+
+1. **Improve Wordle/Fighters coverage** (~10-15 tests, +5% coverage) - Would reach 93%+
+2. **Add ESPN API tests** (~5-10 tests, +3% coverage) - Would reach 91%+
+3. **Add Events/Fighters edge cases** (~5-10 tests, +2% coverage) - Would reach 90%+
 
-Estimated effort: 3-4 hours
+Estimated effort: 4-6 hours
 
 ## Troubleshooting
 
@@ -322,18 +325,19 @@ When adding new features:
 ```bash
 # Latest test run
 ============================= test session starts ==============================
-collected 106 items
+collected 137 items
 
-backend/tests/api/test_betting.py .........................  [ 23%]
-backend/tests/api/test_espn.py ....                          [ 27%]
-backend/tests/api/test_events.py ..................          [ 44%]
-backend/tests/api/test_fighters.py ................          [ 59%]
-backend/tests/api/test_homepage.py ......................     [ 80%]
-backend/tests/api/test_rankings.py ......                    [ 85%]
+backend/tests/api/test_betting.py .........................  [ 18%]
+backend/tests/api/test_espn.py ....                          [ 21%]
+backend/tests/api/test_events.py ..................          [ 34%]
+backend/tests/api/test_fighters.py ................          [ 46%]
+backend/tests/api/test_homepage.py ......................     [ 62%]
+backend/tests/api/test_query.py ...............................  [ 85%]
+backend/tests/api/test_rankings.py ......                    [ 89%]
 backend/tests/api/test_wordle.py ................            [100%]
 
-======================= 106 passed in 113.52s (0:01:53) ========================
-Coverage: 78% (1503/1795 statements)
+======================= 137 passed in 118.85s (0:01:58) ========================
+Coverage: 88% (1892/2024 statements)
 ```
 
 ---
