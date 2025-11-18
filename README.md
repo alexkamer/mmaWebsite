@@ -5,6 +5,8 @@ A comprehensive MMA (Mixed Martial Arts) web application built with FastAPI and 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/fastapi-0.121+-green.svg)](https://fastapi.tiangolo.com/)
 [![Next.js 16](https://img.shields.io/badge/next.js-16-black.svg)](https://nextjs.org/)
+[![Tests](https://img.shields.io/badge/tests-43%20passing-brightgreen.svg)](TESTING.md)
+[![Coverage](https://img.shields.io/badge/coverage-60%25-yellow.svg)](TESTING.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## ✨ Features
@@ -142,9 +144,38 @@ See [docs/DATA_UPDATE_GUIDE.md](docs/DATA_UPDATE_GUIDE.md) for details.
 - `GET /api/fight-stats/<id>` - Fight statistics
 - `GET /rankings/api` - Rankings data
 
+## 🧪 Testing
+
+This project has comprehensive automated testing with **43 tests** and **60% code coverage**.
+
+### Run Tests
+
+```bash
+# Run all tests
+uv run pytest
+
+# Run with coverage
+uv run pytest --cov=backend
+
+# Run specific tests
+uv run pytest backend/tests/api/test_fighters.py -v
+```
+
+### Test Coverage by Module
+- Rankings API: **91%** ✨
+- Events API: **85%** ✨
+- ESPN API: **79%**
+- Fighters API: **74%**
+
+### Continuous Integration
+Tests run automatically on every push and pull request via GitHub Actions.
+
+**See [TESTING.md](TESTING.md) for complete testing guide.**
+
 ## 📚 Documentation
 
 - [SETUP.md](SETUP.md) - Complete setup guide
+- [TESTING.md](TESTING.md) - Testing guide and best practices
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Project overview & capabilities
 - [CONTRIBUTING.md](.github/CONTRIBUTING.md) - Contribution guidelines
 - [docs/DATA_UPDATE_GUIDE.md](docs/DATA_UPDATE_GUIDE.md) - Data management
@@ -165,8 +196,8 @@ See [docs/DATA_UPDATE_GUIDE.md](docs/DATA_UPDATE_GUIDE.md) for details.
 Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 ### Priority Areas
-- [ ] Add automated tests (pytest)
-- [ ] Mobile responsiveness improvements
+- [x] ~~Add automated tests (pytest)~~ ✅ **Complete** - 43 tests, 60% coverage
+- [x] ~~Mobile responsiveness improvements~~ ✅ **Complete** - All pages responsive
 - [ ] User authentication & profiles
 - [ ] Advanced analytics features
 - [ ] Deployment configuration
