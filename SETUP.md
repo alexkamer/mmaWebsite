@@ -2,11 +2,31 @@
 
 Complete setup instructions for the MMA Website.
 
+## Quick Start
+
+```bash
+# 1. Install dependencies
+uv sync                          # Backend (Python)
+cd frontend && npm install       # Frontend (Node.js)
+
+# 2. Set up database
+uv run python scripts/update_data.py
+
+# 3. Start backend (Terminal 1)
+cd backend && python run.py      # Runs on http://localhost:8000
+
+# 4. Start frontend (Terminal 2)
+cd frontend && npm run dev       # Runs on http://localhost:3000
+
+# 5. Visit http://localhost:3000
+```
+
 ## Prerequisites
 
-- Python 3.12+
-- Git
-- 10GB free disk space (for database)
+- **Python 3.12+**
+- **Node.js 18+** and npm
+- **Git**
+- **10GB free disk space** (for database)
 
 ## Installation
 
@@ -19,23 +39,24 @@ cd mmaWebsite
 
 ### 2. Install Dependencies
 
-**Option A: Using uv (Recommended)**
+**Backend Dependencies (Python)**
+
+Using uv (Recommended):
 ```bash
 # Install uv if you don't have it
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install project dependencies
+# Install backend dependencies
 uv sync
 ```
 
-**Option B: Using pip**
-```bash
-# Create virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+**Frontend Dependencies (Node.js)**
 
-# Install dependencies
-pip install -r requirements.txt
+```bash
+# Install Node.js dependencies
+cd frontend
+npm install
+cd ..
 ```
 
 ### 3. Environment Configuration
@@ -53,13 +74,17 @@ Edit `.env` with your configuration:
 AZURE_OPENAI_API_KEY=your_key_here
 AZURE_OPENAI_ENDPOINT=https://your-endpoint.openai.azure.com/
 AZURE_DEPLOYMENT=gpt-4-1
-
-# Flask configuration
-FLASK_ENV=development
-FLASK_DEBUG=1
 ```
 
-**Note:** The Azure OpenAI configuration is only needed if you want to use the experimental MMA query feature (`/query` route). The rest of the application works without it.
+**Note:** The Azure OpenAI configuration is only needed if you want to use the experimental MMA query feature (`/api/query` endpoint). The rest of the application works without it.
+
+**Frontend Environment:**
+
+Create `frontend/.env.local`:
+```bash
+# API endpoint (points to FastAPI backend)
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
 
 ### 4. Database Setup
 
@@ -93,19 +118,38 @@ with app.app_context():
 "
 ```
 
-### 5. Verify Setup
+### 5. Run the Application
 
-Run the application:
+The application consists of two servers that must both be running:
 
+**Terminal 1 - Start FastAPI Backend (Port 8000):**
 ```bash
-uv run run.py
+cd backend
+python run.py
 ```
 
-Visit `http://127.0.0.1:5000` in your browser. You should see:
-- Home page with events (if database is populated)
-- Fighter search functionality
-- Rankings page
-- Interactive games
+The backend API will be available at `http://localhost:8000`
+- API documentation: `http://localhost:8000/docs`
+- Health check: `http://localhost:8000/health`
+
+**Terminal 2 - Start Next.js Frontend (Port 3000):**
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend will be available at `http://localhost:3000`
+
+### 6. Verify Setup
+
+Visit `http://localhost:3000` in your browser. You should see:
+- **Homepage** with champions, recent events, and upcoming fights
+- **Fighters** (`/fighters`) - Searchable database with 36,847+ fighters
+- **Events** (`/events`) - UFC, Bellator, PFL event listings
+- **Rankings** (`/rankings`) - Current UFC rankings by division
+- **Next Event** (`/next-event`) - Upcoming UFC event with betting odds
+- **System Checker** (`/tools/system-checker`) - Betting analytics dashboard
+- **Fighter Wordle** (`/games/wordle`) - Daily fighter guessing game
 
 ## Database Updates
 
@@ -127,24 +171,58 @@ After setup, your directory should look like:
 
 ```
 mmaWebsite/
-├── .env                      # Your environment configuration
-├── .venv/                    # Virtual environment (if using pip)
+├── .env                      # Backend environment configuration
+├── backend/                  # FastAPI backend (Port 8000)
+│   ├── api/                 # API routes
+│   ├── models/              # Pydantic models
+│   ├── services/            # Business logic
+│   └── run.py              # FastAPI entry point
+├── frontend/                 # Next.js frontend (Port 3000)
+│   ├── .env.local           # Frontend environment configuration
+│   ├── app/                 # Next.js pages (App Router)
+│   ├── components/          # React components
+│   ├── lib/                 # Utilities and API client
+│   └── __tests__/           # Jest tests
 ├── data/
-│   └── mma.db               # SQLite database (94MB, you create this)
-├── mma_website/             # Main application
+│   └── mma.db               # SQLite database (82MB, you create this)
 ├── scripts/                 # Data update scripts
-├── templates/               # HTML templates
-├── static/                  # CSS, JS, images
-├── docs/                    # Documentation
-└── run.py                   # Application entry point
+└── docs/                    # Documentation
 ```
 
 ## Troubleshooting
 
-### "Module not found" errors
+### Backend won't start
 ```bash
-# Make sure you're using the virtual environment
-source .venv/bin/activate  # or: uv run <command>
+# Make sure you're in the backend directory
+cd backend
+python run.py
+
+# Check if port 8000 is already in use
+lsof -ti:8000 | xargs kill -9
+```
+
+### Frontend won't start
+```bash
+# Make sure dependencies are installed
+cd frontend
+npm install
+
+# Check if port 3000 is already in use
+lsof -ti:3000 | xargs kill -9
+
+# Or run on a different port
+cd frontend
+PORT=3001 npm run dev
+```
+
+### Frontend can't connect to backend
+```bash
+# Verify backend is running on port 8000
+curl http://localhost:8000/health
+
+# Check frontend/.env.local has correct API URL
+cat frontend/.env.local
+# Should show: NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
 ### Database errors
@@ -154,20 +232,13 @@ rm data/mma.db
 uv run python scripts/update_data.py
 ```
 
-### Port already in use
+### "Module not found" errors (Backend)
 ```bash
-# Kill the process using port 5000
-lsof -ti:5000 | xargs kill -9
+# Make sure you've run uv sync
+uv sync
 
-# Or run on a different port
-FLASK_RUN_PORT=5001 uv run run.py
-```
-
-### "No module named 'mma_website'"
-```bash
-# Make sure you're in the project root directory
-cd /path/to/mmaWebsite
-uv run run.py
+# Or use uv run for commands
+uv run python backend/run.py
 ```
 
 ## Next Steps
